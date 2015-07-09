@@ -3,7 +3,7 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical" 
-    android:id="@+id/layout1">
+    android:id="@+id/mainlayout">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -11,7 +11,7 @@
         android:orientation="horizontal" >
 
         <Button
-            android:id="@+id/btn_select"
+            android:id="@+id/btn_connect"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="12dp"
@@ -19,9 +19,9 @@
     </LinearLayout>
 
 	<com.vehicle.uart.SpeedView
+		android:id="@+id/speedview"
 	    android:layout_width="wrap_content"
-	    android:layout_height="100dip"
-	    android:id="@+id/speedview"/>
+	    android:layout_height="100dip"/>
 
 	<LinearLayout
         android:layout_width="wrap_content"
@@ -34,14 +34,14 @@
 	        android:layout_height="wrap_content"  
 	        android:layout_gravity="center_vertical"
 	        android:textAppearance="?android:attr/textAppearanceLarge"
-	        android:text="当前时速" />
+	        android:text="当前时速: " />
 
 		<TextView
+			android:id="@+id/txt_speed"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"  
 	        android:layout_gravity="center_vertical"
-	        android:textAppearance="?android:attr/textAppearanceLarge"
-	        android:text=": 27.5KM/h" />
+	        android:textAppearance="?android:attr/textAppearanceLarge"/>
     </LinearLayout>
     
 	<LinearLayout
@@ -59,14 +59,14 @@
 	        android:layout_height="wrap_content"  
 	        android:layout_gravity="center_vertical"
 	        android:textAppearance="?android:attr/textAppearanceLarge"
-	        android:text="续驶里程" />
+	        android:text="续驶里程: " />
 
 		<TextView
+			android:id="@+id/txt_leftmiles"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"  
 	        android:layout_gravity="center_vertical"
-	        android:textAppearance="?android:attr/textAppearanceLarge"
-	        android:text=": 60.27KM" />
+	        android:textAppearance="?android:attr/textAppearanceLarge"/>
     </LinearLayout>
 
 	<LinearLayout
@@ -84,14 +84,14 @@
 	        android:layout_height="wrap_content"  
 	        android:layout_gravity="center_vertical"
 	        android:textAppearance="?android:attr/textAppearanceLarge"
-	        android:text="行驶里程" />
+	        android:text="行驶里程: " />
 
 		<TextView
+			android:id="@+id/txt_drivedmiles"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"  
 	        android:layout_gravity="center_vertical"
-	        android:textAppearance="?android:attr/textAppearanceLarge"
-	        android:text=": 40.12KM" />
+	        android:textAppearance="?android:attr/textAppearanceLarge"/>
     </LinearLayout>
 
 	<LinearLayout
@@ -109,14 +109,14 @@
 	        android:layout_height="wrap_content"  
 	        android:layout_gravity="center_vertical"
 	        android:textAppearance="?android:attr/textAppearanceLarge"
-	        android:text="当前温度" />
+	        android:text="当前温度: " />
 
 		<TextView
+			android:id="@+id/txt_temperature"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"  
 	        android:layout_gravity="center_vertical"
-	        android:textAppearance="?android:attr/textAppearanceLarge"
-	        android:text=": 33摄氏度" />
+	        android:textAppearance="?android:attr/textAppearanceLarge"/>
     </LinearLayout>
 	
 	<LinearLayout
@@ -150,88 +150,10 @@
 				android:layout_height="wrap_content"/>
 	</LinearLayout>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="160dp"
-        android:layout_weight="0.31"
-        android:orientation="vertical" >
-
-        <RelativeLayout
-            android:id="@+id/RelativeLayout1"
+	<Button
+            android:id="@+id/btn_send"
             android:layout_width="match_parent"
-            android:layout_height="292dp"
-            android:layout_weight="4.11"
-            android:orientation="vertical" >
-
-            <EditText
-                android:id="@+id/sendText"
-                android:layout_width="102dp"
-                android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:layout_alignParentLeft="true"
-                android:layout_toLeftOf="@+id/sendButton"
-                android:ems="10"
-                android:enabled="false"
-                android:fontFamily="1"
-                android:lines="1"
-                android:maxLength="20"
-                android:maxLines="1"
-                android:shadowRadius="1" />
-
-            <ListView
-                android:id="@+id/listMessage"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_above="@+id/sendButton"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentTop="true" >
-            </ListView>
-
-            <Button
-                android:id="@+id/sendButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:layout_alignParentRight="true"
-                android:enabled="false"
-                android:text="Send" />
-
-        </RelativeLayout>
-    </LinearLayout>
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
-        android:layout_marginTop="10dp"
-        android:orientation="vertical" >
-
-        <TextView
-            android:id="@+id/deviceLabel"
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentTop="true"
-            android:text="@string/device" />
-
-        <TextView
-            android:id="@+id/deviceName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_marginLeft="18dp"
-            android:layout_toRightOf="@+id/deviceLabel"
-            android:text="@string/no_device"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
-
-        <TextView
-            android:id="@+id/rssival"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentTop="true"
-            android:text="_"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
-    </RelativeLayout>
-
+            android:padding="12dp"
+            android:text="Send" />
 </LinearLayout>

@@ -60,7 +60,7 @@ public class DeviceListActivity extends Activity {
 
    // private BluetoothAdapter mBtAdapter;
     private TextView mEmptyList;
-    public static final String TAG = "DeviceListActivity";
+    public static final String TAG = "ElectronicVehicle";
     
     List<BluetoothDevice> deviceList;
     private DeviceAdapter deviceAdapter;
@@ -76,7 +76,7 @@ public class DeviceListActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
     	
         super.onCreate(savedInstanceState);
-        Log.d(TAG, "onCreate");
+        Log.e(TAG, "onCreate");
         getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.title_bar);
         setContentView(R.layout.device_list);
         android.view.WindowManager.LayoutParams layoutParams = this.getWindow().getAttributes();
@@ -118,7 +118,7 @@ public class DeviceListActivity extends Activity {
 
     private void populateList() {
         /* Initialize device list container */
-        Log.d(TAG, "populateList");
+        Log.e(TAG, "populateList");
         deviceList = new ArrayList<BluetoothDevice>();
         deviceAdapter = new DeviceAdapter(this, deviceList);
         devRssiValues = new HashMap<String, Integer>();
@@ -292,15 +292,19 @@ public class DeviceListActivity extends Activity {
             final TextView tvrssi = (TextView) vg.findViewById(R.id.rssi);
 
             tvrssi.setVisibility(View.VISIBLE);
+
+			// RSSI
+			/*
             byte rssival = (byte) devRssiValues.get(device.getAddress()).intValue();
             if (rssival != 0) {
                 tvrssi.setText("Rssi = " + String.valueOf(rssival));
             }
+            */
 
             tvname.setText(device.getName());
             tvadd.setText(device.getAddress());
             if (device.getBondState() == BluetoothDevice.BOND_BONDED) {
-                Log.i(TAG, "device::"+device.getName());
+                Log.e(TAG, "device::"+device.getName());
                 tvname.setTextColor(Color.WHITE);
                 tvadd.setTextColor(Color.WHITE);
                 tvpaired.setTextColor(Color.GRAY);

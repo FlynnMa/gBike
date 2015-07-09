@@ -27,7 +27,10 @@ public class SpeedView extends SurfaceView implements Callback,Runnable{
 	public int bigDialDegrees;
 	private String percentageText="";
 	private int percentageX,percentageY;
-	public SpeedView(Context context, AttributeSet attrs) {
+	private boolean mblDemo = false;
+	
+	public SpeedView(Context context, AttributeSet attrs) 
+	{
 		super(context, attrs);
 		holder=getHolder();
 		holder.addCallback(this);
@@ -39,7 +42,14 @@ public class SpeedView extends SurfaceView implements Callback,Runnable{
 		setFocusable(true);
 		setFocusableInTouchMode(true);
 	}
-	public void myDraw(){
+
+	public void setDemo(boolean blDemo)
+	{
+		mblDemo = blDemo;
+	}
+	
+	public void myDraw()
+	{
 		try {
 			canvas=holder.lockCanvas(bgRect);
 			canvas.drawColor(Color.WHITE);
@@ -50,7 +60,9 @@ public class SpeedView extends SurfaceView implements Callback,Runnable{
 			holder.unlockCanvasAndPost(canvas);
 		}
 	}
-    public void drawBigDial(){
+	
+    public void drawBigDial()
+	{
 		canvas.drawBitmap(bigDialBmp, bigDialX, bigDialY, paint);
 		canvas.save();
 		canvas.rotate(bigDialDegrees,bigPointerX+bigPointerBmp.getWidth()/2, bigPointerY+bigPointerBmp.getHeight()/2);
@@ -58,27 +70,47 @@ public class SpeedView extends SurfaceView implements Callback,Runnable{
 		canvas.restore();
 	}
 
-	public void logic(){
+	public void logic()
+	{
 		bigDialDegrees++;
 		if (bigDialDegrees>180)
 		{
 			bigDialDegrees=bigDialDegrees-180;
 		}
 	}
-	public void run() {
-		while(flag){
-			long start = System.currentTimeMillis();
-	        myDraw();
-	        logic();
-	        long end = System.currentTimeMillis();
-	        try {
-	            if (end - start < 50)
-	           Thread.sleep(50 - (end - start));
-	        } catch (Exception e) {
-	           e.printStackTrace();
-	        }
+	
+	public void run()
+	{
+		while(flag)
+		{
+			if (mblDemo)
+			{
+				long start = System.currentTimeMillis();
+		        myDraw();
+		        logic();
+		        long end = System.currentTimeMillis();
+		        try {
+		            if (end - start < 50)
+		           Thread.sleep(50 - (end - start));
+		        } catch (Exception e) {
+		           e.printStackTrace();
+		        }
+			}
+			else
+			{
+				long start = System.currentTimeMillis();
+		        myDraw();
+		        long end = System.currentTimeMillis();
+		        try {
+		            if (end - start < 50)
+		           Thread.sleep(50 - (end - start));
+		        } catch (Exception e) {
+		           e.printStackTrace();
+		        }
+			}
 		}
 	}
+	
 	public void surfaceCreated(SurfaceHolder holder) {
 		bigDialBmp = BitmapFactory.decodeResource(getResources(), R.drawable.signsec_dashboard);
 		bigPointerBmp = BitmapFactory.decodeResource(getResources(), R.drawable.signsec_pointer);
@@ -96,7 +128,8 @@ public class SpeedView extends SurfaceView implements Callback,Runnable{
 	}
 
 	public void surfaceChanged(SurfaceHolder holder, int format, int width,
-			int height) {
+			int height)
+	{
 		
 	}
 

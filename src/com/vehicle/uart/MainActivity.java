@@ -21,6 +21,7 @@ package com.vehicle.uart;
 
 import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
+import java.util.Arrays;
 import java.util.Date;
 
 
@@ -54,104 +55,199 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends Activity implements RadioGroup.OnCheckedChangeListener {
-    private static final int REQUEST_SELECT_DEVICE = 1;
+public class MainActivity extends Activity{
+	private static final boolean DEMO = false;
+	private static final byte[] NULL_ARRAY = new byte[0];
+	private static final int REQUEST_SELECT_DEVICE = 1;
     private static final int REQUEST_ENABLE_BT = 2;
-    private static final int UART_PROFILE_READY = 10;
-    public static final String TAG = "ElectronicVehicle";
     private static final int UART_PROFILE_CONNECTED = 20;
     private static final int UART_PROFILE_DISCONNECTED = 21;
-    private static final int STATE_OFF = 10;
+	public static final String TAG = "ElectronicVehicle";
 
-    TextView mRemoteRssiVal;
-    RadioGroup mRg;
+	// Command Type
+	public static final byte CMD_TYPE_QUERY = 1;
+	public static final byte CMD_TYPE_SET = 2;
+	public static final byte CMD_TYPE_ACK = 3;
+
+	// Command ID
+	public static final byte CMD_ID_DEVICE_ID = 0;
+	public static final byte CMD_ID_DEVICE_NAME = 1;
+	public static final byte CMD_ID_FIRMWARE_VERSION = 2;
+	public static final byte CMD_ID_MAINBOARD_TEMPERITURE = 3;
+	public static final byte CMD_ID_BATTERY_VOLTAGE = 4;
+	public static final byte CMD_ID_CHARGE_STATUS = 5;
+	public static final byte CMD_ID_SPEED = 6;
+	public static final byte CMD_ID_MILE = 7;
+	public static final byte CMD_ID_MAX_SPEED = 8;
+	public static final byte CMD_ID_LOW_BATTERY = 9;
+	public static final byte CMD_ID_SHUTDOWN_BATTERY = 10;
+	public static final byte CMD_ID_FULL_BATTERY = 11;
+
+	TextView mSpeedTxt, mLeftMilesTxt, mDrivedMilesTxt, mTemperatureTxt;
+	SpeedView mSpeedView;
+	ImageView mBatteryStatusImg, mBatteryNumberImg;
     private int mState = UART_PROFILE_DISCONNECTED;
     private UartService mService = null;
     private BluetoothDevice mDevice = null;
     private BluetoothAdapter mBtAdapter = null;
-    private ListView messageListView;
-    private ArrayAdapter<String> listAdapter;
-    private Button btnConnectDisconnect,btnSend;
-    private EditText edtMessage;
+    private Button btnConnectDisconnect, btnSend;
+	private received_package mReceivedPackage;
+	private static final byte HEADER_MAGIC[] = {(byte)0xAD, 0x56, 0x78, (byte)0xED};
+	private static int[] BatteryNumberArray = 
+		{R.drawable.battery_digit_0, R.drawable.battery_digit_1, R.drawable.battery_digit_2, R.drawable.battery_digit_3, R.drawable.battery_digit_4,
+		R.drawable.battery_digit_5, R.drawable.battery_digit_6, R.drawable.battery_digit_7, R.drawable.battery_digit_8, R.drawable.battery_digit_9,
+		R.drawable.battery_digit_10, R.drawable.battery_digit_11, R.drawable.battery_digit_12, R.drawable.battery_digit_13, R.drawable.battery_digit_14,
+		R.drawable.battery_digit_15, R.drawable.battery_digit_16, R.drawable.battery_digit_17, R.drawable.battery_digit_18, R.drawable.battery_digit_19,
+		R.drawable.battery_digit_20, R.drawable.battery_digit_blue_21, R.drawable.battery_digit_blue_22, R.drawable.battery_digit_blue_23, R.drawable.battery_digit_blue_24,
+		R.drawable.battery_digit_blue_25, R.drawable.battery_digit_blue_26, R.drawable.battery_digit_blue_27, R.drawable.battery_digit_blue_28, R.drawable.battery_digit_blue_29,
+		R.drawable.battery_digit_blue_30, R.drawable.battery_digit_blue_31, R.drawable.battery_digit_blue_32, R.drawable.battery_digit_blue_33, R.drawable.battery_digit_blue_34,
+		R.drawable.battery_digit_blue_35, R.drawable.battery_digit_blue_36, R.drawable.battery_digit_blue_37, R.drawable.battery_digit_blue_38, R.drawable.battery_digit_blue_39,
+		R.drawable.battery_digit_blue_40, R.drawable.battery_digit_blue_41, R.drawable.battery_digit_blue_42, R.drawable.battery_digit_blue_43, R.drawable.battery_digit_blue_44,
+		R.drawable.battery_digit_blue_45, R.drawable.battery_digit_blue_46, R.drawable.battery_digit_blue_47, R.drawable.battery_digit_blue_48, R.drawable.battery_digit_blue_49,
+		R.drawable.battery_digit_blue_50, R.drawable.battery_digit_blue_51, R.drawable.battery_digit_blue_52, R.drawable.battery_digit_blue_53, R.drawable.battery_digit_blue_54,
+		R.drawable.battery_digit_blue_55, R.drawable.battery_digit_blue_56, R.drawable.battery_digit_blue_57, R.drawable.battery_digit_blue_58, R.drawable.battery_digit_blue_59,
+		R.drawable.battery_digit_blue_60, R.drawable.battery_digit_blue_61, R.drawable.battery_digit_blue_62, R.drawable.battery_digit_blue_63, R.drawable.battery_digit_blue_64,
+		R.drawable.battery_digit_blue_65, R.drawable.battery_digit_blue_66, R.drawable.battery_digit_blue_67, R.drawable.battery_digit_blue_68, R.drawable.battery_digit_blue_69,
+		R.drawable.battery_digit_blue_70, R.drawable.battery_digit_blue_71, R.drawable.battery_digit_blue_72, R.drawable.battery_digit_blue_73, R.drawable.battery_digit_blue_74,
+		R.drawable.battery_digit_blue_75, R.drawable.battery_digit_blue_76, R.drawable.battery_digit_blue_77, R.drawable.battery_digit_blue_78, R.drawable.battery_digit_blue_79,
+		R.drawable.battery_digit_blue_80, R.drawable.battery_digit_blue_81, R.drawable.battery_digit_blue_82, R.drawable.battery_digit_blue_83, R.drawable.battery_digit_blue_84,
+		R.drawable.battery_digit_blue_85, R.drawable.battery_digit_blue_86, R.drawable.battery_digit_blue_87, R.drawable.battery_digit_blue_88, R.drawable.battery_digit_blue_89,
+		R.drawable.battery_digit_blue_90, R.drawable.battery_digit_blue_91, R.drawable.battery_digit_blue_92, R.drawable.battery_digit_blue_93, R.drawable.battery_digit_blue_94,
+		R.drawable.battery_digit_blue_95, R.drawable.battery_digit_blue_96, R.drawable.battery_digit_blue_97, R.drawable.battery_digit_blue_98, R.drawable.battery_digit_blue_99,
+		R.drawable.battery_digit_blue_100};
+
+	class received_package
+	{
+		public boolean mblMatch;
+		public byte cmdType;
+		public byte cmd;
+		public int datalength;
+		public byte[] data;
+	}
+	
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) 
+    {
         super.onCreate(savedInstanceState);
+		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.main);
 
-		LinearLayout myLayout = (LinearLayout) findViewById(R.id.layout1);
+		LinearLayout myLayout = (LinearLayout) findViewById(R.id.mainlayout);
 		myLayout.setBackgroundColor(Color.WHITE);
 
         mBtAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (mBtAdapter == null) {
+        if (mBtAdapter == null) 
+		{
             Toast.makeText(this, "Bluetooth is not available", Toast.LENGTH_LONG).show();
             finish();
             return;
-        }
-        messageListView = (ListView) findViewById(R.id.listMessage);
-        listAdapter = new ArrayAdapter<String>(this, R.layout.message_detail);
-        messageListView.setAdapter(listAdapter);
-        messageListView.setDivider(null);
-        btnConnectDisconnect=(Button) findViewById(R.id.btn_select);
-        btnSend=(Button) findViewById(R.id.sendButton);
-        edtMessage = (EditText) findViewById(R.id.sendText);
-        service_init();
+        }        
+        
+        btnConnectDisconnect=(Button) findViewById(R.id.btn_connect);
+		btnSend=(Button) findViewById(R.id.btn_send);
 		
-		ImageView BatteryStatusImg = (ImageView)findViewById(R.id.battery_status);
-		BatteryStatusImg.setBackgroundResource(R.anim.batterystatus);
-		AnimationDrawable anim1 = (AnimationDrawable)BatteryStatusImg.getBackground();
-		anim1.start();
-
-		ImageView BatteryNumberImg = (ImageView)findViewById(R.id.battery_number);
-        BatteryNumberImg.setBackgroundResource(R.anim.batterynumber);
-		AnimationDrawable anim = (AnimationDrawable)BatteryNumberImg.getBackground();
-		anim.start();
+        service_init();
 
 		((ImageView)findViewById(R.id.image_leftmiles)).setImageResource(R.drawable.leftmiles);
 		((ImageView)findViewById(R.id.image_passedmiles)).setImageResource(R.drawable.passedmiles);
 		((ImageView)findViewById(R.id.image_temperature)).setImageResource(R.drawable.temperature);
 		
+		mSpeedTxt = (TextView)findViewById(R.id.txt_speed);
+		mLeftMilesTxt = (TextView)findViewById(R.id.txt_leftmiles);
+		mDrivedMilesTxt = (TextView)findViewById(R.id.txt_drivedmiles);
+		mTemperatureTxt = (TextView)findViewById(R.id.txt_temperature);
+		mBatteryStatusImg = (ImageView)findViewById(R.id.battery_status);
+		mBatteryNumberImg = (ImageView)findViewById(R.id.battery_number);
+		mSpeedView = (SpeedView)findViewById(R.id.speedview);
+		mReceivedPackage = new received_package();
+		
+		// TODO: update acccording to received strings
+		if (DEMO)
+		{
+			mSpeedView.setDemo(true);
+			
+			mSpeedTxt.setText("30.5KM/h");
+			updateLeftMilesText((float)68.27);
+			updateDrivedMilesText((float)30.12);
+			updateTemperatureText(33);
+			
+			mBatteryStatusImg.setBackgroundResource(R.anim.batterystatus);
+			AnimationDrawable anim1 = (AnimationDrawable)mBatteryStatusImg.getBackground();
+			anim1.start();
+
+			mBatteryNumberImg.setBackgroundResource(R.anim.batterynumber);
+			AnimationDrawable anim = (AnimationDrawable)mBatteryNumberImg.getBackground();
+			anim.start();
+		}
+		else
+		{
+			mSpeedView.setDemo(false);
+			
+			// default values
+			updateLeftMilesText(0);
+			updateDrivedMilesText(0);
+			updateTemperatureText(0);
+			updateSpeedViewAndText(0);
+			updateBatteryStatus(100);
+		}
+			
 		// Handler Disconnect & Connect button
-        btnConnectDisconnect.setOnClickListener(new View.OnClickListener() {
+        btnConnectDisconnect.setOnClickListener(new View.OnClickListener() 
+        {
             @Override
-            public void onClick(View v) {
-                if (!mBtAdapter.isEnabled()) {
-                    Log.i(TAG, "onClick - BT not enabled yet");
+            public void onClick(View v)
+            {				
+                if (!mBtAdapter.isEnabled()) 
+				{
+                    Log.e(TAG, "onClick - BT not enabled yet");
                     Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                     startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
                 }
-                else {
-                	if (btnConnectDisconnect.getText().equals("connect")){
-                		
+                else 
+				{
+                	if (btnConnectDisconnect.getText().equals("connect"))
+					{
                 		//Connect button pressed, open DeviceListActivity class, with popup windows that scan for devices
-                		
             			Intent newIntent = new Intent(MainActivity.this, DeviceListActivity.class);
             			startActivityForResult(newIntent, REQUEST_SELECT_DEVICE);
-        			} else {
+        			} 
+					else 
+					{
         				//Disconnect button pressed
         				if (mDevice!=null)
         				{
         					mService.disconnect();
-        					
         				}
         			}
                 }
             }
         });
-        // Handler Send button  
-        btnSend.setOnClickListener(new View.OnClickListener() {
+
+		
+		// TODO: test...................................................................................
+		btnSend.setOnClickListener(new View.OnClickListener() 
+        {
             @Override
-            public void onClick(View v) {
-            	EditText editText = (EditText) findViewById(R.id.sendText);
+            public void onClick(View v)
+            {
+				mService.writeRXCharacteristic(encodePackage(CMD_TYPE_QUERY, CMD_ID_SPEED, NULL_ARRAY));
+				Log.e(TAG, "Send CMD_TYPE_QUERY CMD_ID_SPEED");
+				
+            }
+        });
+		// TODO: test end.......................................................................
+		
+		// send message
+		/*
             	String message = editText.getText().toString();
             	byte[] value;
 				try {
@@ -160,26 +256,19 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
 					mService.writeRXCharacteristic(value);
 					//Update the log with time stamp
 					String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
-					listAdapter.add("["+currentDateTimeString+"] TX: "+ message);
-               	 	messageListView.smoothScrollToPosition(listAdapter.getCount() - 1);
-               	 	edtMessage.setText("");
+					Log.e(TAG, "[" + currentDateTimeString + "] RX: " + message);
 				} catch (UnsupportedEncodingException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-                
-            }
-        });
-     
-        // Set initial UI state
-        
+		*/        
     }
     
     //UART service connected/disconnected
     private ServiceConnection mServiceConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder rawBinder) {
         		mService = ((UartService.LocalBinder) rawBinder).getService();
-        		Log.d(TAG, "onServiceConnected mService= " + mService);
+        		Log.e(TAG, "onServiceConnected mService= " + mService);
         		if (!mService.initialize()) {
                     Log.e(TAG, "Unable to initialize Bluetooth");
                     finish();
@@ -209,33 +298,28 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
 
             final Intent mIntent = intent;
            //*********************//
-            if (action.equals(UartService.ACTION_GATT_CONNECTED)) {
+            if (action.equals(UartService.ACTION_GATT_CONNECTED)) 
+			{
             	 runOnUiThread(new Runnable() {
                      public void run() {
                          	String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
-                             Log.d(TAG, "UART_CONNECT_MSG");
+                             Log.e(TAG, "UART_CONNECT_MSG");
                              btnConnectDisconnect.setText("Disconnect");
-                             edtMessage.setEnabled(true);
-                             btnSend.setEnabled(true);
-                             ((TextView) findViewById(R.id.deviceName)).setText(mDevice.getName()+ " - ready");
-                             listAdapter.add("["+currentDateTimeString+"] Connected to: "+ mDevice.getName());
-                        	 	messageListView.smoothScrollToPosition(listAdapter.getCount() - 1);
+							 Log.e(TAG, "[" + currentDateTimeString + "] Connected to: " + mDevice.getName());
                              mState = UART_PROFILE_CONNECTED;
                      }
             	 });
             }
            
           //*********************//
-            if (action.equals(UartService.ACTION_GATT_DISCONNECTED)) {
+            if (action.equals(UartService.ACTION_GATT_DISCONNECTED)) 
+			{
             	 runOnUiThread(new Runnable() {
                      public void run() {
                     	 	 String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
-                             Log.d(TAG, "UART_DISCONNECT_MSG");
+                             Log.e(TAG, "UART_DISCONNECT_MSG");
                              btnConnectDisconnect.setText("Connect");
-                             edtMessage.setEnabled(false);
-                             btnSend.setEnabled(false);
-                             ((TextView) findViewById(R.id.deviceName)).setText("Not Connected");
-                             listAdapter.add("["+currentDateTimeString+"] Disconnected to: "+ mDevice.getName());
+							 Log.e(TAG, "[" + currentDateTimeString + "] Disconnected to: " + mDevice.getName());
                              mState = UART_PROFILE_DISCONNECTED;
                              mService.close();
                             //setUiState();
@@ -246,34 +330,144 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
             
           
           //*********************//
-            if (action.equals(UartService.ACTION_GATT_SERVICES_DISCOVERED)) {
+            if (action.equals(UartService.ACTION_GATT_SERVICES_DISCOVERED))
+			{
              	 mService.enableTXNotification();
             }
+			
           //*********************//
-            if (action.equals(UartService.ACTION_DATA_AVAILABLE)) {
-              
+            if (action.equals(UartService.ACTION_DATA_AVAILABLE)) 
+			{
                  final byte[] txValue = intent.getByteArrayExtra(UartService.EXTRA_DATA);
-                 runOnUiThread(new Runnable() {
-                     public void run() {
-                         try {
-                         	String text = new String(txValue, "UTF-8");
+                 runOnUiThread(new Runnable() 
+				 {
+                     public void run() 
+					 {
+                         try 
+						 {
                          	String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
-                        	 	listAdapter.add("["+currentDateTimeString+"] RX: "+text);
-                        	 	messageListView.smoothScrollToPosition(listAdapter.getCount() - 1);
-                        	
-                         } catch (Exception e) {
+							mReceivedPackage = decodePackage(txValue);
+
+							Log.e(TAG, "[" + currentDateTimeString + "] Receive blMatch=" + mReceivedPackage.mblMatch);
+							if (mReceivedPackage.mblMatch)
+							{
+								switch (mReceivedPackage.cmdType)
+								{
+									case CMD_TYPE_ACK:
+										{
+											Log.e(TAG, "Receive CMD_TYPE_ACK");
+										}
+										break;
+
+									case CMD_TYPE_QUERY:
+										{
+											Log.e(TAG, "Receive CMD_TYPE_QUERY");
+										}
+										break;
+
+									case CMD_TYPE_SET:
+										{
+											Log.e(TAG, "Receive CMD_TYPE_SET");
+										}
+										break;
+
+									default:
+										break;
+								}
+
+								switch (mReceivedPackage.cmd)
+								{
+									case CMD_ID_DEVICE_ID:
+										{
+											Log.e(TAG, "Receive CMD_ID_DEVICE_ID");
+										}
+										break;
+										
+									case CMD_ID_DEVICE_NAME:
+										{
+											Log.e(TAG, "Receive CMD_ID_DEVICE_NAME");
+										}
+										break;
+										
+									case CMD_ID_FIRMWARE_VERSION:
+										{
+											Log.e(TAG, "Receive CMD_ID_FIRMWARE_VERSION");
+										}
+										break;
+
+									case CMD_ID_MAINBOARD_TEMPERITURE:
+										{
+											Log.e(TAG, "Receive CMD_ID_MAINBOARD_TEMPERITURE");
+										}
+										break;
+
+									case CMD_ID_BATTERY_VOLTAGE:
+										{
+											Log.e(TAG, "Receive CMD_ID_BATTERY_VOLTAGE");
+										}
+										break;
+
+									case CMD_ID_CHARGE_STATUS:
+										{
+											Log.e(TAG, "Receive CMD_ID_CHARGE_STATUS");
+										}
+										break;
+
+									case CMD_ID_SPEED:
+										{
+											Log.e(TAG, "Receive CMD_ID_SPEED");
+										}
+										break;
+
+									case CMD_ID_MILE:
+										{
+											Log.e(TAG, "Receive CMD_ID_MILE");
+										}
+										break;
+
+									case CMD_ID_MAX_SPEED:
+										{
+											Log.e(TAG, "Receive CMD_ID_MAX_SPEED");
+										}
+										break;
+
+									case CMD_ID_LOW_BATTERY:
+										{
+											Log.e(TAG, "Receive CMD_ID_LOW_BATTERY");
+										}
+										break;
+
+									case CMD_ID_SHUTDOWN_BATTERY:
+										{
+											Log.e(TAG, "Receive CMD_ID_SHUTDOWN_BATTERY");
+										}
+										break;
+
+									case CMD_ID_FULL_BATTERY:
+										{
+											Log.e(TAG, "Receive CMD_ID_FULL_BATTERY");
+										}
+										break;
+
+									default:
+										break;
+								}
+							}
+                         } 
+						 catch (Exception e) 
+						 {
                              Log.e(TAG, e.toString());
                          }
                      }
                  });
              }
            //*********************//
-            if (action.equals(UartService.DEVICE_DOES_NOT_SUPPORT_UART)){
+           
+            if (action.equals(UartService.DEVICE_DOES_NOT_SUPPORT_UART))
+			{
             	showMessage("Device doesn't support UART. Disconnecting");
             	mService.disconnect();
             }
-            
-            
         }
     };
 
@@ -300,7 +494,7 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
     @Override
     public void onDestroy() {
     	 super.onDestroy();
-        Log.d(TAG, "onDestroy()");
+        Log.e(TAG, "onDestroy()");
         
         try {
         	LocalBroadcastManager.getInstance(this).unregisterReceiver(UARTStatusChangeReceiver);
@@ -315,28 +509,28 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
 
     @Override
     protected void onStop() {
-        Log.d(TAG, "onStop");
+        Log.e(TAG, "onStop");
         super.onStop();
     }
 
     @Override
     protected void onPause() {
-        Log.d(TAG, "onPause");
+        Log.e(TAG, "onPause");
         super.onPause();
     }
 
     @Override
     protected void onRestart() {
         super.onRestart();
-        Log.d(TAG, "onRestart");
+        Log.e(TAG, "onRestart");
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        Log.d(TAG, "onResume");
+        Log.e(TAG, "onResume");
         if (!mBtAdapter.isEnabled()) {
-            Log.i(TAG, "onResume - BT not enabled yet");
+            Log.e(TAG, "onResume - BT not enabled yet");
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
         }
@@ -357,11 +551,8 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
                 String deviceAddress = data.getStringExtra(BluetoothDevice.EXTRA_DEVICE);
                 mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress);
                
-                Log.d(TAG, "... onActivityResultdevice.address==" + mDevice + "mserviceValue" + mService);
-                ((TextView) findViewById(R.id.deviceName)).setText(mDevice.getName()+ " - connecting");
-                mService.connect(deviceAddress);
-                            
-
+                Log.e(TAG, "... onActivityResultdevice.address==" + mDevice + "mserviceValue" + mService);
+                mService.connect(deviceAddress);      
             }
             break;
         case REQUEST_ENABLE_BT:
@@ -371,7 +562,7 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
 
             } else {
                 // User did not enable Bluetooth or an error occurred
-                Log.d(TAG, "BT not enabled");
+                Log.e(TAG, "BT not enabled");
                 Toast.makeText(this, "Problem in BT Turning ON ", Toast.LENGTH_SHORT).show();
                 finish();
             }
@@ -380,11 +571,6 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
             Log.e(TAG, "wrong request code");
             break;
         }
-    }
-
-    @Override
-    public void onCheckedChanged(RadioGroup group, int checkedId) {
-       
     }
 
     
@@ -418,4 +604,175 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
             .show();
         }
     }
+
+	private void updateSpeedViewAndText(float nSpeed)
+	{
+		do
+		{
+			if (null == mSpeedTxt)
+			{
+				break;
+			}
+			
+			if (null == mSpeedView)
+			{
+				break;
+			}
+
+			if (nSpeed<0)
+			{
+				break;
+			}
+
+			if (nSpeed>100)
+			{
+				break;
+			}
+			
+			mSpeedView.setBigDialDegrees((int)nSpeed*2);
+			mSpeedTxt.setText(nSpeed + "KM/h");
+		} while(false);
+	}
+
+	private void updateLeftMilesText(float nLeftMiles)
+	{
+		if (null != mLeftMilesTxt)
+		{
+			mLeftMilesTxt.setText(nLeftMiles + "KM");
+		}
+	}
+
+	private void updateDrivedMilesText(float nDrivedMiles)
+	{
+		if (null != mDrivedMilesTxt)
+		{			mDrivedMilesTxt.setText(nDrivedMiles + "KM");
+		}
+	}		
+
+	private void updateTemperatureText(int nTemperature)
+	{
+		if (null != mTemperatureTxt)
+		{	
+			mTemperatureTxt.setText(nTemperature + "摄氏度");
+		}
+	}
+
+	private void updateBatteryStatus(int nBatteryNumber)
+	{
+		if (nBatteryNumber>=0 && nBatteryNumber<=100)
+		{
+			if (nBatteryNumber>=0 && nBatteryNumber<=10)
+			{
+				mBatteryStatusImg.setImageResource(R.drawable.battery_status0);
+			}
+			else if(nBatteryNumber<=20)
+			{
+				mBatteryStatusImg.setImageResource(R.drawable.battery_status1);
+			}
+			else if(nBatteryNumber<=40)
+			{
+				mBatteryStatusImg.setImageResource(R.drawable.battery_status2);
+			}
+			else if(nBatteryNumber<=60)
+			{
+				mBatteryStatusImg.setImageResource(R.drawable.battery_status3);
+			}
+			else if(nBatteryNumber<=80)
+			{
+				mBatteryStatusImg.setImageResource(R.drawable.battery_status4);
+			}
+			else if(nBatteryNumber<=100)
+			{
+				mBatteryStatusImg.setImageResource(R.drawable.battery_status5);
+			}
+			
+			mBatteryNumberImg.setImageResource(BatteryNumberArray[nBatteryNumber]);
+		}
+	}
+
+	private byte[] encodePackage(byte cmdType, byte cmd, byte[] nData)
+	{
+		int nPackageHeaderSize = 7;
+		byte[] package_header = new byte[nPackageHeaderSize];
+		byte[] nCheckSum = new byte[1];
+		
+		System.arraycopy(HEADER_MAGIC, 0, package_header, 0, HEADER_MAGIC.length);
+		package_header[4] = cmdType;
+		package_header[5] = (byte) (nData.length + 2);
+		package_header[6] = cmd;
+
+		for (int i = 4; i < nPackageHeaderSize; i++)
+	    {
+	        nCheckSum[0] += package_header[i];
+	    }
+
+		for (int j = 0; j < nData.length; j++)
+		{
+			nCheckSum[0] += nData[j];
+		}
+
+		Log.e(TAG, "encodePackage nCheckSum=" + nCheckSum[0]);
+
+		byte[] whole_package = new byte[package_header.length + nData.length + 1];
+		System.arraycopy(package_header, 0, whole_package, 0, package_header.length);
+		System.arraycopy(nData, 0, whole_package, package_header.length, nData.length);
+		System.arraycopy(nCheckSum, 0, whole_package, package_header.length + nData.length, nCheckSum.length);
+
+		for (int y = 0; y < whole_package.length; y++)
+		{
+			Log.e(TAG, "encodePackage nData[" + y + "]=" + whole_package[y]);
+		}
+		
+		return whole_package;
+	}
+
+	private received_package decodePackage(byte[] nData)
+	{
+		byte checksum = 0;
+		received_package receivepkg = new received_package();
+		receivepkg.mblMatch = false;
+
+		Log.e(TAG, "decodePackage nData.length=" + nData.length);
+
+		for (int y = 0; y < nData.length; y++)
+		{
+			Log.e(TAG, "decodePackage nData[" + y + "]=" + nData[y]);
+		}
+		
+		if (nData.length >= 8) // minimum package size is at least 8 elements
+		{
+			for (int i = 0; i < nData.length; i++)
+			{
+				if (!receivepkg.mblMatch)
+				{
+					if (HEADER_MAGIC[0] == nData[i])
+					{
+						if (HEADER_MAGIC[1] == nData[i+1]
+							&& HEADER_MAGIC[2] == nData[i+2]
+							&& HEADER_MAGIC[3] == nData[i+3])
+						{
+							int datalength = nData[i+5] - 2;
+
+							for (int j = i+4; j < datalength; j++)
+							{
+								checksum += nData[j];
+							}
+
+							if (checksum == nData[datalength-1])
+							{
+								receivepkg.mblMatch = true;
+								receivepkg.cmdType = nData[i+4];
+								receivepkg.datalength = datalength;
+								receivepkg.cmd = nData[i+6]; 
+								receivepkg.data = new byte[receivepkg.datalength];
+								System.arraycopy(nData, i+7, receivepkg.data, 0, receivepkg.datalength);
+							}
+						}
+					}
+				}
+			}
+		}
+
+		return receivepkg;
+	}
 }
