@@ -21,12 +21,9 @@ public class SpeedView extends SurfaceView implements Callback,Runnable{
 	private int screenW;
 	private Bitmap bigDialBmp,bigPointerBmp,bgBmp;
 	private boolean flag;
-	private int bigDialX,bigDialY,bigPointerX,bigPointerY,
-				smallPointerX,smallPointerY;
+	private int bigDialX,bigDialY,bigPointerX,bigPointerY;
 	private Rect bgRect;
 	public int bigDialDegrees;
-	private String percentageText="";
-	private int percentageX,percentageY;
 	private boolean mblDemo = false;
 	
 	public SpeedView(Context context, AttributeSet attrs) 

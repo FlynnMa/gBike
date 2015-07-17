@@ -27,8 +27,6 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -37,9 +35,6 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
-import android.os.Message;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -60,11 +55,9 @@ public class DeviceListActivity extends Activity {
 
    // private BluetoothAdapter mBtAdapter;
     private TextView mEmptyList;
-    public static final String TAG = "ElectronicVehicle";
     
     List<BluetoothDevice> deviceList;
     private DeviceAdapter deviceAdapter;
-    private ServiceConnection onService = null;
     Map<String, Integer> devRssiValues;
     private static final long SCAN_PERIOD = 10000; //10 seconds
     private Handler mHandler;
@@ -76,7 +69,7 @@ public class DeviceListActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
     	
         super.onCreate(savedInstanceState);
-        Log.e(TAG, "onCreate");
+        EVLog.e("onCreate");
         getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.title_bar);
         setContentView(R.layout.device_list);
         android.view.WindowManager.LayoutParams layoutParams = this.getWindow().getAttributes();
@@ -118,7 +111,7 @@ public class DeviceListActivity extends Activity {
 
     private void populateList() {
         /* Initialize device list container */
-        Log.e(TAG, "populateList");
+		EVLog.e("populateList");
         deviceList = new ArrayList<BluetoothDevice>();
         deviceAdapter = new DeviceAdapter(this, deviceList);
         devRssiValues = new HashMap<String, Integer>();
@@ -228,7 +221,6 @@ public class DeviceListActivity extends Activity {
     	
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            BluetoothDevice device = deviceList.get(position);
             mBluetoothAdapter.stopLeScan(mLeScanCallback);
   
             Bundle b = new Bundle();
@@ -304,7 +296,7 @@ public class DeviceListActivity extends Activity {
             tvname.setText(device.getName());
             tvadd.setText(device.getAddress());
             if (device.getBondState() == BluetoothDevice.BOND_BONDED) {
-                Log.e(TAG, "device::"+device.getName());
+				EVLog.e("device::"+device.getName());
                 tvname.setTextColor(Color.WHITE);
                 tvadd.setTextColor(Color.WHITE);
                 tvpaired.setTextColor(Color.GRAY);
@@ -323,7 +315,9 @@ public class DeviceListActivity extends Activity {
             return vg;
         }
     }
-    private void showMessage(String msg) {
+    
+    private void showMessage(String msg) 
+    {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 }

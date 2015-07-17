@@ -31,7 +31,6 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 
 import java.util.List;
 import java.util.UUID;
@@ -40,9 +39,8 @@ import java.util.UUID;
  * Service for managing connection and data communication with a GATT server hosted on a
  * given Bluetooth LE device.
  */
-public class UartService extends Service {
-    private final static String TAG = "ElectronicVehicle";
-
+public class UartService extends Service 
+{
     private BluetoothManager mBluetoothManager;
     private BluetoothAdapter mBluetoothAdapter;
     private String mBluetoothDeviceAddress;
@@ -87,15 +85,14 @@ public class UartService extends Service {
                 intentAction = ACTION_GATT_CONNECTED;
                 mConnectionState = STATE_CONNECTED;
                 broadcastUpdate(intentAction);
-                Log.e(TAG, "Connected to GATT server.");
+				EVLog.e("Connected to GATT server.");
                 // Attempts to discover services after successful connection.
-                Log.e(TAG, "Attempting to start service discovery:" +
-                        mBluetoothGatt.discoverServices());
+				EVLog.e("Attempting to start service discovery:" + mBluetoothGatt.discoverServices());
 
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 intentAction = ACTION_GATT_DISCONNECTED;
                 mConnectionState = STATE_DISCONNECTED;
-                Log.e(TAG, "Disconnected from GATT server.");
+				EVLog.e("Disconnected from GATT server.");
                 broadcastUpdate(intentAction);
             }
         }
@@ -103,11 +100,11 @@ public class UartService extends Service {
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
-            	Log.e(TAG, "mBluetoothGatt = " + mBluetoothGatt );
-            	
+            	EVLog.e("mBluetoothGatt = " + mBluetoothGatt);
+				
                 broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
             } else {
-                Log.e(TAG, "onServicesDiscovered received: " + status);
+				EVLog.e("onServicesDiscovered received: " + status);
             }
         }
 
@@ -141,7 +138,6 @@ public class UartService extends Service {
         // http://developer.bluetooth.org/gatt/characteristics/Pages/CharacteristicViewer.aspx?u=org.bluetooth.characteristic.heart_rate_measurement.xml
         if (TX_CHAR_UUID.equals(characteristic.getUuid())) {
         	
-           // Log.e(TAG, String.format("Received TX: %d",characteristic.getValue() ));
             intent.putExtra(EXTRA_DATA, characteristic.getValue());
         } else {
         	
@@ -182,14 +178,14 @@ public class UartService extends Service {
         if (mBluetoothManager == null) {
             mBluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
             if (mBluetoothManager == null) {
-                Log.e(TAG, "Unable to initialize BluetoothManager.");
+				EVLog.e("Unable to initialize BluetoothManager.");
                 return false;
             }
         }
 
         mBluetoothAdapter = mBluetoothManager.getAdapter();
         if (mBluetoothAdapter == null) {
-            Log.e(TAG, "Unable to obtain a BluetoothAdapter.");
+			EVLog.e("Unable to obtain a BluetoothAdapter.");
             return false;
         }
 
@@ -208,14 +204,14 @@ public class UartService extends Service {
      */
     public boolean connect(final String address) {
         if (mBluetoothAdapter == null || address == null) {
-            Log.e(TAG, "BluetoothAdapter not initialized or unspecified address.");
+			EVLog.e("BluetoothAdapter not initialized or unspecified address.");
             return false;
         }
 
         // Previously connected device.  Try to reconnect.
         if (mBluetoothDeviceAddress != null && address.equals(mBluetoothDeviceAddress)
                 && mBluetoothGatt != null) {
-            Log.e(TAG, "Trying to use an existing mBluetoothGatt for connection.");
+			EVLog.e("Trying to use an existing mBluetoothGatt for connection.");
             if (mBluetoothGatt.connect()) {
                 mConnectionState = STATE_CONNECTING;
                 return true;
@@ -226,13 +222,13 @@ public class UartService extends Service {
 
         final BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
         if (device == null) {
-            Log.e(TAG, "Device not found.  Unable to connect.");
+			EVLog.e("Device not found.  Unable to connect.");
             return false;
         }
         // We want to directly connect to the device, so we are setting the autoConnect
         // parameter to false.
         mBluetoothGatt = device.connectGatt(this, false, mGattCallback);
-        Log.e(TAG, "Trying to create a new connection.");
+		EVLog.e("Trying to create a new connection.");
         mBluetoothDeviceAddress = address;
         mConnectionState = STATE_CONNECTING;
         return true;
@@ -246,7 +242,7 @@ public class UartService extends Service {
      */
     public void disconnect() {
         if (mBluetoothAdapter == null || mBluetoothGatt == null) {
-            Log.e(TAG, "BluetoothAdapter not initialized");
+			EVLog.e("BluetoothAdapter not initialized");
             return;
         }
         mBluetoothGatt.disconnect();
@@ -261,7 +257,7 @@ public class UartService extends Service {
         if (mBluetoothGatt == null) {
             return;
         }
-        Log.e(TAG, "mBluetoothGatt closed");
+		EVLog.e("mBluetoothGatt closed");
         mBluetoothDeviceAddress = null;
         mBluetoothGatt.close();
         mBluetoothGatt = null;
@@ -276,7 +272,7 @@ public class UartService extends Service {
      */
     public void readCharacteristic(BluetoothGattCharacteristic characteristic) {
         if (mBluetoothAdapter == null || mBluetoothGatt == null) {
-            Log.e(TAG, "BluetoothAdapter not initialized");
+			EVLog.e("BluetoothAdapter not initialized");
             return;
         }
         mBluetoothGatt.readCharacteristic(characteristic);
@@ -292,7 +288,7 @@ public class UartService extends Service {
     public void setCharacteristicNotification(BluetoothGattCharacteristic characteristic,
                                               boolean enabled) {
         if (mBluetoothAdapter == null || mBluetoothGatt == null) {
-            Log.w(TAG, "BluetoothAdapter not initialized");
+            EVLog.e("BluetoothAdapter not initialized");
             return;
         }
         mBluetoothGatt.setCharacteristicNotification(characteristic, enabled);
@@ -360,11 +356,12 @@ public class UartService extends Service {
         RxChar.setValue(value);
     	boolean status = mBluetoothGatt.writeCharacteristic(RxChar);
     	
-        Log.e(TAG, "write TXchar - status=" + status);  
+		EVLog.e("write TXchar - status=" + status);
     }
     
-    private void showMessage(String msg) {
-        Log.e(TAG, msg);
+    private void showMessage(String msg) 
+	{
+		EVLog.e(msg);
     }
     /**
      * Retrieves a list of supported GATT services on the connected device. This should be

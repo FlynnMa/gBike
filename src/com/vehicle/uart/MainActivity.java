@@ -1,29 +1,7 @@
-/*
- * Copyright (C) 2013 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.vehicle.uart;
 
-
-
-
-import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
-import java.util.Arrays;
 import java.util.Date;
-
 
 import com.vehicle.uart.UartService;
 import com.vehicle.uart.R;
@@ -32,8 +10,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothManager;
-
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -44,34 +20,26 @@ import android.content.ServiceConnection;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.drawable.AnimationDrawable;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends Activity{
-	private static final boolean DEMO = false;
+public class MainActivity extends Activity
+{
 	private static final byte[] NULL_ARRAY = new byte[0];
 	private static final int REQUEST_SELECT_DEVICE = 1;
     private static final int REQUEST_ENABLE_BT = 2;
     private static final int UART_PROFILE_CONNECTED = 20;
     private static final int UART_PROFILE_DISCONNECTED = 21;
-	public static final String TAG = "ElectronicVehicle";
 
 	// Command Type
 	public static final byte CMD_TYPE_QUERY = 1;
@@ -144,13 +112,17 @@ public class MainActivity extends Activity{
 		LinearLayout myLayout = (LinearLayout) findViewById(R.id.mainlayout);
 		myLayout.setBackgroundColor(Color.WHITE);
 
-        mBtAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (mBtAdapter == null) 
+		if (!Feature.blSimulatorMode)
 		{
-            Toast.makeText(this, "Bluetooth is not available", Toast.LENGTH_LONG).show();
-            finish();
-            return;
-        }        
+	        mBtAdapter = BluetoothAdapter.getDefaultAdapter();
+	        if (mBtAdapter == null) 
+			{
+				EVLog.e("Bluetooth is not available");
+	            Toast.makeText(this, "Bluetooth is not available", Toast.LENGTH_LONG).show();
+	            finish();
+	            return;
+	        }        
+		}
         
         btnConnectDisconnect=(Button) findViewById(R.id.btn_connect);
 		btnSend=(Button) findViewById(R.id.btn_send);
@@ -171,7 +143,7 @@ public class MainActivity extends Activity{
 		mReceivedPackage = new received_package();
 		
 		// TODO: update acccording to received strings
-		if (DEMO)
+		if (Feature.blDemo)
 		{
 			mSpeedView.setDemo(true);
 			
@@ -206,29 +178,32 @@ public class MainActivity extends Activity{
             @Override
             public void onClick(View v)
             {				
-                if (!mBtAdapter.isEnabled()) 
-				{
-                    Log.e(TAG, "onClick - BT not enabled yet");
-                    Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                    startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
-                }
-                else 
-				{
-                	if (btnConnectDisconnect.getText().equals("connect"))
+            	if (!Feature.blSimulatorMode)
+            	{
+	                if (!mBtAdapter.isEnabled()) 
 					{
-                		//Connect button pressed, open DeviceListActivity class, with popup windows that scan for devices
-            			Intent newIntent = new Intent(MainActivity.this, DeviceListActivity.class);
-            			startActivityForResult(newIntent, REQUEST_SELECT_DEVICE);
-        			} 
-					else 
+						EVLog.e("onClick - BT not enabled yet");
+	                    Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+	                    startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
+	                }
+	                else 
 					{
-        				//Disconnect button pressed
-        				if (mDevice!=null)
-        				{
-        					mService.disconnect();
-        				}
-        			}
-                }
+	                	if (btnConnectDisconnect.getText().equals("connect"))
+						{
+	                		//Connect button pressed, open DeviceListActivity class, with popup windows that scan for devices
+	            			Intent newIntent = new Intent(MainActivity.this, DeviceListActivity.class);
+	            			startActivityForResult(newIntent, REQUEST_SELECT_DEVICE);
+	        			} 
+						else 
+						{
+	        				//Disconnect button pressed
+	        				if (mDevice!=null)
+	        				{
+	        					mService.disconnect();
+	        				}
+	        			}
+	                }
+            	}
             }
         });
 
@@ -240,7 +215,7 @@ public class MainActivity extends Activity{
             public void onClick(View v)
             {
 				mService.writeRXCharacteristic(encodePackage(CMD_TYPE_QUERY, CMD_ID_SPEED, NULL_ARRAY));
-				Log.e(TAG, "Send CMD_TYPE_QUERY CMD_ID_SPEED");
+				EVLog.e("Send CMD_TYPE_QUERY CMD_ID_SPEED");
 				
             }
         });
@@ -256,7 +231,7 @@ public class MainActivity extends Activity{
 					mService.writeRXCharacteristic(value);
 					//Update the log with time stamp
 					String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
-					Log.e(TAG, "[" + currentDateTimeString + "] RX: " + message);
+					EVLog.e("[" + currentDateTimeString + "] RX: " + message);
 				} catch (UnsupportedEncodingException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -265,18 +240,23 @@ public class MainActivity extends Activity{
     }
     
     //UART service connected/disconnected
-    private ServiceConnection mServiceConnection = new ServiceConnection() {
-        public void onServiceConnected(ComponentName className, IBinder rawBinder) {
+    private ServiceConnection mServiceConnection = new ServiceConnection() 
+    {
+        public void onServiceConnected(ComponentName className, IBinder rawBinder) 
+		{
+			if (!Feature.blSimulatorMode)
+			{
         		mService = ((UartService.LocalBinder) rawBinder).getService();
-        		Log.e(TAG, "onServiceConnected mService= " + mService);
+				EVLog.e("onServiceConnected mService= " + mService);
         		if (!mService.initialize()) {
-                    Log.e(TAG, "Unable to initialize Bluetooth");
+					EVLog.e("Unable to initialize Bluetooth");
                     finish();
                 }
-
+			}
         }
 
-        public void onServiceDisconnected(ComponentName classname) {
+        public void onServiceDisconnected(ComponentName classname) 
+		{
        ////     mService.disconnect(mDevice);
         		mService = null;
         }
@@ -303,9 +283,9 @@ public class MainActivity extends Activity{
             	 runOnUiThread(new Runnable() {
                      public void run() {
                          	String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
-                             Log.e(TAG, "UART_CONNECT_MSG");
+							 EVLog.e("UART_CONNECT_MSG");
                              btnConnectDisconnect.setText("Disconnect");
-							 Log.e(TAG, "[" + currentDateTimeString + "] Connected to: " + mDevice.getName());
+							 EVLog.e("[" + currentDateTimeString + "] Connected to: " + mDevice.getName());
                              mState = UART_PROFILE_CONNECTED;
                      }
             	 });
@@ -317,9 +297,9 @@ public class MainActivity extends Activity{
             	 runOnUiThread(new Runnable() {
                      public void run() {
                     	 	 String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
-                             Log.e(TAG, "UART_DISCONNECT_MSG");
+							 EVLog.e("UART_DISCONNECT_MSG");
                              btnConnectDisconnect.setText("Connect");
-							 Log.e(TAG, "[" + currentDateTimeString + "] Disconnected to: " + mDevice.getName());
+							 EVLog.e("[" + currentDateTimeString + "] Disconnected to: " + mDevice.getName());
                              mState = UART_PROFILE_DISCONNECTED;
                              mService.close();
                             //setUiState();
@@ -348,26 +328,26 @@ public class MainActivity extends Activity{
                          	String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
 							mReceivedPackage = decodePackage(txValue);
 
-							Log.e(TAG, "[" + currentDateTimeString + "] Receive blMatch=" + mReceivedPackage.mblMatch);
+							EVLog.e("[" + currentDateTimeString + "] Receive blMatch=" + mReceivedPackage.mblMatch);
 							if (mReceivedPackage.mblMatch)
 							{
 								switch (mReceivedPackage.cmdType)
 								{
 									case CMD_TYPE_ACK:
 										{
-											Log.e(TAG, "Receive CMD_TYPE_ACK");
+											EVLog.e("Receive CMD_TYPE_ACK");
 										}
 										break;
 
 									case CMD_TYPE_QUERY:
 										{
-											Log.e(TAG, "Receive CMD_TYPE_QUERY");
+											EVLog.e("Receive CMD_TYPE_QUERY");
 										}
 										break;
 
 									case CMD_TYPE_SET:
 										{
-											Log.e(TAG, "Receive CMD_TYPE_SET");
+											EVLog.e("Receive CMD_TYPE_SET");
 										}
 										break;
 
@@ -379,73 +359,73 @@ public class MainActivity extends Activity{
 								{
 									case CMD_ID_DEVICE_ID:
 										{
-											Log.e(TAG, "Receive CMD_ID_DEVICE_ID");
+											EVLog.e("Receive CMD_ID_DEVICE_ID");
 										}
 										break;
 										
 									case CMD_ID_DEVICE_NAME:
 										{
-											Log.e(TAG, "Receive CMD_ID_DEVICE_NAME");
+											EVLog.e("Receive CMD_ID_DEVICE_NAME");
 										}
 										break;
 										
 									case CMD_ID_FIRMWARE_VERSION:
 										{
-											Log.e(TAG, "Receive CMD_ID_FIRMWARE_VERSION");
+											EVLog.e("Receive CMD_ID_FIRMWARE_VERSION");
 										}
 										break;
 
 									case CMD_ID_MAINBOARD_TEMPERITURE:
 										{
-											Log.e(TAG, "Receive CMD_ID_MAINBOARD_TEMPERITURE");
+											EVLog.e("Receive CMD_ID_MAINBOARD_TEMPERITURE");
 										}
 										break;
 
 									case CMD_ID_BATTERY_VOLTAGE:
 										{
-											Log.e(TAG, "Receive CMD_ID_BATTERY_VOLTAGE");
+											EVLog.e("Receive CMD_ID_BATTERY_VOLTAGE");
 										}
 										break;
 
 									case CMD_ID_CHARGE_STATUS:
 										{
-											Log.e(TAG, "Receive CMD_ID_CHARGE_STATUS");
+											EVLog.e("Receive CMD_ID_CHARGE_STATUS");
 										}
 										break;
 
 									case CMD_ID_SPEED:
 										{
-											Log.e(TAG, "Receive CMD_ID_SPEED");
+											EVLog.e("Receive CMD_ID_SPEED");
 										}
 										break;
 
 									case CMD_ID_MILE:
 										{
-											Log.e(TAG, "Receive CMD_ID_MILE");
+											EVLog.e("Receive CMD_ID_MILE");
 										}
 										break;
 
 									case CMD_ID_MAX_SPEED:
 										{
-											Log.e(TAG, "Receive CMD_ID_MAX_SPEED");
+											EVLog.e("Receive CMD_ID_MAX_SPEED");
 										}
 										break;
 
 									case CMD_ID_LOW_BATTERY:
 										{
-											Log.e(TAG, "Receive CMD_ID_LOW_BATTERY");
+											EVLog.e("Receive CMD_ID_LOW_BATTERY");
 										}
 										break;
 
 									case CMD_ID_SHUTDOWN_BATTERY:
 										{
-											Log.e(TAG, "Receive CMD_ID_SHUTDOWN_BATTERY");
+											EVLog.e("Receive CMD_ID_SHUTDOWN_BATTERY");
 										}
 										break;
 
 									case CMD_ID_FULL_BATTERY:
 										{
-											Log.e(TAG, "Receive CMD_ID_FULL_BATTERY");
+											EVLog.e("Receive CMD_ID_FULL_BATTERY");
 										}
 										break;
 
@@ -456,7 +436,7 @@ public class MainActivity extends Activity{
                          } 
 						 catch (Exception e) 
 						 {
-                             Log.e(TAG, e.toString());
+							 EVLog.e(e.toString());
                          }
                      }
                  });
@@ -492,15 +472,20 @@ public class MainActivity extends Activity{
     }
 
     @Override
-    public void onDestroy() {
-    	 super.onDestroy();
-        Log.e(TAG, "onDestroy()");
+    public void onDestroy() 
+    {
+    	super.onDestroy();
+		EVLog.e("onDestroy()");
         
-        try {
+        try 
+		{
         	LocalBroadcastManager.getInstance(this).unregisterReceiver(UARTStatusChangeReceiver);
-        } catch (Exception ignore) {
-            Log.e(TAG, ignore.toString());
         } 
+		catch (Exception ignore) 
+		{
+			EVLog.e(ignore.toString());
+        } 
+		
         unbindService(mServiceConnection);
         mService.stopSelf();
         mService= null;
@@ -508,32 +493,40 @@ public class MainActivity extends Activity{
     }
 
     @Override
-    protected void onStop() {
-        Log.e(TAG, "onStop");
+    protected void onStop() 
+    {
+		EVLog.e("onStop");
         super.onStop();
     }
 
     @Override
-    protected void onPause() {
-        Log.e(TAG, "onPause");
+    protected void onPause() 
+    {
+		EVLog.e("onPause");
         super.onPause();
     }
 
     @Override
-    protected void onRestart() {
+    protected void onRestart() 
+    {
         super.onRestart();
-        Log.e(TAG, "onRestart");
+		EVLog.e("onRestart");
     }
 
     @Override
-    public void onResume() {
+    public void onResume() 
+    {
         super.onResume();
-        Log.e(TAG, "onResume");
-        if (!mBtAdapter.isEnabled()) {
-            Log.e(TAG, "onResume - BT not enabled yet");
-            Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
-        }
+		EVLog.e("onResume");
+		if (!Feature.blSimulatorMode)
+		{
+	        if (!mBtAdapter.isEnabled()) 
+			{
+				EVLog.e("onResume - BT not enabled yet");
+	            Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+	            startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
+	        }
+		}
     }
 
     @Override
@@ -551,7 +544,7 @@ public class MainActivity extends Activity{
                 String deviceAddress = data.getStringExtra(BluetoothDevice.EXTRA_DEVICE);
                 mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress);
                
-                Log.e(TAG, "... onActivityResultdevice.address==" + mDevice + "mserviceValue" + mService);
+				EVLog.e("... onActivityResultdevice.address==" + mDevice + "mserviceValue" + mService);
                 mService.connect(deviceAddress);      
             }
             break;
@@ -562,13 +555,13 @@ public class MainActivity extends Activity{
 
             } else {
                 // User did not enable Bluetooth or an error occurred
-                Log.e(TAG, "BT not enabled");
+				EVLog.e("BT not enabled");
                 Toast.makeText(this, "Problem in BT Turning ON ", Toast.LENGTH_SHORT).show();
                 finish();
             }
             break;
         default:
-            Log.e(TAG, "wrong request code");
+			EVLog.e("wrong request code");
             break;
         }
     }
@@ -653,7 +646,7 @@ public class MainActivity extends Activity{
 	{
 		if (null != mTemperatureTxt)
 		{	
-			mTemperatureTxt.setText(nTemperature + "摄氏度");
+			mTemperatureTxt.setText(nTemperature + "摄氏�?);
 		}
 	}
 
@@ -711,7 +704,7 @@ public class MainActivity extends Activity{
 			nCheckSum[0] += nData[j];
 		}
 
-		Log.e(TAG, "encodePackage nCheckSum=" + nCheckSum[0]);
+		EVLog.e("encodePackage nCheckSum=" + nCheckSum[0]);
 
 		byte[] whole_package = new byte[package_header.length + nData.length + 1];
 		System.arraycopy(package_header, 0, whole_package, 0, package_header.length);
@@ -720,7 +713,7 @@ public class MainActivity extends Activity{
 
 		for (int y = 0; y < whole_package.length; y++)
 		{
-			Log.e(TAG, "encodePackage nData[" + y + "]=" + whole_package[y]);
+			EVLog.e("encodePackage nData[" + y + "]=" + whole_package[y]);
 		}
 		
 		return whole_package;
@@ -732,11 +725,11 @@ public class MainActivity extends Activity{
 		received_package receivepkg = new received_package();
 		receivepkg.mblMatch = false;
 
-		Log.e(TAG, "decodePackage nData.length=" + nData.length);
+		EVLog.e("decodePackage nData.length=" + nData.length);
 
-		for (int y = 0; y < nData.length; y++)
+		for (int i = 0; i < nData.length; i++)
 		{
-			Log.e(TAG, "decodePackage nData[" + y + "]=" + nData[y]);
+			EVLog.e("decodePackage nData[" + i + "]=" + nData[i]);
 		}
 		
 		if (nData.length >= 8) // minimum package size is at least 8 elements
