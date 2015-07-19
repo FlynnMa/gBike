@@ -18,6 +18,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
@@ -33,10 +34,30 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import android.content.res.Resources;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.view.ViewPager;
+import android.view.Window;
+
+import com.vehicle.uart.CarouselContainer;
+import com.vehicle.uart.CarouselPagerAdapter;
+
 import com.vehicle.uart.DevMaster;
 
-public class MainActivity extends Activity
+public class MainActivity extends FragmentActivity
 {
+	/**
+	* First tab index
+	*/
+   private static final int FIRST_TAB = CarouselContainer.TAB_INDEX_FIRST;
+
+   /**
+	* Second tab index
+	*/
+   private static final int SECOND_TAB = CarouselContainer.TAB_INDEX_SECOND;
+
 	private static final byte[] NULL_ARRAY = new byte[0];
 	private static final int REQUEST_SELECT_DEVICE = 1;
     private static final int REQUEST_ENABLE_BT = 2;
@@ -64,49 +85,53 @@ public class MainActivity extends Activity
 
 	TextView mSpeedTxt, mLeftMilesTxt, mDrivedMilesTxt, mTemperatureTxt;
 	SpeedView mSpeedView;
-	ImageView mBatteryStatusImg, mBatteryNumberImg;
     private int mState = UART_PROFILE_DISCONNECTED;
     private UartService mService = null;
     private BluetoothDevice mDevice = null;
     private BluetoothAdapter mBtAdapter = null;
     private Button btnConnectDisconnect, btnSend;
-	private received_package mReceivedPackage;
-	private static final byte HEADER_MAGIC[] = {(byte)0xAD, 0x56, 0x78, (byte)0xED};
-	private static int[] BatteryNumberArray = 
-		{R.drawable.battery_digit_0, R.drawable.battery_digit_1, R.drawable.battery_digit_2, R.drawable.battery_digit_3, R.drawable.battery_digit_4,
-		R.drawable.battery_digit_5, R.drawable.battery_digit_6, R.drawable.battery_digit_7, R.drawable.battery_digit_8, R.drawable.battery_digit_9,
-		R.drawable.battery_digit_10, R.drawable.battery_digit_11, R.drawable.battery_digit_12, R.drawable.battery_digit_13, R.drawable.battery_digit_14,
-		R.drawable.battery_digit_15, R.drawable.battery_digit_16, R.drawable.battery_digit_17, R.drawable.battery_digit_18, R.drawable.battery_digit_19,
-		R.drawable.battery_digit_20, R.drawable.battery_digit_blue_21, R.drawable.battery_digit_blue_22, R.drawable.battery_digit_blue_23, R.drawable.battery_digit_blue_24,
-		R.drawable.battery_digit_blue_25, R.drawable.battery_digit_blue_26, R.drawable.battery_digit_blue_27, R.drawable.battery_digit_blue_28, R.drawable.battery_digit_blue_29,
-		R.drawable.battery_digit_blue_30, R.drawable.battery_digit_blue_31, R.drawable.battery_digit_blue_32, R.drawable.battery_digit_blue_33, R.drawable.battery_digit_blue_34,
-		R.drawable.battery_digit_blue_35, R.drawable.battery_digit_blue_36, R.drawable.battery_digit_blue_37, R.drawable.battery_digit_blue_38, R.drawable.battery_digit_blue_39,
-		R.drawable.battery_digit_blue_40, R.drawable.battery_digit_blue_41, R.drawable.battery_digit_blue_42, R.drawable.battery_digit_blue_43, R.drawable.battery_digit_blue_44,
-		R.drawable.battery_digit_blue_45, R.drawable.battery_digit_blue_46, R.drawable.battery_digit_blue_47, R.drawable.battery_digit_blue_48, R.drawable.battery_digit_blue_49,
-		R.drawable.battery_digit_blue_50, R.drawable.battery_digit_blue_51, R.drawable.battery_digit_blue_52, R.drawable.battery_digit_blue_53, R.drawable.battery_digit_blue_54,
-		R.drawable.battery_digit_blue_55, R.drawable.battery_digit_blue_56, R.drawable.battery_digit_blue_57, R.drawable.battery_digit_blue_58, R.drawable.battery_digit_blue_59,
-		R.drawable.battery_digit_blue_60, R.drawable.battery_digit_blue_61, R.drawable.battery_digit_blue_62, R.drawable.battery_digit_blue_63, R.drawable.battery_digit_blue_64,
-		R.drawable.battery_digit_blue_65, R.drawable.battery_digit_blue_66, R.drawable.battery_digit_blue_67, R.drawable.battery_digit_blue_68, R.drawable.battery_digit_blue_69,
-		R.drawable.battery_digit_blue_70, R.drawable.battery_digit_blue_71, R.drawable.battery_digit_blue_72, R.drawable.battery_digit_blue_73, R.drawable.battery_digit_blue_74,
-		R.drawable.battery_digit_blue_75, R.drawable.battery_digit_blue_76, R.drawable.battery_digit_blue_77, R.drawable.battery_digit_blue_78, R.drawable.battery_digit_blue_79,
-		R.drawable.battery_digit_blue_80, R.drawable.battery_digit_blue_81, R.drawable.battery_digit_blue_82, R.drawable.battery_digit_blue_83, R.drawable.battery_digit_blue_84,
-		R.drawable.battery_digit_blue_85, R.drawable.battery_digit_blue_86, R.drawable.battery_digit_blue_87, R.drawable.battery_digit_blue_88, R.drawable.battery_digit_blue_89,
-		R.drawable.battery_digit_blue_90, R.drawable.battery_digit_blue_91, R.drawable.battery_digit_blue_92, R.drawable.battery_digit_blue_93, R.drawable.battery_digit_blue_94,
-		R.drawable.battery_digit_blue_95, R.drawable.battery_digit_blue_96, R.drawable.battery_digit_blue_97, R.drawable.battery_digit_blue_98, R.drawable.battery_digit_blue_99,
-		R.drawable.battery_digit_blue_100};
-
-	class received_package
-	{
-		public boolean mblMatch;
-		public byte cmdType;
-		public byte cmd;
-		public int datalength;
-		public byte[] data;
-	}
 	
     @Override
     public void onCreate(Bundle savedInstanceState) 
     {
+    	super.onCreate(savedInstanceState);
+		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        // Set the layout
+        setContentView(R.layout.carousel_container);
+
+        // Resources
+        final Resources res = getResources();
+
+        // Initialize the header
+        final CarouselContainer carousel = (CarouselContainer) findViewById(R.id.carousel_header);
+        // Indicates that the carousel should only show a fraction of the
+        // secondary tab
+        carousel.setUsesDualTabs(true);
+        // Add some text to the labels
+       // carousel.setLabel(FIRST_TAB, "Lost in Translation");
+        //carousel.setLabel(SECOND_TAB, "The Prestige");
+        // Add some images to the tabs
+        carousel.setImageDrawable(FIRST_TAB, res.getDrawable(R.drawable.lost_in_translation));
+        carousel.setImageDrawable(SECOND_TAB, res.getDrawable(R.drawable.the_prestige));
+
+        // The Bundle for the color fragment
+        final Bundle blue = new Bundle();
+        blue.putInt("color", Color.parseColor("#ff33b5e5"));
+
+        // Initialize the pager adatper
+        final PagerAdapter pagerAdapter = new PagerAdapter(this);
+        pagerAdapter.add(DummyListFragment.class, new Bundle());
+        pagerAdapter.add(ColorFragment.class, blue);
+
+        // Initialize the pager
+        final ViewPager carouselPager = (ViewPager) findViewById(R.id.carousel_pager);
+        // This is used to communicate between the pager and header
+        carouselPager.setOnPageChangeListener(new CarouselPagerAdapter(carouselPager, carousel));
+        carouselPager.setAdapter(pagerAdapter);
+
+		service_init();
+		
+    	/*
         super.onCreate(savedInstanceState);
 		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.main);
@@ -142,40 +167,14 @@ public class MainActivity extends Activity
 		mLeftMilesTxt = (TextView)findViewById(R.id.txt_leftmiles);
 		mDrivedMilesTxt = (TextView)findViewById(R.id.txt_drivedmiles);
 		mTemperatureTxt = (TextView)findViewById(R.id.txt_temperature);
-		mBatteryStatusImg = (ImageView)findViewById(R.id.battery_status);
-		mBatteryNumberImg = (ImageView)findViewById(R.id.battery_number);
 		mSpeedView = (SpeedView)findViewById(R.id.speedview);
-		mReceivedPackage = new received_package();
 		
 		// TODO: update acccording to received strings
-		if (Feature.blDemo)
-		{
-			mSpeedView.setDemo(true);
-			
-			mSpeedTxt.setText("30.5KM/h");
-			updateLeftMilesText((float)68.27);
-			updateDrivedMilesText((float)30.12);
-			updateTemperatureText(33);
-			
-			mBatteryStatusImg.setBackgroundResource(R.anim.batterystatus);
-			AnimationDrawable anim1 = (AnimationDrawable)mBatteryStatusImg.getBackground();
-			anim1.start();
-
-			mBatteryNumberImg.setBackgroundResource(R.anim.batterynumber);
-			AnimationDrawable anim = (AnimationDrawable)mBatteryNumberImg.getBackground();
-			anim.start();
-		}
-		else
-		{
-			mSpeedView.setDemo(false);
-			
-			// default values
-			updateLeftMilesText(0);
-			updateDrivedMilesText(0);
-			updateTemperatureText(0);
-			updateSpeedViewAndText(0);
-			updateBatteryStatus(100);
-		}
+		// default values
+		updateLeftMilesText(0);
+		updateDrivedMilesText(0);
+		updateTemperatureText(0);
+		updateSpeedViewAndText(0);
 			
 		// Handler Disconnect & Connect button
         btnConnectDisconnect.setOnClickListener(new View.OnClickListener() 
@@ -243,7 +242,7 @@ public class MainActivity extends Activity
 				}
 		*/        
     }
-    
+
     //UART service connected/disconnected
     private ServiceConnection mServiceConnection = new ServiceConnection() 
     {
@@ -262,17 +261,8 @@ public class MainActivity extends Activity
 
         public void onServiceDisconnected(ComponentName classname) 
 		{
-       ////     mService.disconnect(mDevice);
+      		// mService.disconnect(mDevice);
         		mService = null;
-        }
-    };
-
-    private Handler mHandler = new Handler() {
-        @Override
-        
-        //Handler events that received from UART service 
-        public void handleMessage(Message msg) {
-  
         }
     };
 	
@@ -282,28 +272,27 @@ public class MainActivity extends Activity
             String action = intent.getAction();
 
             final Intent mIntent = intent;
-           //*********************//
+
             if (action.equals(UartService.ACTION_GATT_CONNECTED)) 
 			{
             	 runOnUiThread(new Runnable() {
                      public void run() {
                          	String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
 							 EVLog.e("UART_CONNECT_MSG");
-                             btnConnectDisconnect.setText("Disconnect");
+                             //btnConnectDisconnect.setText("Disconnect");
 							 EVLog.e("[" + currentDateTimeString + "] Connected to: " + mDevice.getName());
                              mState = UART_PROFILE_CONNECTED;
                      }
             	 });
             }
            
-          //*********************//
             if (action.equals(UartService.ACTION_GATT_DISCONNECTED)) 
 			{
             	 runOnUiThread(new Runnable() {
                      public void run() {
                     	 	 String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
 							 EVLog.e("UART_DISCONNECT_MSG");
-                             btnConnectDisconnect.setText("Connect");
+                             //btnConnectDisconnect.setText("Connect");
 							 EVLog.e("[" + currentDateTimeString + "] Disconnected to: " + mDevice.getName());
                              mState = UART_PROFILE_DISCONNECTED;
                              mService.close();
@@ -313,14 +302,11 @@ public class MainActivity extends Activity
                  });
             }
             
-          
-          //*********************//
             if (action.equals(UartService.ACTION_GATT_SERVICES_DISCOVERED))
 			{
              	 mService.enableTXNotification();
             }
-			
-          //*********************//
+
             if (action.equals(UartService.ACTION_DATA_AVAILABLE)) 
 			{
                  final byte[] txValue = intent.getByteArrayExtra(UartService.EXTRA_DATA);
@@ -333,111 +319,7 @@ public class MainActivity extends Activity
                          	String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
 							//mReceivedPackage = decodePackage(txValue);
 
-							EVLog.e("[" + currentDateTimeString + "] Receive blMatch=" + mReceivedPackage.mblMatch);
-							if (mReceivedPackage.mblMatch)
-							{
-								switch (mReceivedPackage.cmdType)
-								{
-									case CMD_TYPE_ACK:
-										{
-											EVLog.e("Receive CMD_TYPE_ACK");
-										}
-										break;
-
-									case CMD_TYPE_QUERY:
-										{
-											EVLog.e("Receive CMD_TYPE_QUERY");
-										}
-										break;
-
-									case CMD_TYPE_SET:
-										{
-											EVLog.e("Receive CMD_TYPE_SET");
-										}
-										break;
-
-									default:
-										break;
-								}
-
-								switch (mReceivedPackage.cmd)
-								{
-									case CMD_ID_DEVICE_ID:
-										{
-											EVLog.e("Receive CMD_ID_DEVICE_ID");
-										}
-										break;
-										
-									case CMD_ID_DEVICE_NAME:
-										{
-											EVLog.e("Receive CMD_ID_DEVICE_NAME");
-										}
-										break;
-										
-									case CMD_ID_FIRMWARE_VERSION:
-										{
-											EVLog.e("Receive CMD_ID_FIRMWARE_VERSION");
-										}
-										break;
-
-									case CMD_ID_MAINBOARD_TEMPERITURE:
-										{
-											EVLog.e("Receive CMD_ID_MAINBOARD_TEMPERITURE");
-										}
-										break;
-
-									case CMD_ID_BATTERY_VOLTAGE:
-										{
-											EVLog.e("Receive CMD_ID_BATTERY_VOLTAGE");
-										}
-										break;
-
-									case CMD_ID_CHARGE_STATUS:
-										{
-											EVLog.e("Receive CMD_ID_CHARGE_STATUS");
-										}
-										break;
-
-									case CMD_ID_SPEED:
-										{
-											EVLog.e("Receive CMD_ID_SPEED");
-										}
-										break;
-
-									case CMD_ID_MILE:
-										{
-											EVLog.e("Receive CMD_ID_MILE");
-										}
-										break;
-
-									case CMD_ID_MAX_SPEED:
-										{
-											EVLog.e("Receive CMD_ID_MAX_SPEED");
-										}
-										break;
-
-									case CMD_ID_LOW_BATTERY:
-										{
-											EVLog.e("Receive CMD_ID_LOW_BATTERY");
-										}
-										break;
-
-									case CMD_ID_SHUTDOWN_BATTERY:
-										{
-											EVLog.e("Receive CMD_ID_SHUTDOWN_BATTERY");
-										}
-										break;
-
-									case CMD_ID_FULL_BATTERY:
-										{
-											EVLog.e("Receive CMD_ID_FULL_BATTERY");
-										}
-										break;
-
-									default:
-										break;
-								}
-							}
+							//EVLog.e("[" + currentDateTimeString + "] Receive blMatch=" + mReceivedPackage.mblMatch);
                          } 
 						 catch (Exception e) 
 						 {
@@ -446,7 +328,6 @@ public class MainActivity extends Activity
                      }
                  });
              }
-           //*********************//
            
             if (action.equals(UartService.DEVICE_DOES_NOT_SUPPORT_UART))
 			{
@@ -471,10 +352,6 @@ public class MainActivity extends Activity
         intentFilter.addAction(UartService.DEVICE_DOES_NOT_SUPPORT_UART);
         return intentFilter;
     }
-    @Override
-    public void onStart() {
-        super.onStart();
-    }
 
     @Override
     public void onDestroy() 
@@ -498,27 +375,6 @@ public class MainActivity extends Activity
     }
 
     @Override
-    protected void onStop() 
-    {
-		EVLog.e("onStop");
-        super.onStop();
-    }
-
-    @Override
-    protected void onPause() 
-    {
-		EVLog.e("onPause");
-        super.onPause();
-    }
-
-    @Override
-    protected void onRestart() 
-    {
-        super.onRestart();
-		EVLog.e("onRestart");
-    }
-
-    @Override
     public void onResume() 
     {
         super.onResume();
@@ -534,10 +390,6 @@ public class MainActivity extends Activity
 		}
     }
 
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-    }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -603,6 +455,7 @@ public class MainActivity extends Activity
         }
     }
 
+	/*
 	private void updateSpeedViewAndText(float nSpeed)
 	{
 		do
@@ -654,37 +507,5 @@ public class MainActivity extends Activity
 			mTemperatureTxt.setText(nTemperature + "摄氏�?");
 		}
 	}
-
-	private void updateBatteryStatus(int nBatteryNumber)
-	{
-		if (nBatteryNumber>=0 && nBatteryNumber<=100)
-		{
-			if (nBatteryNumber>=0 && nBatteryNumber<=10)
-			{
-				mBatteryStatusImg.setImageResource(R.drawable.battery_status0);
-			}
-			else if(nBatteryNumber<=20)
-			{
-				mBatteryStatusImg.setImageResource(R.drawable.battery_status1);
-			}
-			else if(nBatteryNumber<=40)
-			{
-				mBatteryStatusImg.setImageResource(R.drawable.battery_status2);
-			}
-			else if(nBatteryNumber<=60)
-			{
-				mBatteryStatusImg.setImageResource(R.drawable.battery_status3);
-			}
-			else if(nBatteryNumber<=80)
-			{
-				mBatteryStatusImg.setImageResource(R.drawable.battery_status4);
-			}
-			else if(nBatteryNumber<=100)
-			{
-				mBatteryStatusImg.setImageResource(R.drawable.battery_status5);
-			}
-			
-			mBatteryNumberImg.setImageResource(BatteryNumberArray[nBatteryNumber]);
-		}
-	}
+	*/
 }

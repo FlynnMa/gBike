@@ -24,7 +24,6 @@ public class SpeedView extends SurfaceView implements Callback,Runnable{
 	private int bigDialX,bigDialY,bigPointerX,bigPointerY;
 	private Rect bgRect;
 	public int bigDialDegrees;
-	private boolean mblDemo = false;
 	
 	public SpeedView(Context context, AttributeSet attrs) 
 	{
@@ -38,11 +37,6 @@ public class SpeedView extends SurfaceView implements Callback,Runnable{
 		paint.setTextSize(22);
 		setFocusable(true);
 		setFocusableInTouchMode(true);
-	}
-
-	public void setDemo(boolean blDemo)
-	{
-		mblDemo = blDemo;
 	}
 	
 	public void myDraw()
@@ -80,31 +74,15 @@ public class SpeedView extends SurfaceView implements Callback,Runnable{
 	{
 		while(flag)
 		{
-			if (mblDemo)
-			{
-				long start = System.currentTimeMillis();
-		        myDraw();
-		        logic();
-		        long end = System.currentTimeMillis();
-		        try {
-		            if (end - start < 50)
-		           Thread.sleep(50 - (end - start));
-		        } catch (Exception e) {
-		           e.printStackTrace();
-		        }
-			}
-			else
-			{
-				long start = System.currentTimeMillis();
-		        myDraw();
-		        long end = System.currentTimeMillis();
-		        try {
-		            if (end - start < 50)
-		           Thread.sleep(50 - (end - start));
-		        } catch (Exception e) {
-		           e.printStackTrace();
-		        }
-			}
+			long start = System.currentTimeMillis();
+	        myDraw();
+	        long end = System.currentTimeMillis();
+	        try {
+	            if (end - start < 50)
+	           Thread.sleep(50 - (end - start));
+	        } catch (Exception e) {
+	           e.printStackTrace();
+	        }
 		}
 	}
 	

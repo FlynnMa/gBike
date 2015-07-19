@@ -17,6 +17,7 @@
 <resources>
 
     <string name="app_name">电动平衡车</string>
+    <string name="action_settings">Settings</string>
     <string name="device">Device:</string>
     <string name="no_device">&lt;Select a device&gt;</string>
     <string name="select_device">Select a device</string>
