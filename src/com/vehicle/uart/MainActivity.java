@@ -33,6 +33,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.vehicle.uart.DevMaster;
+
 public class MainActivity extends Activity
 {
 	private static final byte[] NULL_ARRAY = new byte[0];
@@ -109,6 +111,9 @@ public class MainActivity extends Activity
 		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.main);
 
+        DevMaster dev = new DevMaster();
+        dev.update();
+        
 		LinearLayout myLayout = (LinearLayout) findViewById(R.id.mainlayout);
 		myLayout.setBackgroundColor(Color.WHITE);
 
@@ -646,7 +651,7 @@ public class MainActivity extends Activity
 	{
 		if (null != mTemperatureTxt)
 		{	
-			mTemperatureTxt.setText(nTemperature + "摄氏�?);
+			mTemperatureTxt.setText(nTemperature + "摄氏�?");
 		}
 	}
 
