@@ -219,7 +219,7 @@ public class MainActivity extends Activity
             @Override
             public void onClick(View v)
             {
-				mService.writeRXCharacteristic(encodePackage(CMD_TYPE_QUERY, CMD_ID_SPEED, NULL_ARRAY));
+				//mService.writeRXCharacteristic(encodePackage(CMD_TYPE_QUERY, CMD_ID_SPEED, NULL_ARRAY));
 				EVLog.e("Send CMD_TYPE_QUERY CMD_ID_SPEED");
 				
             }
@@ -331,7 +331,7 @@ public class MainActivity extends Activity
                          try 
 						 {
                          	String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
-							mReceivedPackage = decodePackage(txValue);
+							//mReceivedPackage = decodePackage(txValue);
 
 							EVLog.e("[" + currentDateTimeString + "] Receive blMatch=" + mReceivedPackage.mblMatch);
 							if (mReceivedPackage.mblMatch)
@@ -651,7 +651,7 @@ public class MainActivity extends Activity
 	{
 		if (null != mTemperatureTxt)
 		{	
-			mTemperatureTxt.setText(nTemperature + "摄氏�?");
+			mTemperatureTxt.setText(nTemperature + "摄氏�?");
 		}
 	}
 
@@ -686,91 +686,5 @@ public class MainActivity extends Activity
 			
 			mBatteryNumberImg.setImageResource(BatteryNumberArray[nBatteryNumber]);
 		}
-	}
-
-	private byte[] encodePackage(byte cmdType, byte cmd, byte[] nData)
-	{
-		int nPackageHeaderSize = 7;
-		byte[] package_header = new byte[nPackageHeaderSize];
-		byte[] nCheckSum = new byte[1];
-		
-		System.arraycopy(HEADER_MAGIC, 0, package_header, 0, HEADER_MAGIC.length);
-		package_header[4] = cmdType;
-		package_header[5] = (byte) (nData.length + 2);
-		package_header[6] = cmd;
-
-		for (int i = 4; i < nPackageHeaderSize; i++)
-	    {
-	        nCheckSum[0] += package_header[i];
-	    }
-
-		for (int j = 0; j < nData.length; j++)
-		{
-			nCheckSum[0] += nData[j];
-		}
-
-		EVLog.e("encodePackage nCheckSum=" + nCheckSum[0]);
-
-		byte[] whole_package = new byte[package_header.length + nData.length + 1];
-		System.arraycopy(package_header, 0, whole_package, 0, package_header.length);
-		System.arraycopy(nData, 0, whole_package, package_header.length, nData.length);
-		System.arraycopy(nCheckSum, 0, whole_package, package_header.length + nData.length, nCheckSum.length);
-
-		for (int y = 0; y < whole_package.length; y++)
-		{
-			EVLog.e("encodePackage nData[" + y + "]=" + whole_package[y]);
-		}
-		
-		return whole_package;
-	}
-
-	private received_package decodePackage(byte[] nData)
-	{
-		byte checksum = 0;
-		received_package receivepkg = new received_package();
-		receivepkg.mblMatch = false;
-
-		EVLog.e("decodePackage nData.length=" + nData.length);
-
-		for (int i = 0; i < nData.length; i++)
-		{
-			EVLog.e("decodePackage nData[" + i + "]=" + nData[i]);
-		}
-		
-		if (nData.length >= 8) // minimum package size is at least 8 elements
-		{
-			for (int i = 0; i < nData.length; i++)
-			{
-				if (!receivepkg.mblMatch)
-				{
-					if (HEADER_MAGIC[0] == nData[i])
-					{
-						if (HEADER_MAGIC[1] == nData[i+1]
-							&& HEADER_MAGIC[2] == nData[i+2]
-							&& HEADER_MAGIC[3] == nData[i+3])
-						{
-							int datalength = nData[i+5] - 2;
-
-							for (int j = i+4; j < datalength; j++)
-							{
-								checksum += nData[j];
-							}
-
-							if (checksum == nData[datalength-1])
-							{
-								receivepkg.mblMatch = true;
-								receivepkg.cmdType = nData[i+4];
-								receivepkg.datalength = datalength;
-								receivepkg.cmd = nData[i+6]; 
-								receivepkg.data = new byte[receivepkg.datalength];
-								System.arraycopy(nData, i+7, receivepkg.data, 0, receivepkg.datalength);
-							}
-						}
-					}
-				}
-			}
-		}
-
-		return receivepkg;
 	}
 }
