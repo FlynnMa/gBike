@@ -1,17 +1,5 @@
 /*
- * Copyright (C) 2013 Andrew Neal
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright (C) 2015 Daniel.Liu Tel:13818674825
  */
 
 package com.vehicle.uart;
@@ -30,41 +18,25 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.vehicle.uart.BackScrollManager;
 import com.vehicle.uart.CarouselContainer;
-
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
 
 /**
  * @author Andrew Neal (andrewdneal@gmail.com)
  */
-public class DummyListFragment extends ListFragment implements OnItemClickListener {
-
+public class DummyListFragment extends ListFragment implements OnItemClickListener
+{
     /**
      * List content
      */
-     private final static String[] MOVIES = new String[] {
-    	 	"欢迎使用电动平衡车", "还没有绑定设备哦，点击绑定吧", "历史记录01", "历史记录02", "历史记录03", "历史记录04", "历史记录05", "历史记录06", "历史记录07"
+     // TODO: update
+     private final static String[] helpListData = new String[] {
+ 			"还没有绑定设备", "历史记录01", "历史记录02", "历史记录03", "历史记录04", "历史记录05", "历史记录06", "历史记录07"
             , "历史记录08", "历史记录09", "历史记录10", "历史记录11", "历史记录12", "历史记录13"
     };
-     /*
-    private static final String[] MOVIES = new String[] {
-            "A Separation", "Beasts of the Southern Wild", "Being John Malkovich", "Capote",
-            "Cast Away", "City of God", "Cloud Atlas", "Dead Poet's Society", "Downfall",
-            "Incendies", "Let Me In", "Looper", "Moneyball", "Monsieur Lazhar", "Moon",
-            "My Neighbour Totoro", "Paranorman", "Boogie Nights", "Hard Eight", "Magnolia",
-            "Punch Drunk Love", "The Master", "There Will Be Blood", "Sherlock Holmes",
-            "Silver Linings Playbook", "Lost in Translation", "The Virgin Suicides",
-            "The Bling Ring", "Spirited Away", "The Big Lebowski", "The Goods", "Anchorman",
-            "Step Brothers", "Talladega Nights", "The Grey", "The Hurt Locker", "Zero Dark Thirty",
-            "The Impossible", "The Lives of Others", "Troll Hunter", "United 93", "Winter's Bone",
-            "This is 40", "Casa De Mi Padre", "Gone Baby Gone", "Good Will Hunting", "The Town",
-            "Another Earth", "Sond of my Voice", "Alien", "Alien II", "Blad Runner", "Inception",
-            "Memento", "The Prestige", "Batman", "Black Swan", "The Fountain", "Pan's Labyrinth"
-    };*/
-
+	
     /**
      * The header to bind the {@link BackScrollManager} to
      */
@@ -73,14 +45,16 @@ public class DummyListFragment extends ListFragment implements OnItemClickListen
     /**
      * Empty constructor as per the {@link Fragment} docs
      */
-    public DummyListFragment() {
+    public DummyListFragment() 
+    {
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void onAttach(Activity activity) {
+    public void onAttach(Activity activity)
+    {
         super.onAttach(activity);
         mCarousel = (CarouselContainer) activity.findViewById(R.id.carousel_header);
     }
@@ -89,11 +63,13 @@ public class DummyListFragment extends ListFragment implements OnItemClickListen
      * {@inheritDoc}
      */
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) 
+    {
         // Simple ArrayAdapter
-        //Arrays.sort(MOVIES);
+        //Arrays.sort(helpListData);
         final CarouselListAdapter adapter = new CarouselListAdapter(getActivity());
-        for (final String movie : MOVIES) {
+        for (final String movie : helpListData) 
+		{
             adapter.add(movie);
         }
 
@@ -106,7 +82,8 @@ public class DummyListFragment extends ListFragment implements OnItemClickListen
      * {@inheritDoc}
      */
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
+    public void onViewCreated(View view, Bundle savedInstanceState) 
+    {
         super.onViewCreated(view, savedInstanceState);
         final ListView listView = getListView();
         // Attach the BackScrollManager
@@ -124,9 +101,11 @@ public class DummyListFragment extends ListFragment implements OnItemClickListen
      * {@inheritDoc}
      */
     @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+    {
         // This is the header
-        if (position == 0) {
+        if (position == 0) 
+		{
             return;
         }
 
@@ -142,8 +121,8 @@ public class DummyListFragment extends ListFragment implements OnItemClickListen
      * position == 0 in the adapter. This isn't necessary to use the widget, but
      * it is if you want the animation to appear correct.
      */
-    private static final class CarouselListAdapter extends ArrayAdapter<String> {
-
+    private static final class CarouselListAdapter extends ArrayAdapter<String> 
+    {
         /**
          * The header view
          */
@@ -169,7 +148,8 @@ public class DummyListFragment extends ListFragment implements OnItemClickListen
          * 
          * @param context The {@link Context} to use
          */
-        public CarouselListAdapter(Context context) {
+        public CarouselListAdapter(Context context) 
+        {
             super(context, 0);
             // Inflate the fake header
             mHeader = LayoutInflater.from(context).inflate(R.layout.faux_carousel, null);
@@ -179,20 +159,25 @@ public class DummyListFragment extends ListFragment implements OnItemClickListen
          * {@inheritDoc}
          */
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(int position, View convertView, ViewGroup parent)
+        {
             // Return a faux header at position 0
-            if (position == 0) {
+            if (position == 0) 
+			{
                 return mHeader;
             }
 
             // Recycle ViewHolder's items
             ViewHolder holder;
-            if (convertView == null) {
+            if (convertView == null) 
+			{
                 convertView = LayoutInflater.from(getContext()).inflate(
                         android.R.layout.simple_list_item_1, parent, false);
                 holder = new ViewHolder(convertView);
                 convertView.setTag(holder);
-            } else {
+            } 
+			else
+			{
                 holder = (ViewHolder) convertView.getTag();
             }
 
@@ -207,7 +192,8 @@ public class DummyListFragment extends ListFragment implements OnItemClickListen
          * {@inheritDoc}
          */
         @Override
-        public boolean hasStableIds() {
+        public boolean hasStableIds()
+        {
             return true;
         }
 
@@ -215,16 +201,19 @@ public class DummyListFragment extends ListFragment implements OnItemClickListen
          * {@inheritDoc}
          */
         @Override
-        public int getCount() {
-            return MOVIES.length + 1;
+        public int getCount() 
+        {
+            return helpListData.length + 1;
         }
 
         /**
          * {@inheritDoc}
          */
         @Override
-        public long getItemId(int position) {
-            if (position == 0) {
+        public long getItemId(int position) 
+        {
+            if (position == 0) 
+			{
                 return -1;
             }
             return position - 1;
@@ -234,7 +223,8 @@ public class DummyListFragment extends ListFragment implements OnItemClickListen
          * {@inheritDoc}
          */
         @Override
-        public int getViewTypeCount() {
+        public int getViewTypeCount()
+        {
             return VIEW_TYPE_COUNT;
         }
 
@@ -242,24 +232,25 @@ public class DummyListFragment extends ListFragment implements OnItemClickListen
          * {@inheritDoc}
          */
         @Override
-        public int getItemViewType(int position) {
-            if (position == 0) {
+        public int getItemViewType(int position)
+        {
+            if (position == 0) 
+			{
                 return ITEM_VIEW_TYPE_HEADER;
             }
             return ITEM_VIEW_TYPE_DATA;
         }
     }
 
-    private static final class ViewHolder {
-
+    private static final class ViewHolder 
+	{
         public WeakReference<TextView> mLineOne;
 
         /* Constructor of <code>ViewHolder</code> */
-        public ViewHolder(View view) {
+        public ViewHolder(View view) 
+        {
             // Initialize mLineOne
             mLineOne = new WeakReference<TextView>((TextView) view.findViewById(android.R.id.text1));
         }
-
     }
-
 }

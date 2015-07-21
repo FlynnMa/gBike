@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2015 Daniel.Liu Tel:13818674825
+ */
+
 package com.vehicle.uart;
 
 import android.app.Activity;  
@@ -22,7 +26,6 @@ public class SplashActivity extends Activity
 		TextView version_name = (TextView) findViewById(R.id.version_name);
 		version_name.setText(Feature.g_Version);
 
-		
 		new Handler().postDelayed(new Runnable()
 		{
 			@Override

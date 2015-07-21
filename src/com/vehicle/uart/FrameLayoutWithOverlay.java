@@ -1,17 +1,5 @@
 /*
- * Copyright (C) 2013 Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright (C) 2015 Daniel.Liu Tel:13818674825
  */
 
 package com.vehicle.uart;
@@ -27,20 +15,20 @@ import android.widget.FrameLayout;
  * {@link AlphaTouchInterceptorOverlay}. If necessary, you can specify your own
  * alpha-layer and manually manage its z-order.
  */
-public class FrameLayoutWithOverlay extends FrameLayout {
-
+public class FrameLayoutWithOverlay extends FrameLayout 
+{
     private final AlphaTouchInterceptorOverlay mOverlay;
 
     /**
      * @param context The {@link Context} to use
      * @param attrs The attributes of the XML tag that is inflating the view
      */
-    public FrameLayoutWithOverlay(Context context, AttributeSet attrs) {
+    public FrameLayoutWithOverlay(Context context, AttributeSet attrs)
+    {
         super(context, attrs);
 
         // Programmatically create touch-interceptor View
         mOverlay = new AlphaTouchInterceptorOverlay(context);
-
         addView(mOverlay);
     }
 
@@ -49,7 +37,8 @@ public class FrameLayoutWithOverlay extends FrameLayout {
      * always on top
      */
     @Override
-    public void addView(View child, int index, ViewGroup.LayoutParams params) {
+    public void addView(View child, int index, ViewGroup.LayoutParams params) 
+    {
         super.addView(child, index, params);
         mOverlay.bringToFront();
     }
@@ -59,22 +48,26 @@ public class FrameLayoutWithOverlay extends FrameLayout {
      * none is set, the overlay will use its own alpha layer. Only necessary to
      * set this if some child views need to appear above the alpha-layer
      */
-    protected void setAlphaLayer(View layer) {
+    protected void setAlphaLayer(View layer)
+    {
         mOverlay.setAlphaLayer(layer);
     }
 
     /** Delegate to overlay: set the alpha value on the alpha layer */
-    public void setAlphaLayerValue(float alpha) {
+    public void setAlphaLayerValue(float alpha) 
+    {
         mOverlay.setAlphaLayerValue(alpha);
     }
 
     /** Delegate to overlay */
-    public void setOverlayOnClickListener(OnClickListener listener) {
+    public void setOverlayOnClickListener(OnClickListener listener)
+    {
         mOverlay.setOverlayOnClickListener(listener);
     }
 
     /** Delegate to overlay */
-    public void setOverlayClickable(boolean clickable) {
+    public void setOverlayClickable(boolean clickable)
+    {
         mOverlay.setOverlayClickable(clickable);
     }
 }

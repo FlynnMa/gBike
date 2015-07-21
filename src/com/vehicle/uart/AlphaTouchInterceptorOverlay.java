@@ -1,17 +1,5 @@
 /*
- * Copyright (C) 2013 Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright (C) 2015 Daniel.Liu Tel:13818674825
  */
 
 package com.vehicle.uart;
@@ -34,8 +22,8 @@ import android.widget.FrameLayout;
  * directly, but rather use another class that uses it, for example
  * {@link FrameLayoutWithOverlay}.
  */
-public class AlphaTouchInterceptorOverlay extends FrameLayout {
-
+public class AlphaTouchInterceptorOverlay extends FrameLayout 
+{
     private final View mInterceptorLayer;
     private float mAlpha = 0.0f;
     private View mAlphaLayer;
@@ -43,7 +31,8 @@ public class AlphaTouchInterceptorOverlay extends FrameLayout {
     /**
      * @param context The {@link Context} to use
      */
-    public AlphaTouchInterceptorOverlay(Context context) {
+    public AlphaTouchInterceptorOverlay(Context context) 
+    {
         super(context);
 
         mInterceptorLayer = new View(context);
@@ -59,13 +48,16 @@ public class AlphaTouchInterceptorOverlay extends FrameLayout {
      * it will use itself. Only necessary to set this if some child views need
      * to appear above the alpha-layer but below the touch-interceptor
      */
-    public void setAlphaLayer(View alphaLayer) {
-        if (mAlphaLayer == alphaLayer) {
+    public void setAlphaLayer(View alphaLayer) 
+    {
+        if (mAlphaLayer == alphaLayer) 
+		{
             return;
         }
 
         // We're no longer the alpha-layer, so make ourself invisible
-        if (mAlphaLayer == this) {
+        if (mAlphaLayer == this) 
+		{
             Utils.setAlphaOnViewBackground(this, 0.0f);
         }
 
@@ -74,20 +66,24 @@ public class AlphaTouchInterceptorOverlay extends FrameLayout {
     }
 
     /** Sets the alpha value on the alpha layer */
-    public void setAlphaLayerValue(float alpha) {
+    public void setAlphaLayerValue(float alpha) 
+    {
         mAlpha = alpha;
-        if (mAlphaLayer != null) {
+        if (mAlphaLayer != null) 
+		{
             Utils.setAlphaOnViewBackground(mAlphaLayer, mAlpha);
         }
     }
 
     /** Delegate to interceptor-layer */
-    public void setOverlayOnClickListener(OnClickListener listener) {
+    public void setOverlayOnClickListener(OnClickListener listener) 
+    {
         mInterceptorLayer.setOnClickListener(listener);
     }
 
     /** Delegate to interceptor-layer */
-    public void setOverlayClickable(boolean clickable) {
+    public void setOverlayClickable(boolean clickable) 
+    {
         mInterceptorLayer.setClickable(clickable);
     }
 }

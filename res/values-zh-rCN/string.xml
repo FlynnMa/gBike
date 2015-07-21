@@ -49,4 +49,5 @@
     <string name="scan">Scan</string>
     <string name="cancel">Cancel</string> 
     <string name="welcome">欢迎使用电动平衡车</string> 
+    <string name="empty"></string>
 </resources>

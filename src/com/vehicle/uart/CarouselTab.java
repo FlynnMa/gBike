@@ -1,20 +1,11 @@
 /*
- * Copyright (C) 2013 Andrew Neal
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright (C) 2015 Daniel.Liu Tel:13818674825
  */
 
 package com.vehicle.uart;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -24,14 +15,15 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import com.vehicle.uart.R;
+import com.vehicle.uart.SatelliteMenu.SateliteClickedListener;
 
 /**
  * This class represents each tab in the {@link CarouselContainer}.
  * 
  * @author Andrew Neal (andrewdneal@gmail.com)
  */
-public class CarouselTab extends FrameLayoutWithOverlay {
-
+public class CarouselTab extends FrameLayoutWithOverlay 
+{
 	private ImageView mStaticImage;
 	
     /**
@@ -50,15 +42,11 @@ public class CarouselTab extends FrameLayoutWithOverlay {
     private View mAlphaLayer;
 
     /**
-     * Used to indicate which tab in selected
-     */
-    private View mColorstrip;
-
-    /**
      * @param context The {@link Context} to use
      * @param attrs The attributes of the XML tag that is inflating the view
      */
-    public CarouselTab(Context context, AttributeSet attrs) {
+    public CarouselTab(Context context, AttributeSet attrs) 
+    {
         super(context, attrs);
     }
 
@@ -66,31 +54,44 @@ public class CarouselTab extends FrameLayoutWithOverlay {
      * {@inheritDoc}
      */
     @Override
-    protected void onFinishInflate() {
+    protected void onFinishInflate()
+    {
         super.onFinishInflate();
         // Initiate the tab
         mStaticImage = (ImageView) findViewById(R.id.static_image);
         mCarouselImage = (ImageView) findViewById(R.id.carousel_tab_image);
         mLabel = (TextView) findViewById(R.id.carousel_tab_label);
         mAlphaLayer = findViewById(R.id.carousel_tab_alpha_overlay);
-        mColorstrip = findViewById(R.id.carousel_tab_colorstrip);
         // Set the alpha layer
         setAlphaLayer(mAlphaLayer);
+
+		SatelliteMenu menu = (SatelliteMenu) findViewById(R.id.menu);
+		List<SatelliteMenuItem> items = new ArrayList<SatelliteMenuItem>();
+		// TODO: need to update
+        items.add(new SatelliteMenuItem(1, R.drawable.ic_1));
+        items.add(new SatelliteMenuItem(2, R.drawable.ic_2));
+        items.add(new SatelliteMenuItem(3, R.drawable.ic_3));
+        items.add(new SatelliteMenuItem(4, R.drawable.ic_4));
+        items.add(new SatelliteMenuItem(5, R.drawable.ic_5));
+        items.add(new SatelliteMenuItem(6, R.drawable.ic_6));
+        menu.addItems(items);        
+        menu.setOnItemClickedListener(new SateliteClickedListener() 
+		{
+			public void eventOccured(int id) 
+			{
+				EVLog.e("Clicked on " + id);
+			}
+		});
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void setSelected(boolean selected) {
+    public void setSelected(boolean selected)
+    {
         super.setSelected(selected);
-        if (selected) {
-            mColorstrip.setVisibility(View.VISIBLE);
-            setOverlayClickable(false);
-        } else {
-            mColorstrip.setVisibility(View.GONE);
-            setOverlayClickable(true);
-        }
+        setOverlayClickable(false);
         setSelectedState(selected);
     }
 
@@ -99,7 +100,8 @@ public class CarouselTab extends FrameLayoutWithOverlay {
      * 
      * @param label The string to set as the label
      */
-    public void setLabel(String label) {
+    public void setLabel(String label)
+    {
         mLabel.setText(label);
     }
 
@@ -108,7 +110,8 @@ public class CarouselTab extends FrameLayoutWithOverlay {
      * 
      * @param state True to select the label, false otherwise
      */
-    public void setSelectedState(boolean state) {
+    public void setSelectedState(boolean state) 
+    {
         mLabel.setSelected(state);
     }
 
@@ -117,7 +120,8 @@ public class CarouselTab extends FrameLayoutWithOverlay {
      * 
      * @param resId The resource identifier of the the drawable
      */
-    public void setImageResource(int resId) {
+    public void setImageResource(int resId)
+    {
         mCarouselImage.setImageResource(resId);
     }
 
@@ -126,7 +130,8 @@ public class CarouselTab extends FrameLayoutWithOverlay {
      * 
      * @param bm The {@link Bitmap} to set
      */
-    public void setImageBitmap(Bitmap bm) {
+    public void setImageBitmap(Bitmap bm) 
+    {
         mCarouselImage.setImageBitmap(bm);
     }
 
@@ -135,50 +140,42 @@ public class CarouselTab extends FrameLayoutWithOverlay {
      * 
      * @param drawable The {@link Drawable} to set
      */
-    public void setImageDrawable(Drawable drawable) {
+    public void setImageDrawable(Drawable drawable)
+    {
         mCarouselImage.setImageDrawable(drawable);
     }
 
-	public void setStaticImageDrawable(Drawable drawable) {
+	public void setStaticImageDrawable(Drawable drawable)
+	{
         mStaticImage.setImageDrawable(drawable);
     }
-
-    public void setOnImageClickListner(OnClickListener onClickListener) {
-        mCarouselImage.setOnClickListener(onClickListener);
-    }
-
 	
 	 public void setOnStaticImageClickListner(OnClickListener onClickListener) 
 	 {
         mStaticImage.setOnClickListener(onClickListener);
-    }
+     }
 
     /**
      * @return the mCarouselImage
      */
-    public ImageView getImage() {
+    public ImageView getImage() 
+    {
         return mCarouselImage;
     }
 
     /**
      * @return the mLabel
      */
-    public TextView getLabel() {
+    public TextView getLabel()
+    {
         return mLabel;
     }
 
     /**
      * @return the mAlphaLayer
      */
-    public View getAlphaLayer() {
+    public View getAlphaLayer() 
+    {
         return mAlphaLayer;
     }
-
-    /**
-     * @return the mColorstrip
-     */
-    public View getColorstrip() {
-        return mColorstrip;
-    }
-
 }

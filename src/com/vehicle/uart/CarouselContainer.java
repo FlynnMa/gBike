@@ -1,17 +1,5 @@
 /*
- * Copyright (C) 2013 Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright (C) 2015 Daniel.Liu Tel:13818674825
  */
 
 package com.vehicle.uart;
@@ -31,19 +19,17 @@ import android.view.animation.Interpolator;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import com.vehicle.uart.R;
 import com.nineoldandroids.animation.Animator;
 import com.nineoldandroids.animation.Animator.AnimatorListener;
 import com.nineoldandroids.animation.ObjectAnimator;
-
 import java.lang.ref.WeakReference;
 
 /**
  * This is a horizontally scrolling carousel with 2 tabs.
  */
-public class CarouselContainer extends HorizontalScrollView implements OnTouchListener {
-
+public class CarouselContainer extends HorizontalScrollView implements OnTouchListener 
+{
     /**
      * Number of tabs
      */
@@ -148,7 +134,8 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
      * @param context The {@link Context} to use
      * @param attrs The attributes of the XML tag that is inflating the view
      */
-    public CarouselContainer(Context context, AttributeSet attrs) {
+    public CarouselContainer(Context context, AttributeSet attrs) 
+    {
         super(context, attrs);
         // Add the onTouchListener
         setOnTouchListener(this);
@@ -168,12 +155,13 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
      * {@inheritDoc}
      */
     @Override
-    protected void onFinishInflate() {
+    protected void onFinishInflate() 
+    {
         super.onFinishInflate();
         mFirstTab = (CarouselTab) findViewById(R.id.carousel_tab_one);
-        mFirstTab.setOverlayOnClickListener(new TabClickListener(this, TAB_INDEX_FIRST));
+        //mFirstTab.setOverlayOnClickListener(new TabClickListener(this, TAB_INDEX_FIRST));
         mSecondTab = (CarouselTab) findViewById(R.id.carousel_tab_two);
-        mSecondTab.setOverlayOnClickListener(new TabClickListener(this, TAB_INDEX_SECOND));
+       // mSecondTab.setOverlayOnClickListener(new TabClickListener(this, TAB_INDEX_SECOND));
         mSecondTab.setAlphaLayerValue(MAX_ALPHA);
     }
 
@@ -181,7 +169,8 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
      * {@inheritDoc}
      */
     @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) 
+    {
         final int screenWidth = MeasureSpec.getSize(widthMeasureSpec);
         // Compute the width of a tab as a fraction of the screen width
         final int tabWidth = Math.round(mTabWidthScreenFraction * screenWidth);
@@ -194,14 +183,17 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
         // Scrolling by mAllowedHorizontalScrollLength causes listeners to
         // scroll by the entire screen amount; compute the scale-factor
         // necessary to make this so.
-        if (mAllowedHorizontalScrollLength == 0) {
+        if (mAllowedHorizontalScrollLength == 0) 
+		{
             // Guard against divide-by-zero.
             // This hard-coded value prevents a crash, but won't result in the
             // desired scrolling behavior. We rely on the framework calling
             // onMeasure()
             // again with a non-zero screen width.
             mScrollScaleFactor = 1.0f;
-        } else {
+        } 
+		else 
+		{
             mScrollScaleFactor = screenWidth / mAllowedHorizontalScrollLength;
         }
 
@@ -209,26 +201,29 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
         // Set the child layout's to be TAB_COUNT * the computed tab
         // width so that the layout's children (which are the tabs) will evenly
         // split that width.
-        if (getChildCount() > 0) {
+        if (getChildCount() > 0) 
+		{
             final View child = getChildAt(0);
 
             // Add 1 dip of separation between the tabs
             final int seperatorPixels = (int) (TypedValue.applyDimension(
                     TypedValue.COMPLEX_UNIT_DIP, 1, getResources().getDisplayMetrics()) + 0.5f);
 
-            if (mDualTabs) {
+            if (mDualTabs) 
+			{
 				/*
                 final int size = TAB_COUNT * tabWidth + (TAB_COUNT - 1) * seperatorPixels;
                 child.measure(measureExact(size), measureExact(tabHeight));*/
                 child.measure(measureExact(screenWidth*TAB_COUNT), measureExact(tabHeight));
-            } else {
+            }
+			else 
+			{
                 child.measure(measureExact(screenWidth), measureExact(tabHeight));
             }
         }
 
         mAllowedVerticalScrollLength = tabHeight - mTabDisplayLabelHeight - mTabShadowHeight;
-        setMeasuredDimension(resolveSize(screenWidth, widthMeasureSpec),
-                resolveSize(tabHeight, heightMeasureSpec));
+        setMeasuredDimension(resolveSize(screenWidth, widthMeasureSpec), resolveSize(tabHeight, heightMeasureSpec));
     }
 
     /**
@@ -236,15 +231,19 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
      */
     @SuppressLint("DrawAllocation")
     @Override
-    protected void onLayout(boolean changed, int l, int t, int r, int b) {
+    protected void onLayout(boolean changed, int l, int t, int r, int b) 
+    {
         super.onLayout(changed, l, t, r, b);
-        if (!mScrollToCurrentTab) {
+        if (!mScrollToCurrentTab)
+		{
             return;
         }
         mScrollToCurrentTab = false;
-        Utils.doAfterLayout(this, new Runnable() {
+        Utils.doAfterLayout(this, new Runnable() 
+		{
             @Override
-            public void run() {
+            public void run() 
+            {
                 scrollTo(mCurrentTab == TAB_INDEX_FIRST ? 0 : mAllowedHorizontalScrollLength, 0);
                 updateAlphaLayers();
             }
@@ -255,7 +254,8 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
      * {@inheritDoc}
      */
     @Override
-    protected void onScrollChanged(int x, int y, int oldX, int oldY) {
+    protected void onScrollChanged(int x, int y, int oldX, int oldY) 
+    {
         super.onScrollChanged(x, y, oldX, oldY);
 
         // Guard against framework issue where onScrollChanged() is called twice
@@ -264,7 +264,8 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
         // view-pager moved twice as fast as it should because we called
         // fakeDragBy()
         // twice with the same value.
-        if (mLastScrollPosition == x) {
+        if (mLastScrollPosition == x) 
+		{
             return;
         }
 
@@ -285,9 +286,11 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
      * {@inheritDoc}
      */
     @Override
-    public boolean onInterceptTouchEvent(MotionEvent ev) {
+    public boolean onInterceptTouchEvent(MotionEvent ev) 
+    {
         final boolean interceptTouch = super.onInterceptTouchEvent(ev);
-        if (interceptTouch) {
+        if (interceptTouch) 
+		{
             mCarouselListener.onTouchDown();
         }
         return interceptTouch;
@@ -297,8 +300,10 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
      * {@inheritDoc}
      */
     @Override
-    public boolean onTouch(View v, MotionEvent event) {
-        switch (event.getAction()) {
+    public boolean onTouch(View v, MotionEvent event) 
+    {
+        switch (event.getAction()) 
+		{
             case MotionEvent.ACTION_DOWN:
                 mCarouselListener.onTouchDown();
                 return true;
@@ -312,14 +317,16 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
     /**
      * @return True if the carousel is currently animating, false otherwise
      */
-    public boolean isTabCarouselIsAnimating() {
+    public boolean isTabCarouselIsAnimating() 
+    {
         return mTabCarouselIsAnimating;
     }
 
     /**
      * Reset the carousel to the start position
      */
-    public void reset() {
+    public void reset() 
+    {
         scrollTo(0, 0);
         setCurrentTab(TAB_INDEX_FIRST);
         moveToYCoordinate(TAB_INDEX_FIRST, 0);
@@ -332,7 +339,8 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
      * @param tabIndex The tab index being stored
      * @param y The Y cooridinate to move to
      */
-    public void storeYCoordinate(int tabIndex, float y) {
+    public void storeYCoordinate(int tabIndex, float y) 
+    {
         Y_COORDINATE[tabIndex] = y;
     }
 
@@ -345,7 +353,8 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
      * @param duration The duration of the animation
      * @param tabIndex The index to restore
      */
-    public void restoreYCoordinate(int duration, int tabIndex) {
+    public void restoreYCoordinate(int duration, int tabIndex) 
+    {
         final float storedYCoordinate = getStoredYCoordinateForTab(tabIndex);
 
         final Interpolator interpolator = AnimationUtils.loadInterpolator(getContext(),
@@ -365,7 +374,8 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
      * @param tabIndex The tab index being stored
      * @param y The Y cooridinate to move to
      */
-    public void moveToYCoordinate(int tabIndex, float y) {
+    public void moveToYCoordinate(int tabIndex, float y) 
+    {
         storeYCoordinate(tabIndex, y);
         restoreYCoordinate(0, tabIndex);
     }
@@ -376,14 +386,16 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
      * @param yesOrNo Yes to indicate both tabs will be used in the carousel,
      *            false to indicate only one
      */
-    public void setUsesDualTabs(boolean yesOrNo) {
+    public void setUsesDualTabs(boolean yesOrNo) 
+    {
         mDualTabs = yesOrNo;
     }
 
     /**
      * Set the given {@link OnCarouselListener} to handle carousel events
      */
-    public void setListener(OnCarouselListener carouselListener) {
+    public void setListener(OnCarouselListener carouselListener) 
+    {
         mCarouselListener = carouselListener;
     }
 
@@ -392,22 +404,27 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
      * 
      * @param position The index to update
      */
-    public void setCurrentTab(int position) {
+    public void setCurrentTab(int position) 
+    {
         final CarouselTab selected, deselected;
 
-        switch (position) {
+        switch (position) 
+		{
             case TAB_INDEX_FIRST:
                 selected = mFirstTab;
                 deselected = mSecondTab;
                 break;
+				
             case TAB_INDEX_SECOND:
                 selected = mSecondTab;
                 deselected = mFirstTab;
                 break;
+				
             default:
                 throw new IllegalStateException("Invalid tab position " + position);
         }
-        selected.setSelected(true);
+		
+        selected.setSelected(false);
         deselected.setSelected(false);
         mCurrentTab = position;
     }
@@ -418,14 +435,18 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
      * @param index Which label to write on
      * @param label The string to set as the label
      */
-    public void setLabel(int index, String label) {
-        switch (index) {
+    public void setLabel(int index, String label) 
+    {
+        switch (index) 
+		{
             case TAB_INDEX_FIRST:
                 mFirstTab.setLabel(label);
                 break;
+
             case TAB_INDEX_SECOND:
                 mSecondTab.setLabel(label);
                 break;
+				
             default:
                 throw new IllegalStateException("Invalid tab position " + index);
         }
@@ -437,14 +458,18 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
      * @param index Which {@link ImageView}
      * @param resId The resource identifier of the the drawable
      */
-    public void setImageResource(int index, int resId) {
-        switch (index) {
+    public void setImageResource(int index, int resId)
+    {
+        switch (index) 
+		{
             case TAB_INDEX_FIRST:
                 mFirstTab.setImageResource(resId);
                 break;
+				
             case TAB_INDEX_SECOND:
                 mSecondTab.setImageResource(resId);
                 break;
+				
             default:
                 throw new IllegalStateException("Invalid tab position " + index);
         }
@@ -456,14 +481,18 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
      * @param index Which {@link ImageView}
      * @param drawable The {@link Drawable} to set
      */
-    public void setImageDrawable(int index, Drawable drawable) {
-        switch (index) {
+    public void setImageDrawable(int index, Drawable drawable)
+    {
+        switch (index) 
+		{
             case TAB_INDEX_FIRST:
                 mFirstTab.setImageDrawable(drawable);
                 break;
+				
             case TAB_INDEX_SECOND:
                 mSecondTab.setImageDrawable(drawable);
                 break;
+				
             default:
                 throw new IllegalStateException("Invalid tab position " + index);
         }
@@ -481,14 +510,18 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
      * @param index Which {@link ImageView}
      * @param bm The {@link Bitmap} to set
      */
-    public void setImageBitmap(int index, Bitmap bm) {
-        switch (index) {
+    public void setImageBitmap(int index, Bitmap bm) 
+    {
+        switch (index) 
+		{
             case TAB_INDEX_FIRST:
                 mFirstTab.setImageBitmap(bm);
                 break;
+				
             case TAB_INDEX_SECOND:
                 mSecondTab.setImageBitmap(bm);
                 break;
+				
             default:
                 throw new IllegalStateException("Invalid tab position " + index);
         }
@@ -500,12 +533,16 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
      * @param index The index returning the {@link ImageView}
      * @return The {@link ImageView} from one of the tabs
      */
-    public ImageView getImage(int index) {
-        switch (index) {
+    public ImageView getImage(int index) 
+    {
+        switch (index) 
+		{
             case TAB_INDEX_FIRST:
                 return mFirstTab.getImage();
+				
             case TAB_INDEX_SECOND:
                 return mSecondTab.getImage();
+				
             default:
                 throw new IllegalStateException("Invalid tab position " + index);
         }
@@ -517,12 +554,16 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
      * @param index The index returning the label
      * @return The label from one of the tabs
      */
-    public TextView getLabel(int index) {
-        switch (index) {
+    public TextView getLabel(int index) 
+    {
+        switch (index) 
+		{
             case TAB_INDEX_FIRST:
                 return mFirstTab.getLabel();
+				
             case TAB_INDEX_SECOND:
                 return mSecondTab.getLabel();
+				
             default:
                 throw new IllegalStateException("Invalid tab position " + index);
         }
@@ -534,14 +575,16 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
      * 
      * @param tabIndex The tab index use to return the Y value
      */
-    public float getStoredYCoordinateForTab(int tabIndex) {
+    public float getStoredYCoordinateForTab(int tabIndex)
+    {
         return Y_COORDINATE[tabIndex];
     }
 
     /**
      * Returns the number of pixels that this view can be scrolled horizontally
      */
-    public int getAllowedHorizontalScrollLength() {
+    public int getAllowedHorizontalScrollLength() 
+    {
         return mAllowedHorizontalScrollLength;
     }
 
@@ -549,7 +592,8 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
      * Returns the number of pixels that this view can be scrolled vertically
      * while still allowing the tab labels to still show
      */
-    public int getAllowedVerticalScrollLength() {
+    public int getAllowedVerticalScrollLength() 
+    {
         return mAllowedVerticalScrollLength;
     }
 
@@ -557,14 +601,16 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
      * @param size The size of the measure specification
      * @return The measure specifiction based on {@link MeasureSpec.#EXACTLY}
      */
-    private int measureExact(int size) {
+    private int measureExact(int size) 
+    {
         return MeasureSpec.makeMeasureSpec(size, MeasureSpec.EXACTLY);
     }
 
     /**
      * Sets the correct alpha layers over the tabs.
      */
-    private void updateAlphaLayers() {
+    private void updateAlphaLayers() 
+    {
         float alpha = mLastScrollPosition * MAX_ALPHA / mAllowedHorizontalScrollLength;
         alpha = Utils.clamp(alpha, 0.0f, 1.0f);
         mFirstTab.setAlphaLayerValue(alpha);
@@ -576,13 +622,14 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
      * currently going on or not, in order to prevent other simultaneous changes
      * to the Y position of the tab carousel which can cause flicker.
      */
-    private final AnimatorListener mTabCarouselAnimatorListener = new AnimatorListener() {
-
+    private final AnimatorListener mTabCarouselAnimatorListener = new AnimatorListener()
+    {
         /**
          * {@inheritDoc}
          */
         @Override
-        public void onAnimationCancel(Animator animation) {
+        public void onAnimationCancel(Animator animation) 
+        {
             mTabCarouselIsAnimating = false;
         }
 
@@ -590,7 +637,8 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
          * {@inheritDoc}
          */
         @Override
-        public void onAnimationEnd(Animator animation) {
+        public void onAnimationEnd(Animator animation) 
+        {
             mTabCarouselIsAnimating = false;
         }
 
@@ -598,7 +646,8 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
          * {@inheritDoc}
          */
         @Override
-        public void onAnimationRepeat(Animator animation) {
+        public void onAnimationRepeat(Animator animation) 
+        {
             mTabCarouselIsAnimating = true;
         }
 
@@ -606,14 +655,15 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
          * {@inheritDoc}
          */
         @Override
-        public void onAnimationStart(Animator animation) {
+        public void onAnimationStart(Animator animation) 
+        {
             mTabCarouselIsAnimating = true;
         }
     };
 
     /** When pressed, selects the corresponding tab */
-    private static final class TabClickListener implements OnClickListener {
-
+    private static final class TabClickListener implements OnClickListener 
+    {
         /**
          * Reference to {@link CarouselContainer}
          */
@@ -627,7 +677,8 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
         /**
          * @param tab The index of the tab pressed
          */
-        public TabClickListener(CarouselContainer carouselHeader, int tab) {
+        public TabClickListener(CarouselContainer carouselHeader, int tab)
+        {
             super();
             mReference = new WeakReference<CarouselContainer>(carouselHeader);
             mTab = tab;
@@ -637,7 +688,8 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
          * {@inheritDoc}
          */
         @Override
-        public void onClick(View v) {
+        public void onClick(View v) 
+        {
             mReference.get().mCarouselListener.onTabSelected(mTab);
         }
     }
@@ -647,5 +699,4 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
 		mFirstTab.setOnStaticImageClickListner(onClickListener);
 		mSecondTab.setOnStaticImageClickListner(onClickListener);
 	}
-
 }

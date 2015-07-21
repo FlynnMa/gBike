@@ -1,17 +1,5 @@
 /*
- * Copyright (C) 2013 Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright (C) 2015 Daniel.Liu Tel:13818674825
  */
 
 package com.vehicle.uart;
@@ -29,8 +17,8 @@ import android.widget.AbsListView.OnScrollListener;
  * This is used to implement a header that scrolls up with the content of a list
  * to be partially obscured.
  */
-public class BackScrollManager implements OnScrollListener {
-
+public class BackScrollManager implements OnScrollListener 
+{
     /**
      * {@code #onScrollStateChanged(AbsListView, int)} listener
      */
@@ -52,8 +40,8 @@ public class BackScrollManager implements OnScrollListener {
      * @param scrollableHeader Capture onScrollStateChanged
      * @param pageIndex The position of the {@link ViewPager} this is used in
      */
-    public BackScrollManager(CarouselContainer carouselHeader, ScrollableHeader scrollableHeader,
-            int pageIndex) {
+    public BackScrollManager(CarouselContainer carouselHeader, ScrollableHeader scrollableHeader, int pageIndex) 
+    {
         // Initialize the scoll listener
         mScrollableHeader = scrollableHeader;
         // Initialize the header
@@ -67,23 +55,26 @@ public class BackScrollManager implements OnScrollListener {
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     @Override
-    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
-            int totalItemCount) {
+    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) 
+    {
         // Don't move the carousel if: 1) It is already being animated
-        if (mCarousel == null || mCarousel.isTabCarouselIsAnimating()) {
+        if (mCarousel == null || mCarousel.isTabCarouselIsAnimating()) 
+		{
             return;
         }
 
         // If the FIRST item is not visible on the screen, then the carousel
         // must be pinned
         // at the top of the screen.
-        if (firstVisibleItem != 0) {
+        if (firstVisibleItem != 0) 
+		{
             mCarousel.moveToYCoordinate(mPageIndex, -mCarousel.getAllowedVerticalScrollLength());
             return;
         }
 
         final View topView = view.getChildAt(firstVisibleItem);
-        if (topView == null) {
+        if (topView == null) 
+		{
             return;
         }
 
@@ -96,8 +87,10 @@ public class BackScrollManager implements OnScrollListener {
      * {@inheritDoc}
      */
     @Override
-    public void onScrollStateChanged(AbsListView view, int scrollState) {
-        if (mScrollableHeader != null) {
+    public void onScrollStateChanged(AbsListView view, int scrollState) 
+    {
+        if (mScrollableHeader != null) 
+		{
             mScrollableHeader.onScrollStateChanged(view, scrollState);
         }
     }
@@ -105,8 +98,8 @@ public class BackScrollManager implements OnScrollListener {
     /**
      * Defines the header to be scrolled
      */
-    public interface ScrollableHeader {
-
+    public interface ScrollableHeader 
+    {
         /**
          * Used to capture
          * {@code BackScrollManager#onScrollStateChanged(AbsListView, int)} in

@@ -1,11 +1,13 @@
+/*
+ * Copyright (C) 2015 Daniel.Liu Tel:13818674825
+ */
+
 package com.vehicle.uart;
 
 import java.text.DateFormat;
 import java.util.Date;
-
 import com.vehicle.uart.UartService;
 import com.vehicle.uart.R;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -17,33 +19,19 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Color;
-import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
 import android.support.v4.content.LocalBroadcastManager;
-import android.view.View;
 import android.view.Window;
 import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import android.content.res.Resources;
-import android.graphics.Color;
-import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
-import android.view.Window;
-
 import com.vehicle.uart.CarouselContainer;
 import com.vehicle.uart.CarouselPagerAdapter;
-
 import com.vehicle.uart.DevMaster;
 
 public class MainActivity extends FragmentActivity
@@ -51,12 +39,12 @@ public class MainActivity extends FragmentActivity
 	/**
 	* First tab index
 	*/
-   private static final int FIRST_TAB = CarouselContainer.TAB_INDEX_FIRST;
+    private static final int FIRST_TAB = CarouselContainer.TAB_INDEX_FIRST;
 
    /**
 	* Second tab index
 	*/
-   private static final int SECOND_TAB = CarouselContainer.TAB_INDEX_SECOND;
+    private static final int SECOND_TAB = CarouselContainer.TAB_INDEX_SECOND;
 
 	private static final byte[] NULL_ARRAY = new byte[0];
 	private static final int REQUEST_SELECT_DEVICE = 1;
@@ -110,9 +98,13 @@ public class MainActivity extends FragmentActivity
         // Add some text to the labels
        	carousel.setLabel(FIRST_TAB, this.getString(R.string.disconnected));
         carousel.setLabel(SECOND_TAB, this.getString(R.string.disconnected));
+
+		// TODO: create a circle widget and update to this widget
         // Add some images to the tabs
-        carousel.setImageDrawable(FIRST_TAB, res.getDrawable(R.drawable.lost_in_translation));
-        carousel.setImageDrawable(SECOND_TAB, res.getDrawable(R.drawable.the_prestige));
+        carousel.setImageDrawable(FIRST_TAB, res.getDrawable(R.drawable.temp1));
+        carousel.setImageDrawable(SECOND_TAB, res.getDrawable(R.drawable.temp2));
+
+		/*
 		carousel.setStaticImageDrawable(res.getDrawable(R.drawable.btn_statistic_normal));
 		carousel.setOnStaticImageClickListner(new View.OnClickListener() 
         {
@@ -121,7 +113,7 @@ public class MainActivity extends FragmentActivity
             {				
             	EVLog.e("Button Click");
             }
-        });
+        });*/
 
         // The Bundle for the color fragment
         final Bundle blue = new Bundle();
@@ -138,7 +130,7 @@ public class MainActivity extends FragmentActivity
         // This is used to communicate between the pager and header
         carouselPager.setOnPageChangeListener(new CarouselPagerAdapter(carouselPager, carousel));
         carouselPager.setAdapter(pagerAdapter);
-
+		
 		service_init();
 		
     	/*
@@ -221,7 +213,6 @@ public class MainActivity extends FragmentActivity
             }
         });
 
-		
 		// TODO: test...................................................................................
 		btnSend.setOnClickListener(new View.OnClickListener() 
         {
@@ -276,17 +267,20 @@ public class MainActivity extends FragmentActivity
         }
     };
 	
-    private final BroadcastReceiver UARTStatusChangeReceiver = new BroadcastReceiver() {
-
-        public void onReceive(Context context, Intent intent) {
+    private final BroadcastReceiver UARTStatusChangeReceiver = new BroadcastReceiver() 
+	{
+        public void onReceive(Context context, Intent intent)
+		{
             String action = intent.getAction();
 
             final Intent mIntent = intent;
 
             if (action.equals(UartService.ACTION_GATT_CONNECTED)) 
 			{
-            	 runOnUiThread(new Runnable() {
-                     public void run() {
+            	 runOnUiThread(new Runnable() 
+				 {
+                     public void run() 
+					 {
                          	String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
 							 EVLog.e("UART_CONNECT_MSG");
                              //btnConnectDisconnect.setText("Disconnect");
@@ -298,8 +292,10 @@ public class MainActivity extends FragmentActivity
            
             if (action.equals(UartService.ACTION_GATT_DISCONNECTED)) 
 			{
-            	 runOnUiThread(new Runnable() {
-                     public void run() {
+            	 runOnUiThread(new Runnable() 
+				 {
+                     public void run() 
+					 {
                     	 	 String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
 							 EVLog.e("UART_DISCONNECT_MSG");
                              //btnConnectDisconnect.setText("Connect");
@@ -347,13 +343,16 @@ public class MainActivity extends FragmentActivity
         }
     };
 
-    private void service_init() {
+    private void service_init()
+	{
         Intent bindIntent = new Intent(this, UartService.class);
         bindService(bindIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
   
         LocalBroadcastManager.getInstance(this).registerReceiver(UARTStatusChangeReceiver, makeGattUpdateIntentFilter());
     }
-    private static IntentFilter makeGattUpdateIntentFilter() {
+	
+    private static IntentFilter makeGattUpdateIntentFilter() 
+	{
         final IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(UartService.ACTION_GATT_CONNECTED);
         intentFilter.addAction(UartService.ACTION_GATT_DISCONNECTED);
@@ -402,11 +401,11 @@ public class MainActivity extends FragmentActivity
 		}
     }
 
-
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-
+    public void onActivityResult(int requestCode, int resultCode, Intent data) 
+    {
+        switch (requestCode) 
+		{
         case REQUEST_SELECT_DEVICE:
         	//When the DeviceListActivity return, with the selected device address
             if (resultCode == Activity.RESULT_OK && data != null) {
@@ -417,6 +416,7 @@ public class MainActivity extends FragmentActivity
                 mService.connect(deviceAddress);      
             }
             break;
+			
         case REQUEST_ENABLE_BT:
             // When the request to enable Bluetooth returns
             if (resultCode == Activity.RESULT_OK) {
@@ -429,28 +429,31 @@ public class MainActivity extends FragmentActivity
                 finish();
             }
             break;
+			
         default:
 			EVLog.e("wrong request code");
             break;
         }
     }
-
     
-    private void showMessage(String msg) {
+    private void showMessage(String msg) 
+	{
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-  
     }
 
     @Override
-    public void onBackPressed() {
-        if (mState == UART_PROFILE_CONNECTED) {
+    public void onBackPressed() 
+    {
+        if (mState == UART_PROFILE_CONNECTED) 
+		{
             Intent startMain = new Intent(Intent.ACTION_MAIN);
             startMain.addCategory(Intent.CATEGORY_HOME);
             startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(startMain);
             showMessage("ElectronicVehicle's running in background.\n             Disconnect to exit");
         }
-        else {
+        else 
+		{
             new AlertDialog.Builder(this)
             .setIcon(android.R.drawable.ic_dialog_alert)
             .setTitle(R.string.popup_title)
@@ -458,7 +461,8 @@ public class MainActivity extends FragmentActivity
             .setPositiveButton(R.string.popup_yes, new DialogInterface.OnClickListener()
                 {
                     @Override
-                    public void onClick(DialogInterface dialog, int which) {
+                    public void onClick(DialogInterface dialog, int which)
+                    {
    	                finish();
                 }
             })

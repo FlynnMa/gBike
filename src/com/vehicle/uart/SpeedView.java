@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2015 Daniel.Liu Tel:13818674825
+ */
+
 package com.vehicle.uart;
 
 import android.content.Context;
@@ -13,7 +17,8 @@ import android.view.SurfaceHolder.Callback;
 import android.view.SurfaceView;
 import com.vehicle.uart.R;
 
-public class SpeedView extends SurfaceView implements Callback,Runnable{
+public class SpeedView extends SurfaceView implements Callback,Runnable
+{
 	private SurfaceHolder holder;
 	private Thread thread;
 	private Paint paint;
@@ -41,13 +46,18 @@ public class SpeedView extends SurfaceView implements Callback,Runnable{
 	
 	public void myDraw()
 	{
-		try {
+		try 
+		{
 			canvas=holder.lockCanvas(bgRect);
 			canvas.drawColor(Color.WHITE);
 			drawBigDial();
-		} catch (Exception e) {
+		} 
+		catch (Exception e) 
+		{
 			e.printStackTrace();
-		}finally{
+		}
+		finally
+		{
 			holder.unlockCanvasAndPost(canvas);
 		}
 	}
@@ -77,16 +87,20 @@ public class SpeedView extends SurfaceView implements Callback,Runnable{
 			long start = System.currentTimeMillis();
 	        myDraw();
 	        long end = System.currentTimeMillis();
-	        try {
+	        try 
+			{
 	            if (end - start < 50)
 	           Thread.sleep(50 - (end - start));
-	        } catch (Exception e) {
+	        } 
+			catch (Exception e) 
+			{
 	           e.printStackTrace();
 	        }
 		}
 	}
 	
-	public void surfaceCreated(SurfaceHolder holder) {
+	public void surfaceCreated(SurfaceHolder holder) 
+	{
 		bigDialBmp = BitmapFactory.decodeResource(getResources(), R.drawable.signsec_dashboard);
 		bigPointerBmp = BitmapFactory.decodeResource(getResources(), R.drawable.signsec_pointer);
 		bgBmp = BitmapFactory.decodeResource(getResources(), R.drawable.signsec_dj_ll_blue);
@@ -105,16 +119,20 @@ public class SpeedView extends SurfaceView implements Callback,Runnable{
 	public void surfaceChanged(SurfaceHolder holder, int format, int width,
 			int height)
 	{
-		
 	}
 
-	public void surfaceDestroyed(SurfaceHolder holder) {
+	public void surfaceDestroyed(SurfaceHolder holder) 
+	{
 		flag=false;
 	}
-	public int getBigDialDegrees() {
+	
+	public int getBigDialDegrees() 
+	{
 		return bigDialDegrees;
 	}
-	public void setBigDialDegrees(int bigDialDegrees) {
+	
+	public void setBigDialDegrees(int bigDialDegrees)
+	{
 		this.bigDialDegrees = bigDialDegrees;
 	}
 }

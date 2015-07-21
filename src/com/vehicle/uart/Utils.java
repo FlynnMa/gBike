@@ -1,17 +1,5 @@
 /*
- * Copyright (C) 2013 Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright (C) 2015 Daniel.Liu Tel:13818674825
  */
 
 package com.vehicle.uart;
@@ -27,10 +15,11 @@ import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 /**
  * Helpers
  */
-public final class Utils {
-
+public final class Utils
+{
     /* This class is never initiated */
-    public Utils() {
+    public Utils() 
+    {
     }
 
     /**
@@ -39,7 +28,8 @@ public final class Utils {
      * @return True if the device is running Honeycomb or greater, false
      *         otherwise
      */
-    public static final boolean hasHoneycomb() {
+    public static final boolean hasHoneycomb() 
+    {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB;
     }
 
@@ -49,14 +39,16 @@ public final class Utils {
      * @return True if the device is running Jelly Bean or greater, false
      *         otherwise
      */
-    public static final boolean hasJellyBean() {
+    public static final boolean hasJellyBean()
+    {
         return Build.VERSION.SDK_INT >= 16;
     }
 
     /**
      * Resolves the given attribute id of the theme to a resource id
      */
-    public static int getAttribute(Theme theme, int attrId) {
+    public static int getAttribute(Theme theme, int attrId) 
+    {
         final TypedValue outValue = new TypedValue();
         theme.resolveAttribute(attrId, outValue, true);
         return outValue.resourceId;
@@ -67,8 +59,10 @@ public final class Utils {
      * pressed and focused state
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static int getSelectableItemBackground(Theme theme) {
-        if (hasHoneycomb()) {
+    public static int getSelectableItemBackground(Theme theme) 
+    {
+        if (hasHoneycomb()) 
+		{
             return getAttribute(theme, android.R.attr.selectableItemBackground);
         }
         return 0;
@@ -77,8 +71,10 @@ public final class Utils {
     /**
      * Sets an alpha value on the view.
      */
-    public static void setAlphaOnViewBackground(View view, float alpha) {
-        if (view != null) {
+    public static void setAlphaOnViewBackground(View view, float alpha) 
+    {
+        if (view != null) 
+		{
             view.setBackgroundColor((int) (clamp(alpha, 0.0f, 1.0f) * 255) << 24);
         }
     }
@@ -87,10 +83,14 @@ public final class Utils {
      * If the input value lies outside of the specified range, return the nearer
      * bound. Otherwise, return the input value, unchanged.
      */
-    public static float clamp(float input, float lowerBound, float upperBound) {
-        if (input < lowerBound) {
+    public static float clamp(float input, float lowerBound, float upperBound)
+    {
+        if (input < lowerBound) 
+		{
             return lowerBound;
-        } else if (input > upperBound) {
+        }
+		else if (input > upperBound) 
+        {
             return upperBound;
         }
         return input;
@@ -103,15 +103,21 @@ public final class Utils {
      * @param runnable The {@link Runnable} used after the next layout run
      */
     @SuppressLint("NewApi")
-    public static void doAfterLayout(final View view, final Runnable runnable) {
-        final OnGlobalLayoutListener listener = new OnGlobalLayoutListener() {
+    public static void doAfterLayout(final View view, final Runnable runnable) 
+    {
+        final OnGlobalLayoutListener listener = new OnGlobalLayoutListener()
+		{
             @SuppressWarnings("deprecation")
             @Override
-            public void onGlobalLayout() {
+            public void onGlobalLayout()
+            {
                 /* Layout pass done, unregister for further events */
-                if (hasJellyBean()) {
+                if (hasJellyBean()) 
+				{
                     view.getViewTreeObserver().removeGlobalOnLayoutListener(this);
-                } else {
+                } 
+				else 
+				{
                     view.getViewTreeObserver().removeGlobalOnLayoutListener(this);
                 }
                 runnable.run();
