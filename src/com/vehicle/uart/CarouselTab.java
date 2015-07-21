@@ -147,6 +147,12 @@ public class CarouselTab extends FrameLayoutWithOverlay {
         mCarouselImage.setOnClickListener(onClickListener);
     }
 
+	
+	 public void setOnStaticImageClickListner(OnClickListener onClickListener) 
+	 {
+        mStaticImage.setOnClickListener(onClickListener);
+    }
+
     /**
      * @return the mCarouselImage
      */

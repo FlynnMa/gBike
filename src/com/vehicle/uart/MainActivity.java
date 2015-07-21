@@ -114,6 +114,14 @@ public class MainActivity extends FragmentActivity
         carousel.setImageDrawable(FIRST_TAB, res.getDrawable(R.drawable.lost_in_translation));
         carousel.setImageDrawable(SECOND_TAB, res.getDrawable(R.drawable.the_prestige));
 		carousel.setStaticImageDrawable(res.getDrawable(R.drawable.btn_statistic_normal));
+		carousel.setOnStaticImageClickListner(new View.OnClickListener() 
+        {
+            @Override
+            public void onClick(View v)
+            {				
+            	EVLog.e("Button Click");
+            }
+        });
 
         // The Bundle for the color fragment
         final Bundle blue = new Bundle();
@@ -360,20 +368,22 @@ public class MainActivity extends FragmentActivity
     {
     	super.onDestroy();
 		EVLog.e("onDestroy()");
-        
-        try 
+
+		if (!Feature.blSimulatorMode)
 		{
-        	LocalBroadcastManager.getInstance(this).unregisterReceiver(UARTStatusChangeReceiver);
-        } 
-		catch (Exception ignore) 
-		{
-			EVLog.e(ignore.toString());
-        } 
-		
-        unbindService(mServiceConnection);
-        mService.stopSelf();
-        mService= null;
-       
+	        try 
+			{
+	        	LocalBroadcastManager.getInstance(this).unregisterReceiver(UARTStatusChangeReceiver);
+	        } 
+			catch (Exception ignore) 
+			{
+				EVLog.e(ignore.toString());
+	        } 
+			
+	        unbindService(mServiceConnection);
+	        mService.stopSelf();
+	        mService= null;
+		}
     }
 
     @Override

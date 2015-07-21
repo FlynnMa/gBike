@@ -642,4 +642,10 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
         }
     }
 
+	public void setOnStaticImageClickListner(OnClickListener onClickListener) 
+	{
+		mFirstTab.setOnStaticImageClickListner(onClickListener);
+		mSecondTab.setOnStaticImageClickListner(onClickListener);
+	}
+
 }
