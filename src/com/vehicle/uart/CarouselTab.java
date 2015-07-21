@@ -32,6 +32,8 @@ import com.vehicle.uart.R;
  */
 public class CarouselTab extends FrameLayoutWithOverlay {
 
+	private ImageView mStaticImage;
+	
     /**
      * Used to display the main images in the tabs of the carousel
      */
@@ -67,6 +69,7 @@ public class CarouselTab extends FrameLayoutWithOverlay {
     protected void onFinishInflate() {
         super.onFinishInflate();
         // Initiate the tab
+        mStaticImage = (ImageView) findViewById(R.id.static_image);
         mCarouselImage = (ImageView) findViewById(R.id.carousel_tab_image);
         mLabel = (TextView) findViewById(R.id.carousel_tab_label);
         mAlphaLayer = findViewById(R.id.carousel_tab_alpha_overlay);
@@ -134,6 +137,10 @@ public class CarouselTab extends FrameLayoutWithOverlay {
      */
     public void setImageDrawable(Drawable drawable) {
         mCarouselImage.setImageDrawable(drawable);
+    }
+
+	public void setStaticImageDrawable(Drawable drawable) {
+        mStaticImage.setImageDrawable(drawable);
     }
 
     public void setOnImageClickListner(OnClickListener onClickListener) {

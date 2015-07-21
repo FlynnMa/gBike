@@ -45,8 +45,8 @@ public class DummyListFragment extends ListFragment implements OnItemClickListen
     /**
      * List content
      */
-     private static final String[] MOVIES = new String[] {
-            "历史记录01", "历史记录02", "历史记录03", "历史记录04", "历史记录05", "历史记录06", "历史记录07"
+     private final static String[] MOVIES = new String[] {
+    	 	"欢迎使用电动平衡车", "还没有绑定设备哦，点击绑定吧", "历史记录01", "历史记录02", "历史记录03", "历史记录04", "历史记录05", "历史记录06", "历史记录07"
             , "历史记录08", "历史记录09", "历史记录10", "历史记录11", "历史记录12", "历史记录13"
     };
      /*
@@ -91,7 +91,7 @@ public class DummyListFragment extends ListFragment implements OnItemClickListen
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Simple ArrayAdapter
-        Arrays.sort(MOVIES);
+        //Arrays.sort(MOVIES);
         final CarouselListAdapter adapter = new CarouselListAdapter(getActivity());
         for (final String movie : MOVIES) {
             adapter.add(movie);

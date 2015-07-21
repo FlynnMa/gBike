@@ -113,6 +113,7 @@ public class MainActivity extends FragmentActivity
         // Add some images to the tabs
         carousel.setImageDrawable(FIRST_TAB, res.getDrawable(R.drawable.lost_in_translation));
         carousel.setImageDrawable(SECOND_TAB, res.getDrawable(R.drawable.the_prestige));
+		carousel.setStaticImageDrawable(res.getDrawable(R.drawable.btn_statistic_normal));
 
         // The Bundle for the color fragment
         final Bundle blue = new Bundle();
@@ -121,7 +122,8 @@ public class MainActivity extends FragmentActivity
         // Initialize the pager adatper
         final PagerAdapter pagerAdapter = new PagerAdapter(this);
         pagerAdapter.add(DummyListFragment.class, new Bundle());
-        pagerAdapter.add(ColorFragment.class, blue);
+		pagerAdapter.add(DummyListFragment.class, new Bundle());
+        //pagerAdapter.add(ColorFragment.class, blue);
 
         // Initialize the pager
         final ViewPager carouselPager = (ViewPager) findViewById(R.id.carousel_pager);

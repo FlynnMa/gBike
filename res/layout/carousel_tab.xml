@@ -25,6 +25,13 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" >
 
+		<ImageView
+            android:id="@+id/static_image"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentBottom="true" />
+            
         <ImageView
             android:id="@+id/carousel_tab_image"
             android:layout_width="match_parent"
