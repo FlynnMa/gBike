@@ -108,8 +108,8 @@ public class MainActivity extends FragmentActivity
         // secondary tab
         carousel.setUsesDualTabs(true);
         // Add some text to the labels
-       // carousel.setLabel(FIRST_TAB, "Lost in Translation");
-        //carousel.setLabel(SECOND_TAB, "The Prestige");
+       	carousel.setLabel(FIRST_TAB, this.getString(R.string.disconnected));
+        carousel.setLabel(SECOND_TAB, this.getString(R.string.disconnected));
         // Add some images to the tabs
         carousel.setImageDrawable(FIRST_TAB, res.getDrawable(R.drawable.lost_in_translation));
         carousel.setImageDrawable(SECOND_TAB, res.getDrawable(R.drawable.the_prestige));
@@ -516,7 +516,7 @@ public class MainActivity extends FragmentActivity
 	{
 		if (null != mTemperatureTxt)
 		{	
-			mTemperatureTxt.setText(nTemperature + "摄氏�?");
+			mTemperatureTxt.setText(nTemperature + "");
 		}
 	}
 	*/

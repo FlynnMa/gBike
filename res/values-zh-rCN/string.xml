@@ -11,7 +11,7 @@
     <string name="scanning">Scanning for devices...</string>
     <string name="no_ble_devices">No LE devices found.</string>
     <string name="connected">Connected</string>
-    <string name="disconnected">Not connected</string>
+    <string name="disconnected">设备未连接</string>
     <string name="ready">Ready</string>
     <string name="disconnect">Disconnect</string>
     <string name="connect">Connect</string>

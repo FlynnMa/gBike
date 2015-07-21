@@ -220,7 +220,7 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
 				/*
                 final int size = TAB_COUNT * tabWidth + (TAB_COUNT - 1) * seperatorPixels;
                 child.measure(measureExact(size), measureExact(tabHeight));*/
-                child.measure(measureExact(screenWidth*2), measureExact(tabHeight));
+                child.measure(measureExact(screenWidth*TAB_COUNT), measureExact(tabHeight));
             } else {
                 child.measure(measureExact(screenWidth), measureExact(tabHeight));
             }
