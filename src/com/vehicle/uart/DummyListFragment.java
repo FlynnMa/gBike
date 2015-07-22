@@ -5,7 +5,9 @@
 package com.vehicle.uart;
 
 import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
@@ -27,16 +29,13 @@ import java.util.Arrays;
  * @author Andrew Neal (andrewdneal@gmail.com)
  */
 public class DummyListFragment extends ListFragment implements OnItemClickListener
-{
-    /**
-     * List content
-     */
-     // TODO: update
-     private final static String[] helpListData = new String[] {
- 			"还没有绑定设备", "历史记录01", "历史记录02"
-    };
-	
-    /**
+{	
+	private static final int REQUEST_SELECT_DEVICE = 1;
+    private static final int REQUEST_ENABLE_BT = 2;
+    private static final int UART_PROFILE_CONNECTED = 20;
+    private static final int UART_PROFILE_DISCONNECTED = 21;
+
+	/**
      * The header to bind the {@link BackScrollManager} to
      */
     private CarouselContainer mCarousel;
@@ -65,12 +64,15 @@ public class DummyListFragment extends ListFragment implements OnItemClickListen
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) 
     {
         // Simple ArrayAdapter
-        //Arrays.sort(helpListData);
         final CarouselListAdapter adapter = new CarouselListAdapter(getActivity());
-        for (final String movie : helpListData) 
+
+		if (!MainActivity.IsBluetoothConnected()) 
 		{
-            adapter.add(movie);
-        }
+       		adapter.add(this.getString(R.string.device_unbinding));
+		}
+		adapter.add("历史记录01");
+		adapter.add("历史记录02");
+		adapter.add("历史记录03");
 
         // Bind the data
         setListAdapter(adapter);
@@ -109,8 +111,28 @@ public class DummyListFragment extends ListFragment implements OnItemClickListen
         }
 
         // Remember to substract one from the touched position
-        final String movie = (String) parent.getItemAtPosition(position - 1);
-        Toast.makeText(getActivity(), movie, Toast.LENGTH_SHORT).show();
+        final String str = (String) parent.getItemAtPosition(position - 1);
+		EVLog.e("onItemClick " + str);
+		
+		// TODO:
+		if(str.equals(this.getString(R.string.device_unbinding)))
+		{
+			if (!Feature.blSimulatorMode)
+            {
+            	if (!MainActivity.mBtAdapter.isEnabled()) 
+				{
+					EVLog.e("onClick - BT not enabled yet");
+                    Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                    startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
+                }
+                else 
+				{
+            		// Open DeviceListActivity class, with popup windows that scan for devices
+        			Intent newIntent = new Intent(view.getContext(), DeviceListActivity.class);
+        			startActivityForResult(newIntent, REQUEST_SELECT_DEVICE);
+                }
+			}
+		}
     }
 
     /**
@@ -194,15 +216,6 @@ public class DummyListFragment extends ListFragment implements OnItemClickListen
         public boolean hasStableIds()
         {
             return true;
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public int getCount() 
-        {
-            return helpListData.length + 1;
         }
 
         /**

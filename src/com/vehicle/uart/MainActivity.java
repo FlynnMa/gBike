@@ -52,13 +52,11 @@ public class MainActivity extends FragmentActivity
     private static final int UART_PROFILE_CONNECTED = 20;
     private static final int UART_PROFILE_DISCONNECTED = 21;
 
-	TextView mSpeedTxt, mLeftMilesTxt, mDrivedMilesTxt, mTemperatureTxt;
-	SpeedView mSpeedView;
-    private int mState = UART_PROFILE_DISCONNECTED;
+    private static int mState = UART_PROFILE_DISCONNECTED;
     private UartService mService = null;
     private BluetoothDevice mDevice = null;
-    private BluetoothAdapter mBtAdapter = null;
-    private Button btnConnectDisconnect, btnSend;
+    public static BluetoothAdapter mBtAdapter = null;
+    private Button btnSend;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) 
@@ -84,16 +82,11 @@ public class MainActivity extends FragmentActivity
         // Add some images to the tabs
         //carousel.setImageDrawable(FIRST_TAB, res.getDrawable(R.drawable.temp1));
         carousel.setImageDrawable(SECOND_TAB, res.getDrawable(R.drawable.temp2));
-
-        // The Bundle for the color fragment
-        final Bundle blue = new Bundle();
-        blue.putInt("color", Color.parseColor("#ff33b5e5"));
-
+		
         // Initialize the pager adatper
         final PagerAdapter pagerAdapter = new PagerAdapter(this);
         pagerAdapter.add(DummyListFragment.class, new Bundle());
 		pagerAdapter.add(DummyListFragment.class, new Bundle());
-        //pagerAdapter.add(ColorFragment.class, blue);
 
         // Initialize the pager
         final ViewPager carouselPager = (ViewPager) findViewById(R.id.carousel_pager);
@@ -102,98 +95,37 @@ public class MainActivity extends FragmentActivity
         carouselPager.setAdapter(pagerAdapter);
 		
 		service_init();
-		
+
 		if (!Feature.blSimulatorMode)
 		{
 	        mBtAdapter = BluetoothAdapter.getDefaultAdapter();
 	        if (mBtAdapter == null) 
 			{
 				EVLog.e("Bluetooth is not available");
-	            Toast.makeText(this, "Bluetooth is not available", Toast.LENGTH_LONG).show();
+	            Toast.makeText(this, this.getString(R.string.bluetooth_unavailable), Toast.LENGTH_LONG).show();
 	            finish();
 	            return;
 	        }        
 		}
-		
-		/*
-        super.onCreate(savedInstanceState);
-		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(R.layout.main);
 
-        DevMaster dev = new DevMaster();
-        dev.update();
-        
-		LinearLayout myLayout = (LinearLayout) findViewById(R.id.mainlayout);
-		myLayout.setBackgroundColor(Color.WHITE);
-        
-        btnConnectDisconnect=(Button) findViewById(R.id.btn_connect);
+		if (!Feature.blSimulatorMode)
+		{
+			DevMaster dev = new DevMaster();
+	        dev.update();
+		}
+
+		/*  
 		btnSend=(Button) findViewById(R.id.btn_send);
-		
-        service_init();
-
-		((ImageView)findViewById(R.id.image_leftmiles)).setImageResource(R.drawable.leftmiles);
-		((ImageView)findViewById(R.id.image_passedmiles)).setImageResource(R.drawable.passedmiles);
-		((ImageView)findViewById(R.id.image_temperature)).setImageResource(R.drawable.temperature);
-		
-		mSpeedTxt = (TextView)findViewById(R.id.txt_speed);
-		mLeftMilesTxt = (TextView)findViewById(R.id.txt_leftmiles);
-		mDrivedMilesTxt = (TextView)findViewById(R.id.txt_drivedmiles);
-		mTemperatureTxt = (TextView)findViewById(R.id.txt_temperature);
-		mSpeedView = (SpeedView)findViewById(R.id.speedview);
-		
-		// TODO: update acccording to received strings
-		// default values
-		updateLeftMilesText(0);
-		updateDrivedMilesText(0);
-		updateTemperatureText(0);
-		updateSpeedViewAndText(0);
-			
-		// Handler Disconnect & Connect button
-        btnConnectDisconnect.setOnClickListener(new View.OnClickListener() 
-        {
-            @Override
-            public void onClick(View v)
-            {				
-            	if (!Feature.blSimulatorMode)
-            	{
-	                if (!mBtAdapter.isEnabled()) 
-					{
-						EVLog.e("onClick - BT not enabled yet");
-	                    Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-	                    startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
-	                }
-	                else 
-					{
-	                	if (btnConnectDisconnect.getText().equals("connect"))
-						{
-	                		//Connect button pressed, open DeviceListActivity class, with popup windows that scan for devices
-	            			Intent newIntent = new Intent(MainActivity.this, DeviceListActivity.class);
-	            			startActivityForResult(newIntent, REQUEST_SELECT_DEVICE);
-	        			} 
-						else 
-						{
-	        				//Disconnect button pressed
-	        				if (mDevice!=null)
-	        				{
-	        					mService.disconnect();
-	        				}
-	        			}
-	                }
-            	}
-            }
-        });
-
-		// TODO: test...................................................................................
 		btnSend.setOnClickListener(new View.OnClickListener() 
         {
             @Override
             public void onClick(View v)
             {
+				//mService.writeRXCharacteristic(encodePackage(CMD_TYPE_QUERY, CMD_ID_SPEED, NULL_ARRAY));
 				EVLog.e("Send CMD_TYPE_QUERY CMD_ID_SPEED");
 				
             }
         });
-		// TODO: test end.......................................................................
 		
 		// send message
 		/*
@@ -222,7 +154,8 @@ public class MainActivity extends FragmentActivity
 			{
         		mService = ((UartService.LocalBinder) rawBinder).getService();
 				EVLog.e("onServiceConnected mService= " + mService);
-        		if (!mService.initialize()) {
+        		if (!mService.initialize()) 
+				{
 					EVLog.e("Unable to initialize Bluetooth");
                     finish();
                 }
@@ -231,8 +164,7 @@ public class MainActivity extends FragmentActivity
 
         public void onServiceDisconnected(ComponentName classname) 
 		{
-      		// mService.disconnect(mDevice);
-       		mService = null;
+			mService = null;
         }
     };
 	
@@ -252,6 +184,7 @@ public class MainActivity extends FragmentActivity
 					 {
                          	String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
 							 EVLog.e("UART_CONNECT_MSG");
+							 // TODO: display speed
                              //btnConnectDisconnect.setText("Disconnect");
 							 EVLog.e("[" + currentDateTimeString + "] Connected to: " + mDevice.getName());
                              mState = UART_PROFILE_CONNECTED;
@@ -267,7 +200,13 @@ public class MainActivity extends FragmentActivity
 					 {
                     	 	 String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
 							 EVLog.e("UART_DISCONNECT_MSG");
-                             //btnConnectDisconnect.setText("Connect");
+							 // TODO: replace by next segment codes
+							 //btnConnectDisconnect.setText("Connect");
+							 /*
+							 carousel.setLabel(FIRST_TAB, this.getString(R.string.disconnected));
+        					 carousel.setLabel(SECOND_TAB, this.getString(R.string.disconnected));
+        					 */
+                             
 							 EVLog.e("[" + currentDateTimeString + "] Disconnected to: " + mDevice.getName());
                              mState = UART_PROFILE_DISCONNECTED;
                              mService.close();
@@ -294,6 +233,7 @@ public class MainActivity extends FragmentActivity
                          	String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
 							//mReceivedPackage = decodePackage(txValue);
 
+							//EVLog.e("[" + currentDateTimeString + "] Receive blMatch=" + mReceivedPackage.mblMatch);
                          } 
 						 catch (Exception e) 
 						 {
@@ -322,11 +262,13 @@ public class MainActivity extends FragmentActivity
     private static IntentFilter makeGattUpdateIntentFilter() 
 	{
         final IntentFilter intentFilter = new IntentFilter();
+		
         intentFilter.addAction(UartService.ACTION_GATT_CONNECTED);
         intentFilter.addAction(UartService.ACTION_GATT_DISCONNECTED);
         intentFilter.addAction(UartService.ACTION_GATT_SERVICES_DISCOVERED);
         intentFilter.addAction(UartService.ACTION_DATA_AVAILABLE);
         intentFilter.addAction(UartService.DEVICE_DOES_NOT_SUPPORT_UART);
+		
         return intentFilter;
     }
 
@@ -387,13 +329,16 @@ public class MainActivity extends FragmentActivity
 			
         case REQUEST_ENABLE_BT:
             // When the request to enable Bluetooth returns
-            if (resultCode == Activity.RESULT_OK) {
-                Toast.makeText(this, "Bluetooth has turned on ", Toast.LENGTH_SHORT).show();
-
-            } else {
+            if (resultCode == Activity.RESULT_OK) 
+			{
+				EVLog.e("BT has turned on");
+                Toast.makeText(this, this.getString(R.string.bluetooth_turned_on), Toast.LENGTH_SHORT).show();
+            } 
+			else 
+			{
                 // User did not enable Bluetooth or an error occurred
 				EVLog.e("BT not enabled");
-                Toast.makeText(this, "Problem in BT Turning ON ", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, this.getString(R.string.bluetooth_disabled), Toast.LENGTH_SHORT).show();
                 finish();
             }
             break;
@@ -439,57 +384,9 @@ public class MainActivity extends FragmentActivity
         }
     }
 
-	/*
-	private void updateSpeedViewAndText(float nSpeed)
+	public static boolean IsBluetoothConnected()
 	{
-		do
-		{
-			if (null == mSpeedTxt)
-			{
-				break;
-			}
-			
-			if (null == mSpeedView)
-			{
-				break;
-			}
-
-			if (nSpeed<0)
-			{
-				break;
-			}
-
-			if (nSpeed>100)
-			{
-				break;
-			}
-			
-			mSpeedView.setBigDialDegrees((int)nSpeed*2);
-			mSpeedTxt.setText(nSpeed + "KM/h");
-		} while(false);
+		EVLog.e("" + mState);
+		return UART_PROFILE_CONNECTED == mState;
 	}
-
-	private void updateLeftMilesText(float nLeftMiles)
-	{
-		if (null != mLeftMilesTxt)
-		{
-			mLeftMilesTxt.setText(nLeftMiles + "KM");
-		}
-	}
-
-	private void updateDrivedMilesText(float nDrivedMiles)
-	{
-		if (null != mDrivedMilesTxt)
-		{			mDrivedMilesTxt.setText(nDrivedMiles + "KM");
-		}
-	}		
-
-	private void updateTemperatureText(int nTemperature)
-	{
-		if (null != mTemperatureTxt)
-		{	
-			mTemperatureTxt.setText(nTemperature + "");
-		}
-	}
-	*/
 }

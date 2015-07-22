@@ -53,4 +53,9 @@
     <string name="totalmiles">总里程</string>
     <string name="copyright">上海极客工作室 版权所有</string>
     <string name="miles">公里</string>
+    <string name="bluetooth_unavailable">蓝牙不可用</string>
+    <string name="bluetooth_disabled">蓝牙未开启</string>
+    <string name="bluetooth_turned_on">蓝牙已开启</string>
+    <string name="device_unbinding">还没有绑定设备,点击绑定</string>
+    <string name="helpBinding">请移动靠近设备以绑定</string>
 </resources>
