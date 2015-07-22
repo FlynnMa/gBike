@@ -50,4 +50,7 @@
     <string name="cancel">Cancel</string> 
     <string name="welcome">欢迎使用电动平衡车</string> 
     <string name="empty"></string>
+    <string name="totalmiles">总里程</string>
+    <string name="copyright">上海极客工作室 版权所有</string>
+    <string name="miles">公里</string>
 </resources>

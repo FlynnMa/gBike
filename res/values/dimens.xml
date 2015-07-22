@@ -26,6 +26,8 @@
     <dimen name="carousel_label_height">45.0dip</dimen>
     <!-- Padding around the text label -->
     <dimen name="carousel_label_padding">16.0dip</dimen>
+    <!-- Padding for menu -->
+    <dimen name="carousel_menu_padding">8.0dip</dimen>
     <!-- Height of the tab indicator (colorstrip) -->
     <dimen name="carousel_indicator_height">5.0dip</dimen>
 

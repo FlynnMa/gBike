@@ -23,10 +23,11 @@ import com.vehicle.uart.SatelliteMenu.SateliteClickedListener;
  * @author Andrew Neal (andrewdneal@gmail.com)
  */
 public class CarouselTab extends FrameLayoutWithOverlay 
-{
-	private ImageView mStaticImage;
-	
-    /**
+{	
+	private DashedCircularProgress dashedCircularProgress;
+	private TextView numbers;
+
+	/**
      * Used to display the main images in the tabs of the carousel
      */
     private ImageView mCarouselImage;
@@ -58,10 +59,22 @@ public class CarouselTab extends FrameLayoutWithOverlay
     {
         super.onFinishInflate();
         // Initiate the tab
-        mStaticImage = (ImageView) findViewById(R.id.static_image);
         mCarouselImage = (ImageView) findViewById(R.id.carousel_tab_image);
         mLabel = (TextView) findViewById(R.id.carousel_tab_label);
         mAlphaLayer = findViewById(R.id.carousel_tab_alpha_overlay);
+		dashedCircularProgress = (DashedCircularProgress) findViewById(R.id.CircularView);
+		dashedCircularProgress.setOnValueChangeListener(
+                new DashedCircularProgress.OnValueChangeListener() 
+                {
+                    @Override
+                    public void onValueChange(float value) 
+                    {
+                        numbers.setText((int) value + "" + getResources().getString(R.string.miles));
+                    }
+                });
+		numbers = (TextView) findViewById(R.id.number);
+		dashedCircularProgress.setValue(99);
+		
         // Set the alpha layer
         setAlphaLayer(mAlphaLayer);
 
@@ -144,16 +157,6 @@ public class CarouselTab extends FrameLayoutWithOverlay
     {
         mCarouselImage.setImageDrawable(drawable);
     }
-
-	public void setStaticImageDrawable(Drawable drawable)
-	{
-        mStaticImage.setImageDrawable(drawable);
-    }
-	
-	 public void setOnStaticImageClickListner(OnClickListener onClickListener) 
-	 {
-        mStaticImage.setOnClickListener(onClickListener);
-     }
 
     /**
      * @return the mCarouselImage

@@ -33,8 +33,7 @@ public class DummyListFragment extends ListFragment implements OnItemClickListen
      */
      // TODO: update
      private final static String[] helpListData = new String[] {
- 			"还没有绑定设备", "历史记录01", "历史记录02", "历史记录03", "历史记录04", "历史记录05", "历史记录06", "历史记录07"
-            , "历史记录08", "历史记录09", "历史记录10", "历史记录11", "历史记录12", "历史记录13"
+ 			"还没有绑定设备", "历史记录01", "历史记录02"
     };
 	
     /**

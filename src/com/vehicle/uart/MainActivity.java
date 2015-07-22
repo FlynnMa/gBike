@@ -101,19 +101,8 @@ public class MainActivity extends FragmentActivity
 
 		// TODO: create a circle widget and update to this widget
         // Add some images to the tabs
-        carousel.setImageDrawable(FIRST_TAB, res.getDrawable(R.drawable.temp1));
+        //carousel.setImageDrawable(FIRST_TAB, res.getDrawable(R.drawable.temp1));
         carousel.setImageDrawable(SECOND_TAB, res.getDrawable(R.drawable.temp2));
-
-		/*
-		carousel.setStaticImageDrawable(res.getDrawable(R.drawable.btn_statistic_normal));
-		carousel.setOnStaticImageClickListner(new View.OnClickListener() 
-        {
-            @Override
-            public void onClick(View v)
-            {				
-            	EVLog.e("Button Click");
-            }
-        });*/
 
         // The Bundle for the color fragment
         final Bundle blue = new Bundle();

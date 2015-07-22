@@ -17,6 +17,7 @@
  */-->
 <view xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:sat="http://schemas.android.com/apk/res/com.vehicle.uart"
+	xmlns:custom="http://schemas.android.com/apk/res-auto"
     android:layout_width="0dip"
     android:layout_height="match_parent"
     android:layout_weight="1"
@@ -25,7 +26,46 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent" >
-            
+
+    	<com.vehicle.uart.DashedCircularProgress
+	        android:id="@+id/CircularView"
+	        custom:external_color="#1affffff"
+	        custom:base_color="#6effffff"
+	        custom:min="0"
+	        custom:max="99"
+	        custom:progress_color="@color/material_pink"
+	        custom:progress_icon="@drawable/star"
+	        custom:duration="3500"
+	        android:background="@color/tabview_bg"
+	        android:layout_centerInParent="true"
+	        android:layout_width="match_parent"
+	        android:layout_height="match_parent">
+
+	        <RelativeLayout
+	            android:layout_centerInParent="true"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content">
+
+	            <TextView
+	                android:textSize="30sp"
+	                android:id="@+id/text"
+	                android:textColor="@color/white"
+	                android:text="@string/totalmiles"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content" />
+
+	            <TextView
+	                android:textSize="20sp"
+	                android:layout_centerHorizontal="true"
+	                android:id="@+id/number"
+	                android:paddingTop="5dp"
+	                android:layout_below="@+id/text"
+	                android:textColor="@color/white"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content" />
+	        </RelativeLayout>
+	    </com.vehicle.uart.DashedCircularProgress>
+    
         <ImageView
             android:id="@+id/carousel_tab_image"
             android:layout_width="match_parent"
@@ -63,24 +103,14 @@
             android:textColor="@color/white"
             android:textSize="@dimen/text_size_large" />
 
-        <ImageView
-            android:id="@+id/static_image"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentLeft="true"
-            android:paddingLeft="@dimen/carousel_label_padding"
-            android:paddingTop="@dimen/carousel_label_padding"
-            android:gravity="left|center_vertical" />
-
        	<com.vehicle.uart.SatelliteMenu
 	        android:id="@+id/menu"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
 	        android:layout_alignParentTop="true"
             android:layout_alignParentLeft="true"
-            android:paddingLeft="@dimen/carousel_label_padding"
-            android:paddingTop="@dimen/carousel_label_padding"
+            android:paddingLeft="@dimen/carousel_menu_padding"
+            android:paddingTop="@dimen/carousel_menu_padding"
             android:gravity="left|center_vertical"
 	        android:layout_margin="8dp"
 	        sat:satelliteDistance="170dp"

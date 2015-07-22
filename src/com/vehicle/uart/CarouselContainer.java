@@ -498,12 +498,6 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
         }
     }
 
-	public void setStaticImageDrawable(Drawable drawable) 
-	{
-		mFirstTab.setStaticImageDrawable(drawable);
-		mSecondTab.setStaticImageDrawable(drawable);
-    }
-
     /**
      * Sets a bitmap as the content of the tab {@link ImageView}
      * 
@@ -693,10 +687,4 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
             mReference.get().mCarouselListener.onTabSelected(mTab);
         }
     }
-
-	public void setOnStaticImageClickListner(OnClickListener onClickListener) 
-	{
-		mFirstTab.setOnStaticImageClickListner(onClickListener);
-		mSecondTab.setOnStaticImageClickListner(onClickListener);
-	}
 }

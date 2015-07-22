@@ -20,5 +20,6 @@
 
     <!-- Transparent black -->
     <color name="transparent_black">#99000000</color>
-
+	<color name="material_pink">#FF4081</color>
+	<color name="tabview_bg">#008ED0</color>
 </resources>

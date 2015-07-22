@@ -11,7 +11,7 @@
         android:padding="12dip"
         android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
-        android:text="上海极客工作室平  版权所有"
+        android:text="@string/copyright"
         android:textSize="12sp"/>
    
     <RelativeLayout 

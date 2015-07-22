@@ -66,4 +66,7 @@
     <string name="cancel">Cancel</string>
     <string name="welcome">Welcome to use Electronic vehicle</string> 
     <string name="empty"></string>
+    <string name="totalmiles">Total Miles</string>
+    <string name="copyright">ShangHai JiKe</string>
+    <string name="miles">KM</string>
 </resources>
