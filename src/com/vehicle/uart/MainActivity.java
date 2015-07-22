@@ -52,25 +52,6 @@ public class MainActivity extends FragmentActivity
     private static final int UART_PROFILE_CONNECTED = 20;
     private static final int UART_PROFILE_DISCONNECTED = 21;
 
-	// Command Type
-	public static final byte CMD_TYPE_QUERY = 1;
-	public static final byte CMD_TYPE_SET = 2;
-	public static final byte CMD_TYPE_ACK = 3;
-
-	// Command ID
-	public static final byte CMD_ID_DEVICE_ID = 0;
-	public static final byte CMD_ID_DEVICE_NAME = 1;
-	public static final byte CMD_ID_FIRMWARE_VERSION = 2;
-	public static final byte CMD_ID_MAINBOARD_TEMPERITURE = 3;
-	public static final byte CMD_ID_BATTERY_VOLTAGE = 4;
-	public static final byte CMD_ID_CHARGE_STATUS = 5;
-	public static final byte CMD_ID_SPEED = 6;
-	public static final byte CMD_ID_MILE = 7;
-	public static final byte CMD_ID_MAX_SPEED = 8;
-	public static final byte CMD_ID_LOW_BATTERY = 9;
-	public static final byte CMD_ID_SHUTDOWN_BATTERY = 10;
-	public static final byte CMD_ID_FULL_BATTERY = 11;
-
 	TextView mSpeedTxt, mLeftMilesTxt, mDrivedMilesTxt, mTemperatureTxt;
 	SpeedView mSpeedView;
     private int mState = UART_PROFILE_DISCONNECTED;
@@ -122,17 +103,6 @@ public class MainActivity extends FragmentActivity
 		
 		service_init();
 		
-    	/*
-        super.onCreate(savedInstanceState);
-		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(R.layout.main);
-
-        DevMaster dev = new DevMaster();
-        dev.update();
-        
-		LinearLayout myLayout = (LinearLayout) findViewById(R.id.mainlayout);
-		myLayout.setBackgroundColor(Color.WHITE);
-
 		if (!Feature.blSimulatorMode)
 		{
 	        mBtAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -144,6 +114,17 @@ public class MainActivity extends FragmentActivity
 	            return;
 	        }        
 		}
+		
+		/*
+        super.onCreate(savedInstanceState);
+		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        setContentView(R.layout.main);
+
+        DevMaster dev = new DevMaster();
+        dev.update();
+        
+		LinearLayout myLayout = (LinearLayout) findViewById(R.id.mainlayout);
+		myLayout.setBackgroundColor(Color.WHITE);
         
         btnConnectDisconnect=(Button) findViewById(R.id.btn_connect);
 		btnSend=(Button) findViewById(R.id.btn_send);
@@ -208,7 +189,6 @@ public class MainActivity extends FragmentActivity
             @Override
             public void onClick(View v)
             {
-				//mService.writeRXCharacteristic(encodePackage(CMD_TYPE_QUERY, CMD_ID_SPEED, NULL_ARRAY));
 				EVLog.e("Send CMD_TYPE_QUERY CMD_ID_SPEED");
 				
             }
@@ -252,7 +232,7 @@ public class MainActivity extends FragmentActivity
         public void onServiceDisconnected(ComponentName classname) 
 		{
       		// mService.disconnect(mDevice);
-        		mService = null;
+       		mService = null;
         }
     };
 	
@@ -314,7 +294,6 @@ public class MainActivity extends FragmentActivity
                          	String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
 							//mReceivedPackage = decodePackage(txValue);
 
-							//EVLog.e("[" + currentDateTimeString + "] Receive blMatch=" + mReceivedPackage.mblMatch);
                          } 
 						 catch (Exception e) 
 						 {

@@ -4,6 +4,9 @@
 
     <!-- Transparent black -->
     <color name="transparent_black">#99000000</color>
-	<color name="circular_color">#008ED0</color>
-	<color name="tabview_bg">#FF9322</color>
+    <color name="circular_color">#008ED0</color>
+    <color name="tabview_bg">#FF9322</color>
+    <color name="DarkOrange">#FF8C00</color>
+    <color name="deviceListBG">#ff6633</color>
+
 </resources>

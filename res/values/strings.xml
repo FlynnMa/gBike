@@ -10,7 +10,7 @@
     <string name="status">Status</string>
     <string name="llsWrite">LinkLossAlert</string>
     <string name="iasWrite">ImmediateAlert</string>
-    <string name="scanning">Scanning for devices...</string>
+    <string name="scanning">Scanning for devices</string>
     <string name="no_ble_devices">No LE devices found.</string>
     <string name="connected">Connected</string>
     <string name="disconnected">Not connected</string>
@@ -55,4 +55,5 @@
     <string name="totalmiles">Total Miles</string>
     <string name="copyright">ShangHai JiKe</string>
     <string name="miles">KM</string>
+    <string name="helpBinding">Please move your mobile close to the device for binding</string>
 </resources>

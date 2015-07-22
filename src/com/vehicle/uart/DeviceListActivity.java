@@ -30,10 +30,14 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.vehicle.uart.R;
+import android.text.style.TypefaceSpan;
+import android.text.*;
 
 public class DeviceListActivity extends Activity 
 {
@@ -41,24 +45,41 @@ public class DeviceListActivity extends Activity
 
    // private BluetoothAdapter mBtAdapter;
     private TextView mEmptyList;
-    
+
     List<BluetoothDevice> deviceList;
     private DeviceAdapter deviceAdapter;
     Map<String, Integer> devRssiValues;
-    private static final long SCAN_PERIOD = 10000; //10 seconds
+    private static final long SCAN_PERIOD = 100000; //100 seconds
     private Handler mHandler;
     private boolean mScanning;
+    
+    SpannableString msp = null;  
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) 
-    {
+    protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         EVLog.e("onCreate");
-        getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.title_bar);
-        setContentView(R.layout.device_list);
-        android.view.WindowManager.LayoutParams layoutParams = this.getWindow().getAttributes();
-        layoutParams.gravity=Gravity.TOP;
-        layoutParams.y = 200;
+//        getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.title_bar);
+        ScrollView sv = new ScrollView(this);
+        RelativeLayout rLayout = new RelativeLayout(this);
+        rLayout.setBackgroundColor(getResources().getColor(R.color.deviceListBG));
+        sv.addView(rLayout);
+        
+        String closeToBindStr = getString(R.string.CloseToBind);
+        msp = new SpannableString(closeToBindStr);
+        msp.setSpan(new TypefaceSpan("sans-serif"), 0, closeToBindStr.length(), 0);
+        TextView tv = new TextView(this);
+        tv.setText(msp);
+        tv.setTextSize(46);
+        int height=tv.getLayoutParams().height;
+        int width=tv.getLayoutParams().width;
+        
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(30, 40);
+        params.leftMargin = 50;
+        params.topMargin = 60;
+        rLayout.addView(tv, params);
+        
         mHandler = new Handler();
         // Use this check to determine whether BLE is supported on the device.  Then you can
         // selectively disable BLE-related features.
@@ -83,7 +104,10 @@ public class DeviceListActivity extends Activity
         }
 		
         populateList();
-        mEmptyList = (TextView) findViewById(R.id.empty);
+        
+        setContentView(sv);
+//        mEmptyList = (TextView) findViewById(R.id.empty);
+        /*
         Button cancelButton = (Button) findViewById(R.id.btn_cancel);
         cancelButton.setOnClickListener(new OnClickListener() 
 		{
@@ -99,14 +123,16 @@ public class DeviceListActivity extends Activity
     private void populateList() 
 	{
         /* Initialize device list container */
+    	
 		EVLog.e("populateList");
         deviceList = new ArrayList<BluetoothDevice>();
         deviceAdapter = new DeviceAdapter(this, deviceList);
         devRssiValues = new HashMap<String, Integer>();
-
+/*
         ListView newDevicesListView = (ListView) findViewById(R.id.new_devices);
         newDevicesListView.setAdapter(deviceAdapter);
         newDevicesListView.setOnItemClickListener(mDeviceClickListener);
+<<<<<<< HEAD
         scanLeDevice(true);
     }
     
@@ -115,6 +141,15 @@ public class DeviceListActivity extends Activity
         final Button cancelButton = (Button) findViewById(R.id.btn_cancel);
         if (enable) 
 		{
+=======
+*/
+        scanLeDevice(true);
+
+    }
+
+    private void scanLeDevice(final boolean enable) {
+//        final Button cancelButton = (Button) findViewById(R.id.btn_cancel);
+        if (enable) {
             // Stops scanning after a pre-defined scan period.
             mHandler.postDelayed(new Runnable() 
             {
@@ -135,7 +170,7 @@ public class DeviceListActivity extends Activity
 		{
             mScanning = false;
             mBluetoothAdapter.stopLeScan(mLeScanCallback);
-            cancelButton.setText(R.string.scan);
+//            cancelButton.setText(R.string.scan);
         }
     }
 
@@ -175,7 +210,6 @@ public class DeviceListActivity extends Activity
                 break;
             }
         }
-        
         devRssiValues.put(device.getAddress(), rssi);
         if (!deviceFound) 
 		{
@@ -189,7 +223,7 @@ public class DeviceListActivity extends Activity
     public void onStart() 
     {
         super.onStart();
-       
+
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
         filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
@@ -215,7 +249,7 @@ public class DeviceListActivity extends Activity
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) 
         {
             mBluetoothAdapter.stopLeScan(mLeScanCallback);
-  
+
             Bundle b = new Bundle();
             b.putString(BluetoothDevice.EXTRA_DEVICE, deviceList.get(position).getAddress());
 
@@ -319,8 +353,8 @@ public class DeviceListActivity extends Activity
             return vg;
         }
     }
-    
-    private void showMessage(String msg) 
+
+    private void showMessage(String msg)
     {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }

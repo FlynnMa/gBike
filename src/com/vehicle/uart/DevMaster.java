@@ -147,7 +147,7 @@ public class DevMaster {
      * 
      * @return none
      * */
-    public native void setPowerOnOff();
+    public native void setPowerOnOff(int onOff);
     
     /*!
      * This function generates package for query version
@@ -165,7 +165,7 @@ public class DevMaster {
      * 
      * @return none
      * */
-    public native void setDeviceMode();
+    public native void setDeviceMode(int devMode);
     
     /*!
      * This function generates package for query version
@@ -183,7 +183,7 @@ public class DevMaster {
      * 
      * @return none
      * */
-    public native void setConnection();
+    public native void setConnection(int connection);
     
     /*!
      * This function generates package for query version
@@ -195,7 +195,7 @@ public class DevMaster {
     public native void getConnection();
     
    static {
-	   System.loadLibrary("native-ev-jni"); // myjni.dll (Windows) or libmyjni.so (Unixes)
+	   System.loadLibrary("native-ev-jni");
    }
     
 };
