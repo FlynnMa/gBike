@@ -10,7 +10,6 @@ import java.util.Map;
 
 import com.vehicle.uart.DeviceListActivity.DeviceAdapter;
 
-import android.R;
 import android.R.color;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -78,8 +77,8 @@ public class BindBT extends Activity{
             return;
         }
         
-        deviceList = new ArrayList<BluetoothDevice>();
-        deviceAdapter = new DeviceAdapter(this, deviceList);
+//        deviceList = new ArrayList<BluetoothDevice>();
+//        deviceAdapter = new DeviceAdapter(this, deviceList);
         devRssiValues = new HashMap<String, Integer>();
         
         rLayout.postDelayed(new Runnable() {

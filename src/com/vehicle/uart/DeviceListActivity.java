@@ -66,7 +66,7 @@ public class DeviceListActivity extends Activity
         rLayout.setBackgroundColor(getResources().getColor(R.color.deviceListBG));
         sv.addView(rLayout);
         
-        String closeToBindStr = getString(R.string.CloseToBind);
+        String closeToBindStr = getString(R.string.helpBinding);
         msp = new SpannableString(closeToBindStr);
         msp.setSpan(new TypefaceSpan("sans-serif"), 0, closeToBindStr.length(), 0);
         TextView tv = new TextView(this);
@@ -103,7 +103,7 @@ public class DeviceListActivity extends Activity
             return;
         }
 		
-        populateList();
+//        populateList();
         
         setContentView(sv);
 //        mEmptyList = (TextView) findViewById(R.id.empty);
@@ -158,13 +158,13 @@ public class DeviceListActivity extends Activity
                 {
 					mScanning = false;
                     mBluetoothAdapter.stopLeScan(mLeScanCallback);  
-                    cancelButton.setText(R.string.scan);
+//                    cancelButton.setText(R.string.scan);
                 }
             }, SCAN_PERIOD);
 
             mScanning = true;
             mBluetoothAdapter.startLeScan(mLeScanCallback);
-            cancelButton.setText(R.string.cancel);
+//            cancelButton.setText(R.string.cancel);
         } 
 		else 
 		{

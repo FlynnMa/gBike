@@ -25,6 +25,8 @@ import com.vehicle.uart.CarouselContainer;
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
 
+import com.vehicle.uart.BindBT;
+
 /**
  * @author Andrew Neal (andrewdneal@gmail.com)
  */
