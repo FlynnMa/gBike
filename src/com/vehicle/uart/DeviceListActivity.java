@@ -8,6 +8,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import android.R.color;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -18,8 +22,12 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.Point;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.DisplayMetrics;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,6 +36,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.FrameLayout.LayoutParams;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.RelativeLayout;
@@ -52,7 +61,14 @@ public class DeviceListActivity extends Activity
     private static final long SCAN_PERIOD = 100000; //100 seconds
     private Handler mHandler;
     private boolean mScanning;
-    
+
+    RelativeLayout rLayout;
+	int screenWidth;
+	int screenHeight;
+	int topLeftID;
+	int statusBarHeight;
+	Button startButton;
+
     SpannableString msp = null;  
 
     @Override
@@ -60,27 +76,39 @@ public class DeviceListActivity extends Activity
 
         super.onCreate(savedInstanceState);
         EVLog.e("onCreate");
-//        getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.title_bar);
-        ScrollView sv = new ScrollView(this);
-        RelativeLayout rLayout = new RelativeLayout(this);
-        rLayout.setBackgroundColor(getResources().getColor(R.color.deviceListBG));
-        sv.addView(rLayout);
+
+        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+        rLayout = new RelativeLayout(this);
+        rLayout.setBackgroundResource(color.holo_blue_dark);
+        rLayout.setBackgroundColor(getResources().getColor(R.color.DarkOrange));
+		 LayoutParams rlParam = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+	     rLayout.setLayoutParams(rlParam);
+        setContentView(rLayout);
+
+        Display display = getWindowManager().getDefaultDisplay();
+    	Point size = new Point();
+    	display.getSize(size);
+    	screenWidth = size.x;
+    	screenHeight = size.y;  
+    	
+    	DisplayMetrics dm = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(dm);        
         
-        String closeToBindStr = getString(R.string.helpBinding);
-        msp = new SpannableString(closeToBindStr);
-        msp.setSpan(new TypefaceSpan("sans-serif"), 0, closeToBindStr.length(), 0);
-        TextView tv = new TextView(this);
-        tv.setText(msp);
-        tv.setTextSize(46);
-        int height=tv.getLayoutParams().height;
-        int width=tv.getLayoutParams().width;
+        int nowWidth = dm.widthPixels;
+        int nowHeigth = dm.heightPixels;
+    	
+        DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);   
+        int sHeight = metrics.heightPixels;
+        int sWidth = metrics.widthPixels;
+        int dens=dm.densityDpi;
+        double wi=(double)sWidth/(double)dens;
+        double hi=(double)sHeight/(double)dens;
+        double x = Math.pow(wi,2);
+        double y = Math.pow(hi,2);
+        double screenInches = Math.sqrt(x+y);
         
-        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(30, 40);
-        params.leftMargin = 50;
-        params.topMargin = 60;
-        rLayout.addView(tv, params);
-        
-        mHandler = new Handler();
         // Use this check to determine whether BLE is supported on the device.  Then you can
         // selectively disable BLE-related features.
         if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) 
@@ -88,7 +116,7 @@ public class DeviceListActivity extends Activity
             Toast.makeText(this, R.string.ble_not_supported, Toast.LENGTH_SHORT).show();
             finish();
         }
-
+        
         // Initializes a Bluetooth adapter.  For API level 18 and above, get a reference to
         // BluetoothAdapter through BluetoothManager.
         final BluetoothManager bluetoothManager =
@@ -102,51 +130,115 @@ public class DeviceListActivity extends Activity
             finish();
             return;
         }
-		
-//        populateList();
         
-        setContentView(sv);
-//        mEmptyList = (TextView) findViewById(R.id.empty);
-        /*
-        Button cancelButton = (Button) findViewById(R.id.btn_cancel);
-        cancelButton.setOnClickListener(new OnClickListener() 
-		{
-            @Override
-            public void onClick(View v)
-            {
-            	if (mScanning==false) scanLeDevice(true); 
-            	else finish();
+//        deviceList = new ArrayList<BluetoothDevice>();
+//        deviceAdapter = new DeviceAdapter(this, deviceList);
+        devRssiValues = new HashMap<String, Integer>();
+        
+        rLayout.postDelayed(new Runnable() {
+
+			@Override
+			public void run() {
+		        drawHelpScreen();
+		     
+			}
+		}, 100);
+
+    }
+
+	/*
+	 * This screen shows help information to tell customer how to bind the device
+	 * */
+	public void drawHelpScreen()
+	{
+//		rLayout.removeAllViews();
+		
+		Button cancelButton = new Button(this);
+		cancelButton.setTextColor(color.white);
+		cancelButton.setBackgroundResource(color.holo_red_dark);
+//		cancelButton.setText(R.string.cancel);
+		cancelButton.setText("cancel");
+		cancelButton.setTextSize(screenHeight/48);
+		cancelButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				scanLeDevice(false);
+				finish();
+			}
+		});
+        RelativeLayout.LayoutParams  cancelBtnPos = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
+        cancelBtnPos.setMargins(10, 10, 0, 0);
+        cancelBtnPos.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+        cancelBtnPos.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+        rLayout.addView(cancelButton, cancelBtnPos);
+
+
+        TextView helpText = new TextView(this);
+//        helpText.setText(R.string.helpBinding);
+        helpText.setText("close your mobile to the device to start binding");
+        helpText.setTextSize(screenHeight / 48);
+        int helpTextID = View.generateViewId();
+        helpText.setId(helpTextID);
+        
+        RelativeLayout.LayoutParams helpPos = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
+        helpPos.addRule(RelativeLayout.CENTER_HORIZONTAL);
+        helpPos.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        helpPos.setMargins(0, 0, 0, screenHeight/48);
+        rLayout.addView(helpText, helpPos);
+
+		startButton = new Button(this);
+//		startButton.setTextColor(color.white);
+		startButton.setBackgroundResource(color.holo_red_dark);
+		startButton.setText("start");
+		startButton.setAlpha(0.5f);
+		startButton.setOnClickListener(new View.OnClickListener() {  
+            @Override  
+            public void onClick(View v) {  
+                startButton.animate().alpha(0).setDuration(500).setListener(new AnimatorListenerAdapter(){
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                    	drawSearchScreen();
+                    	scanLeDevice(true);
+                    }}).start();
             }
         });
+        RelativeLayout.LayoutParams btnPos = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
+        btnPos.addRule(RelativeLayout.CENTER_HORIZONTAL);
+        btnPos.addRule(RelativeLayout.ABOVE, helpTextID);
+        rLayout.addView(startButton, btnPos);
+        
+	}
+	
+	/*
+	 * This screen ask customer to move mobile phone close to device
+	 * and get device searched
+	 * */
+	public void drawSearchScreen()
+	{
+		rLayout.removeAllViews();
+		
+	}
+	
+	/*
+	 * This screen ask customer to confirm the device to bind
+	 * */
+	public void drawBondingScreen()
+	{
+		
+	}
+	
+    public int getStatusBarHeight() {
+    	Rect r = new Rect();
+    	Window w = getWindow();
+    	w.getDecorView().getWindowVisibleDisplayFrame(r);
+    	return r.top;
     }
 
-    private void populateList() 
-	{
-        /* Initialize device list container */
-    	
-		EVLog.e("populateList");
-        deviceList = new ArrayList<BluetoothDevice>();
-        deviceAdapter = new DeviceAdapter(this, deviceList);
-        devRssiValues = new HashMap<String, Integer>();
-/*
-        ListView newDevicesListView = (ListView) findViewById(R.id.new_devices);
-        newDevicesListView.setAdapter(deviceAdapter);
-        newDevicesListView.setOnItemClickListener(mDeviceClickListener);
-<<<<<<< HEAD
-        scanLeDevice(true);
+    public int getTitleBarHeight() {
+    	int viewTop = getWindow().findViewById(Window.ID_ANDROID_CONTENT).getTop();
+    	return (viewTop - getStatusBarHeight());
     }
     
-    private void scanLeDevice(final boolean enable)
-	{
-        final Button cancelButton = (Button) findViewById(R.id.btn_cancel);
-        if (enable) 
-		{
-=======
-*/
-        scanLeDevice(true);
-
-    }
-
     private void scanLeDevice(final boolean enable) {
 //        final Button cancelButton = (Button) findViewById(R.id.btn_cancel);
         if (enable) {

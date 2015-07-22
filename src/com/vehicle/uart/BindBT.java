@@ -18,10 +18,12 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
@@ -30,7 +32,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.FrameLayout.LayoutParams;
 
-public class BindBT extends Activity{
+public class BindBT extends FragmentActivity{
 	RelativeLayout rLayout;
 	int screenWidth;
 	int screenHeight;
@@ -49,6 +51,7 @@ public class BindBT extends Activity{
 	
 	public void onCreate(Bundle savedInstanceState)
 	{
+    	super.onCreate(savedInstanceState);
 		rLayout = new RelativeLayout(this);
         rLayout.setBackgroundResource(color.holo_blue_dark);
         setContentView(rLayout);
@@ -246,5 +249,30 @@ public class BindBT extends Activity{
             deviceAdapter.notifyDataSetChanged();
         }
     }
+    
+    @Override
+    public void onStart() 
+    {
+        super.onStart();
+
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
+    }
+
+    @Override
+    public void onStop() 
+    {
+        super.onStop();
+        mBluetoothAdapter.stopLeScan(mLeScanCallback);
+    }
+
+    @Override
+    protected void onDestroy() 
+    {
+        super.onDestroy();
+        mBluetoothAdapter.stopLeScan(mLeScanCallback);
+    }
+
 
 }
