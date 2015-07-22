@@ -56,7 +56,6 @@ public class MainActivity extends FragmentActivity
     private UartService mService = null;
     private BluetoothDevice mDevice = null;
     public static BluetoothAdapter mBtAdapter = null;
-    private Button btnSend;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) 
@@ -78,9 +77,7 @@ public class MainActivity extends FragmentActivity
        	carousel.setLabel(FIRST_TAB, this.getString(R.string.disconnected));
         carousel.setLabel(SECOND_TAB, this.getString(R.string.disconnected));
 
-		// TODO: create a circle widget and update to this widget
         // Add some images to the tabs
-        //carousel.setImageDrawable(FIRST_TAB, res.getDrawable(R.drawable.temp1));
         carousel.setImageDrawable(SECOND_TAB, res.getDrawable(R.drawable.temp2));
 		
         // Initialize the pager adatper
@@ -113,36 +110,6 @@ public class MainActivity extends FragmentActivity
 			DevMaster dev = new DevMaster();
 	        dev.update();
 		}
-
-		/*  
-		btnSend=(Button) findViewById(R.id.btn_send);
-		btnSend.setOnClickListener(new View.OnClickListener() 
-        {
-            @Override
-            public void onClick(View v)
-            {
-				//mService.writeRXCharacteristic(encodePackage(CMD_TYPE_QUERY, CMD_ID_SPEED, NULL_ARRAY));
-				EVLog.e("Send CMD_TYPE_QUERY CMD_ID_SPEED");
-				
-            }
-        });
-		
-		// send message
-		/*
-            	String message = editText.getText().toString();
-            	byte[] value;
-				try {
-					//send data to service
-					value = message.getBytes("UTF-8");
-					mService.writeRXCharacteristic(value);
-					//Update the log with time stamp
-					String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
-					EVLog.e("[" + currentDateTimeString + "] RX: " + message);
-				} catch (UnsupportedEncodingException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-		*/        
     }
 
     //UART service connected/disconnected
@@ -210,8 +177,6 @@ public class MainActivity extends FragmentActivity
 							 EVLog.e("[" + currentDateTimeString + "] Disconnected to: " + mDevice.getName());
                              mState = UART_PROFILE_DISCONNECTED;
                              mService.close();
-                            //setUiState();
-                         
                      }
                  });
             }
@@ -232,7 +197,6 @@ public class MainActivity extends FragmentActivity
 						 {
                          	String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
 							//mReceivedPackage = decodePackage(txValue);
-
 							//EVLog.e("[" + currentDateTimeString + "] Receive blMatch=" + mReceivedPackage.mblMatch);
                          } 
 						 catch (Exception e) 
