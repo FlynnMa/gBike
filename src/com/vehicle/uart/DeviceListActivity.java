@@ -68,6 +68,7 @@ public class DeviceListActivity extends Activity
 	int topLeftID;
 	int statusBarHeight;
 	Button startButton;
+	TextView helpText;
 
     SpannableString msp = null;  
 
@@ -109,9 +110,13 @@ public class DeviceListActivity extends Activity
         double y = Math.pow(hi,2);
         double screenInches = Math.sqrt(x+y);
         
+        screenWidth = screenWidth / (int)dm.density;
+        screenHeight = screenHeight / (int)dm.density;
+        
+        mHandler = new Handler();
         // Use this check to determine whether BLE is supported on the device.  Then you can
         // selectively disable BLE-related features.
-        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) 
+        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE))
 		{
             Toast.makeText(this, R.string.ble_not_supported, Toast.LENGTH_SHORT).show();
             finish();
@@ -131,8 +136,8 @@ public class DeviceListActivity extends Activity
             return;
         }
         
-//        deviceList = new ArrayList<BluetoothDevice>();
-//        deviceAdapter = new DeviceAdapter(this, deviceList);
+        deviceList = new ArrayList<BluetoothDevice>();
+        deviceAdapter = new DeviceAdapter(this, deviceList);
         devRssiValues = new HashMap<String, Integer>();
         
         rLayout.postDelayed(new Runnable() {
@@ -154,11 +159,11 @@ public class DeviceListActivity extends Activity
 //		rLayout.removeAllViews();
 		
 		Button cancelButton = new Button(this);
-		cancelButton.setTextColor(color.white);
+//		cancelButton.setTextColor(color.white);
 		cancelButton.setBackgroundResource(color.holo_red_dark);
 //		cancelButton.setText(R.string.cancel);
 		cancelButton.setText("cancel");
-		cancelButton.setTextSize(screenHeight/48);
+		cancelButton.setTextSize(screenHeight / 16);
 		cancelButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -167,30 +172,31 @@ public class DeviceListActivity extends Activity
 			}
 		});
         RelativeLayout.LayoutParams  cancelBtnPos = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
-        cancelBtnPos.setMargins(10, 10, 0, 0);
+        cancelBtnPos.setMargins(0, 0, 0, 0);
         cancelBtnPos.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
         cancelBtnPos.addRule(RelativeLayout.ALIGN_PARENT_TOP);
         rLayout.addView(cancelButton, cancelBtnPos);
 
 
-        TextView helpText = new TextView(this);
-//        helpText.setText(R.string.helpBinding);
-        helpText.setText("close your mobile to the device to start binding");
-        helpText.setTextSize(screenHeight / 48);
+        helpText = new TextView(this);
+        helpText.setText(R.string.helpBinding);
+//        helpText.setText("close your mobile to the device to start binding");
+        helpText.setTextSize(screenHeight / 16);
+//        helpText.setTextColor(color.black);
         int helpTextID = View.generateViewId();
         helpText.setId(helpTextID);
         
         RelativeLayout.LayoutParams helpPos = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
         helpPos.addRule(RelativeLayout.CENTER_HORIZONTAL);
         helpPos.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        helpPos.setMargins(0, 0, 0, screenHeight/48);
+        helpPos.setMargins(0, 0, 0, screenHeight/16);
         rLayout.addView(helpText, helpPos);
 
 		startButton = new Button(this);
 //		startButton.setTextColor(color.white);
 		startButton.setBackgroundResource(color.holo_red_dark);
 		startButton.setText("start");
-		startButton.setAlpha(0.5f);
+		startButton.setTextSize(screenHeight / 16);
 		startButton.setOnClickListener(new View.OnClickListener() {  
             @Override  
             public void onClick(View v) {  
@@ -205,8 +211,8 @@ public class DeviceListActivity extends Activity
         RelativeLayout.LayoutParams btnPos = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
         btnPos.addRule(RelativeLayout.CENTER_HORIZONTAL);
         btnPos.addRule(RelativeLayout.ABOVE, helpTextID);
+        btnPos.setMargins(0, 0, 0, screenHeight/16);
         rLayout.addView(startButton, btnPos);
-        
 	}
 	
 	/*
@@ -215,8 +221,24 @@ public class DeviceListActivity extends Activity
 	 * */
 	public void drawSearchScreen()
 	{
-		rLayout.removeAllViews();
+		int height = startButton.getHeight();
 		
+	    int startButtonID = View.generateViewId();
+	    startButton.setId(startButtonID);
+        RelativeLayout.LayoutParams btnPos = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
+        btnPos.addRule(RelativeLayout.CENTER_HORIZONTAL);
+        btnPos.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        btnPos.setMargins(0, 0, 0, screenHeight/32);
+        startButton.setLayoutParams(btnPos);
+
+		helpText.setText(R.string.scanning);
+		int y = helpText.getTop();
+		helpText.animate().y(y - height * 2).setDuration(500).start();
+//        RelativeLayout.LayoutParams helpPos = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
+//        helpPos.addRule(RelativeLayout.CENTER_HORIZONTAL);
+//        helpPos.addRule(RelativeLayout.ABOVE, startButtonID);
+//        helpPos.setMargins(0, 0, 0, screenHeight/16);
+//        helpText.setLayoutParams(helpPos);
 	}
 	
 	/*
@@ -250,19 +272,16 @@ public class DeviceListActivity extends Activity
                 {
 					mScanning = false;
                     mBluetoothAdapter.stopLeScan(mLeScanCallback);  
-//                    cancelButton.setText(R.string.scan);
                 }
             }, SCAN_PERIOD);
 
             mScanning = true;
             mBluetoothAdapter.startLeScan(mLeScanCallback);
-//            cancelButton.setText(R.string.cancel);
         } 
 		else 
 		{
             mScanning = false;
             mBluetoothAdapter.stopLeScan(mLeScanCallback);
-//            cancelButton.setText(R.string.scan);
         }
     }
 
@@ -302,11 +321,12 @@ public class DeviceListActivity extends Activity
                 break;
             }
         }
-        devRssiValues.put(device.getAddress(), rssi);
+    	EVLog.e("device is found:" + device.getName() + "rssi:" + rssi);
+    	devRssiValues.put(device.getAddress(), rssi);
         if (!deviceFound) 
 		{
+        	EVLog.e("device is found:" + device.getName());
         	deviceList.add(device);
-            mEmptyList.setVisibility(View.GONE);
             deviceAdapter.notifyDataSetChanged();
         }
     }
