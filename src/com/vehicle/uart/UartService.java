@@ -37,6 +37,7 @@ public class UartService extends Service
     private String mBluetoothDeviceAddress;
     private BluetoothGatt mBluetoothGatt;
     private int mConnectionState = STATE_DISCONNECTED;
+    BluetoothDevice mDevice;
 
     private static final int STATE_DISCONNECTED = 0;
     private static final int STATE_CONNECTING = 1;
@@ -259,6 +260,8 @@ public class UartService extends Service
 		EVLog.e("Trying to create a new connection.");
         mBluetoothDeviceAddress = address;
         mConnectionState = STATE_CONNECTING;
+        
+        mDevice = device;
         return true;
     }
 
@@ -276,7 +279,13 @@ public class UartService extends Service
             return;
         }
         mBluetoothGatt.disconnect();
+        mDevice = null;
        // mBluetoothGatt.close();
+    }
+    
+    public BluetoothDevice getDevice()
+    {
+    	return mDevice;
     }
 
     /**

@@ -168,8 +168,8 @@ public class DeviceListActivity extends Activity
 		cancelButton = new Button(this);
 //		cancelButton.setTextColor(color.white);
 		cancelButton.setBackgroundResource(color.holo_red_dark);
-//		cancelButton.setText(R.string.cancel);
-		cancelButton.setText("cancel");
+		cancelButton.setText(R.string.cancel);
+//		cancelButton.setText("cancel");
 		cancelButton.setTextSize(screenHeight / 16);
 		cancelButton.setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -257,8 +257,8 @@ public class DeviceListActivity extends Activity
 		bindingProcText = new TextView(this);
 		bindingProcText.setText(R.string.bindingProcess);
 		bindingProcText.setTextSize(screenHeight / 20);
-		bindingProcText.setAlpha(1);
-		bindingProcText.setTextColor(color.black);
+//		bindingProcText.setAlpha(1);
+		bindingProcText.setTextColor(Color.rgb(0, 0, 0));
 
         RelativeLayout.LayoutParams bindingProcPos = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,
         		LayoutParams.WRAP_CONTENT);

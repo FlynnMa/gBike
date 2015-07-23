@@ -145,6 +145,7 @@ public class MainActivity extends FragmentActivity
 							 EVLog.e("UART_CONNECT_MSG");
 							 // TODO: display speed
                              //btnConnectDisconnect.setText("Disconnect");
+							 mDevice = UartService.getInstance().getDevice();
 							 EVLog.e("[" + currentDateTimeString + "] Connected to: " + mDevice.getName());
                              mState = UART_PROFILE_CONNECTED;
                      }
