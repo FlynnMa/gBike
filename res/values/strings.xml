@@ -59,5 +59,6 @@
     <string name="bluetooth_disabled">Bluetooth is disabled</string>
     <string name="bluetooth_turned_on">Bluetooth has turned on</string>
     <string name="device_unbinding">Device is not binded, click to bind</string>
-    <string name="helpBinding">Please move your mobile close to the device for binding</string>
+    <string name="helpBinding">Please move your mobile close to the device to start binding process</string>
+    <string name="bleDetected">detected device:</string>
 </resources>

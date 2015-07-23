@@ -56,9 +56,9 @@ public class MainActivity extends FragmentActivity
     private UartService mService = null;
     private BluetoothDevice mDevice = null;
     public static BluetoothAdapter mBtAdapter = null;
-	
+
     @Override
-    public void onCreate(Bundle savedInstanceState) 
+    public void onCreate(Bundle savedInstanceState)
     {
     	super.onCreate(savedInstanceState);
 		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -79,7 +79,7 @@ public class MainActivity extends FragmentActivity
 
         // Add some images to the tabs
         carousel.setImageDrawable(SECOND_TAB, res.getDrawable(R.drawable.temp2));
-		
+
         // Initialize the pager adatper
         final PagerAdapter pagerAdapter = new PagerAdapter(this);
         pagerAdapter.add(DummyListFragment.class, new Bundle());
@@ -90,38 +90,32 @@ public class MainActivity extends FragmentActivity
         // This is used to communicate between the pager and header
         carouselPager.setOnPageChangeListener(new CarouselPagerAdapter(carouselPager, carousel));
         carouselPager.setAdapter(pagerAdapter);
-		
+
 		service_init();
 
 		if (!Feature.blSimulatorMode)
 		{
 	        mBtAdapter = BluetoothAdapter.getDefaultAdapter();
-	        if (mBtAdapter == null) 
+	        if (mBtAdapter == null)
 			{
 				EVLog.e("Bluetooth is not available");
 	            Toast.makeText(this, this.getString(R.string.bluetooth_unavailable), Toast.LENGTH_LONG).show();
 	            finish();
 	            return;
-	        }        
-		}
-
-		if (!Feature.blSimulatorMode)
-		{
-			DevMaster dev = new DevMaster();
-	        dev.update();
+	        }
 		}
     }
 
     //UART service connected/disconnected
-    private ServiceConnection mServiceConnection = new ServiceConnection() 
+    private ServiceConnection mServiceConnection = new ServiceConnection()
     {
-        public void onServiceConnected(ComponentName className, IBinder rawBinder) 
+        public void onServiceConnected(ComponentName className, IBinder rawBinder)
 		{
 			if (!Feature.blSimulatorMode)
 			{
         		mService = ((UartService.LocalBinder) rawBinder).getService();
 				EVLog.e("onServiceConnected mService= " + mService);
-        		if (!mService.initialize()) 
+        		if (!mService.initialize())
 				{
 					EVLog.e("Unable to initialize Bluetooth");
                     finish();
@@ -129,25 +123,23 @@ public class MainActivity extends FragmentActivity
 			}
         }
 
-        public void onServiceDisconnected(ComponentName classname) 
+        public void onServiceDisconnected(ComponentName classname)
 		{
 			mService = null;
         }
     };
-	
-    private final BroadcastReceiver UARTStatusChangeReceiver = new BroadcastReceiver() 
+
+    private final BroadcastReceiver UARTStatusChangeReceiver = new BroadcastReceiver()
 	{
         public void onReceive(Context context, Intent intent)
 		{
             String action = intent.getAction();
 
-            final Intent mIntent = intent;
-
-            if (action.equals(UartService.ACTION_GATT_CONNECTED)) 
+            if (action.equals(UartService.ACTION_GATT_CONNECTED))
 			{
-            	 runOnUiThread(new Runnable() 
+            	 runOnUiThread(new Runnable()
 				 {
-                     public void run() 
+                     public void run()
 					 {
                          	String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
 							 EVLog.e("UART_CONNECT_MSG");
@@ -158,12 +150,12 @@ public class MainActivity extends FragmentActivity
                      }
             	 });
             }
-           
-            if (action.equals(UartService.ACTION_GATT_DISCONNECTED)) 
+
+            if (action.equals(UartService.ACTION_GATT_DISCONNECTED))
 			{
-            	 runOnUiThread(new Runnable() 
+            	 runOnUiThread(new Runnable()
 				 {
-                     public void run() 
+                     public void run()
 					 {
                     	 	 String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
 							 EVLog.e("UART_DISCONNECT_MSG");
@@ -173,40 +165,40 @@ public class MainActivity extends FragmentActivity
 							 carousel.setLabel(FIRST_TAB, this.getString(R.string.disconnected));
         					 carousel.setLabel(SECOND_TAB, this.getString(R.string.disconnected));
         					 */
-                             
+
 							 EVLog.e("[" + currentDateTimeString + "] Disconnected to: " + mDevice.getName());
                              mState = UART_PROFILE_DISCONNECTED;
                              mService.close();
                      }
                  });
             }
-            
+
             if (action.equals(UartService.ACTION_GATT_SERVICES_DISCOVERED))
 			{
              	 mService.enableTXNotification();
             }
 
-            if (action.equals(UartService.ACTION_DATA_AVAILABLE)) 
+            if (action.equals(UartService.ACTION_DATA_AVAILABLE))
 			{
                  final byte[] txValue = intent.getByteArrayExtra(UartService.EXTRA_DATA);
-                 runOnUiThread(new Runnable() 
+                 runOnUiThread(new Runnable()
 				 {
-                     public void run() 
+                     public void run()
 					 {
-                         try 
+                         try
 						 {
                          	String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
 							//mReceivedPackage = decodePackage(txValue);
 							//EVLog.e("[" + currentDateTimeString + "] Receive blMatch=" + mReceivedPackage.mblMatch);
-                         } 
-						 catch (Exception e) 
+                         }
+						 catch (Exception e)
 						 {
 							 EVLog.e(e.toString());
                          }
                      }
                  });
              }
-           
+
             if (action.equals(UartService.DEVICE_DOES_NOT_SUPPORT_UART))
 			{
             	showMessage("Device doesn't support UART. Disconnecting");
@@ -219,40 +211,40 @@ public class MainActivity extends FragmentActivity
 	{
         Intent bindIntent = new Intent(this, UartService.class);
         bindService(bindIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
-  
+
         LocalBroadcastManager.getInstance(this).registerReceiver(UARTStatusChangeReceiver, makeGattUpdateIntentFilter());
     }
-	
-    private static IntentFilter makeGattUpdateIntentFilter() 
+
+    private static IntentFilter makeGattUpdateIntentFilter()
 	{
         final IntentFilter intentFilter = new IntentFilter();
-		
+
         intentFilter.addAction(UartService.ACTION_GATT_CONNECTED);
         intentFilter.addAction(UartService.ACTION_GATT_DISCONNECTED);
         intentFilter.addAction(UartService.ACTION_GATT_SERVICES_DISCOVERED);
         intentFilter.addAction(UartService.ACTION_DATA_AVAILABLE);
         intentFilter.addAction(UartService.DEVICE_DOES_NOT_SUPPORT_UART);
-		
+
         return intentFilter;
     }
 
     @Override
-    public void onDestroy() 
+    public void onDestroy()
     {
     	super.onDestroy();
 		EVLog.e("onDestroy()");
 
 		if (!Feature.blSimulatorMode)
 		{
-	        try 
+	        try
 			{
 	        	LocalBroadcastManager.getInstance(this).unregisterReceiver(UARTStatusChangeReceiver);
-	        } 
-			catch (Exception ignore) 
+	        }
+			catch (Exception ignore)
 			{
 				EVLog.e(ignore.toString());
-	        } 
-			
+	        }
+
 	        unbindService(mServiceConnection);
 	        mService.stopSelf();
 	        mService= null;
@@ -260,13 +252,13 @@ public class MainActivity extends FragmentActivity
     }
 
     @Override
-    public void onResume() 
+    public void onResume()
     {
         super.onResume();
 		EVLog.e("onResume");
 		if (!Feature.blSimulatorMode)
 		{
-	        if (!mBtAdapter.isEnabled()) 
+	        if (!mBtAdapter.isEnabled())
 			{
 				EVLog.e("onResume - BT not enabled yet");
 	            Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -276,29 +268,28 @@ public class MainActivity extends FragmentActivity
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) 
+    public void onActivityResult(int requestCode, int resultCode, Intent data)
     {
-        switch (requestCode) 
+        switch (requestCode)
 		{
         case REQUEST_SELECT_DEVICE:
         	//When the DeviceListActivity return, with the selected device address
             if (resultCode == Activity.RESULT_OK && data != null) {
                 String deviceAddress = data.getStringExtra(BluetoothDevice.EXTRA_DEVICE);
                 mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress);
-               
 				EVLog.e("... onActivityResultdevice.address==" + mDevice + "mserviceValue" + mService);
-                mService.connect(deviceAddress);      
+                mService.connect(deviceAddress);
             }
             break;
-			
+
         case REQUEST_ENABLE_BT:
             // When the request to enable Bluetooth returns
-            if (resultCode == Activity.RESULT_OK) 
+            if (resultCode == Activity.RESULT_OK)
 			{
 				EVLog.e("BT has turned on");
                 Toast.makeText(this, this.getString(R.string.bluetooth_turned_on), Toast.LENGTH_SHORT).show();
-            } 
-			else 
+            }
+			else
 			{
                 // User did not enable Bluetooth or an error occurred
 				EVLog.e("BT not enabled");
@@ -306,22 +297,22 @@ public class MainActivity extends FragmentActivity
                 finish();
             }
             break;
-			
+
         default:
 			EVLog.e("wrong request code");
             break;
         }
     }
-    
-    private void showMessage(String msg) 
+
+    private void showMessage(String msg)
 	{
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 
     @Override
-    public void onBackPressed() 
+    public void onBackPressed()
     {
-        if (mState == UART_PROFILE_CONNECTED) 
+        if (mState == UART_PROFILE_CONNECTED)
 		{
             Intent startMain = new Intent(Intent.ACTION_MAIN);
             startMain.addCategory(Intent.CATEGORY_HOME);
@@ -329,7 +320,7 @@ public class MainActivity extends FragmentActivity
             startActivity(startMain);
             showMessage("ElectronicVehicle's running in background.\n             Disconnect to exit");
         }
-        else 
+        else
 		{
             new AlertDialog.Builder(this)
             .setIcon(android.R.drawable.ic_dialog_alert)

@@ -31,7 +31,7 @@ import com.vehicle.uart.BindBT;
  * @author Andrew Neal (andrewdneal@gmail.com)
  */
 public class DummyListFragment extends ListFragment implements OnItemClickListener
-{	
+{
 	private static final int REQUEST_SELECT_DEVICE = 1;
     private static final int REQUEST_ENABLE_BT = 2;
     private static final int UART_PROFILE_CONNECTED = 20;
@@ -45,7 +45,7 @@ public class DummyListFragment extends ListFragment implements OnItemClickListen
     /**
      * Empty constructor as per the {@link Fragment} docs
      */
-    public DummyListFragment() 
+    public DummyListFragment()
     {
     }
 
@@ -63,12 +63,12 @@ public class DummyListFragment extends ListFragment implements OnItemClickListen
      * {@inheritDoc}
      */
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) 
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         // Simple ArrayAdapter
         final CarouselListAdapter adapter = new CarouselListAdapter(getActivity());
 
-		if (!MainActivity.IsBluetoothConnected()) 
+		if (!MainActivity.IsBluetoothConnected())
 		{
        		adapter.add(this.getString(R.string.device_unbinding));
 		}
@@ -85,7 +85,7 @@ public class DummyListFragment extends ListFragment implements OnItemClickListen
      * {@inheritDoc}
      */
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) 
+    public void onViewCreated(View view, Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
         final ListView listView = getListView();
@@ -107,7 +107,7 @@ public class DummyListFragment extends ListFragment implements OnItemClickListen
     public void onItemClick(AdapterView<?> parent, View view, int position, long id)
     {
         // This is the header
-        if (position == 0) 
+        if (position == 0)
 		{
             return;
         }
@@ -115,23 +115,24 @@ public class DummyListFragment extends ListFragment implements OnItemClickListen
         // Remember to substract one from the touched position
         final String str = (String) parent.getItemAtPosition(position - 1);
 		EVLog.e("onItemClick " + str);
-		
+
 		// TODO:
 		if(str.equals(this.getString(R.string.device_unbinding)))
 		{
 			if (!Feature.blSimulatorMode)
             {
-            	if (!MainActivity.mBtAdapter.isEnabled()) 
+            	if (!MainActivity.mBtAdapter.isEnabled())
 				{
 					EVLog.e("onClick - BT not enabled yet");
                     Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                     startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
                 }
-                else 
+                else
 				{
             		// Open DeviceListActivity class, with popup windows that scan for devices
         			Intent newIntent = new Intent(view.getContext(), DeviceListActivity.class);
-        			startActivityForResult(newIntent, REQUEST_SELECT_DEVICE);
+//                    newIntent.putExtra("intValue", 123);
+        			startActivity(newIntent);
                 }
 			}
 		}
@@ -144,7 +145,7 @@ public class DummyListFragment extends ListFragment implements OnItemClickListen
      * position == 0 in the adapter. This isn't necessary to use the widget, but
      * it is if you want the animation to appear correct.
      */
-    private static final class CarouselListAdapter extends ArrayAdapter<String> 
+    private static final class CarouselListAdapter extends ArrayAdapter<String>
     {
         /**
          * The header view
@@ -168,10 +169,10 @@ public class DummyListFragment extends ListFragment implements OnItemClickListen
 
         /**
          * Constructor of <code>CarouselListAdapter</code>
-         * 
+         *
          * @param context The {@link Context} to use
          */
-        public CarouselListAdapter(Context context) 
+        public CarouselListAdapter(Context context)
         {
             super(context, 0);
             // Inflate the fake header
@@ -185,20 +186,20 @@ public class DummyListFragment extends ListFragment implements OnItemClickListen
         public View getView(int position, View convertView, ViewGroup parent)
         {
             // Return a faux header at position 0
-            if (position == 0) 
+            if (position == 0)
 			{
                 return mHeader;
             }
 
             // Recycle ViewHolder's items
             ViewHolder holder;
-            if (convertView == null) 
+            if (convertView == null)
 			{
                 convertView = LayoutInflater.from(getContext()).inflate(
                         android.R.layout.simple_list_item_1, parent, false);
                 holder = new ViewHolder(convertView);
                 convertView.setTag(holder);
-            } 
+            }
 			else
 			{
                 holder = (ViewHolder) convertView.getTag();
@@ -224,9 +225,9 @@ public class DummyListFragment extends ListFragment implements OnItemClickListen
          * {@inheritDoc}
          */
         @Override
-        public long getItemId(int position) 
+        public long getItemId(int position)
         {
-            if (position == 0) 
+            if (position == 0)
 			{
                 return -1;
             }
@@ -248,7 +249,7 @@ public class DummyListFragment extends ListFragment implements OnItemClickListen
         @Override
         public int getItemViewType(int position)
         {
-            if (position == 0) 
+            if (position == 0)
 			{
                 return ITEM_VIEW_TYPE_HEADER;
             }
@@ -256,12 +257,12 @@ public class DummyListFragment extends ListFragment implements OnItemClickListen
         }
     }
 
-    private static final class ViewHolder 
+    private static final class ViewHolder
 	{
         public WeakReference<TextView> mLineOne;
 
         /* Constructor of <code>ViewHolder</code> */
-        public ViewHolder(View view) 
+        public ViewHolder(View view)
         {
             // Initialize mLineOne
             mLineOne = new WeakReference<TextView>((TextView) view.findViewById(android.R.id.text1));

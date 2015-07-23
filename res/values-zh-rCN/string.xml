@@ -57,5 +57,7 @@
     <string name="bluetooth_disabled">蓝牙未开启</string>
     <string name="bluetooth_turned_on">蓝牙已开启</string>
     <string name="device_unbinding">还没有绑定设备,点击绑定</string>
-    <string name="helpBinding">请移动靠近设备以绑定</string>
+    <string name="helpBinding">请移动手机靠近设备开始绑定</string>
+    <string name="bindingProcess">正在绑定设备,请稍候.</string>
+    <string name="bleDetected">发现可用设备:</string>
 </resources>

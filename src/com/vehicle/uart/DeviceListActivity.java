@@ -48,7 +48,7 @@ import com.vehicle.uart.R;
 import android.text.style.TypefaceSpan;
 import android.text.*;
 
-public class DeviceListActivity extends Activity 
+public class DeviceListActivity extends Activity
 {
     private BluetoothAdapter mBluetoothAdapter;
 
@@ -61,16 +61,21 @@ public class DeviceListActivity extends Activity
     private static final long SCAN_PERIOD = 100000; //100 seconds
     private Handler mHandler;
     private boolean mScanning;
+    BluetoothDevice detectedDevice;
+    UartService     mUartService;
 
     RelativeLayout rLayout;
 	int screenWidth;
 	int screenHeight;
 	int topLeftID;
 	int statusBarHeight;
+	Button cancelButton;
 	Button startButton;
 	TextView helpText;
 
-    SpannableString msp = null;  
+	boolean isConnecting = false;
+
+    SpannableString msp = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,27 +85,30 @@ public class DeviceListActivity extends Activity
 
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
+        mUartService = UartService.getInstance();
+        Bundle bundle = getIntent().getExtras();
+
         rLayout = new RelativeLayout(this);
         rLayout.setBackgroundResource(color.holo_blue_dark);
         rLayout.setBackgroundColor(getResources().getColor(R.color.DarkOrange));
-		 LayoutParams rlParam = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-	     rLayout.setLayoutParams(rlParam);
+		LayoutParams rlParam = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+	    rLayout.setLayoutParams(rlParam);
         setContentView(rLayout);
 
         Display display = getWindowManager().getDefaultDisplay();
     	Point size = new Point();
     	display.getSize(size);
     	screenWidth = size.x;
-    	screenHeight = size.y;  
-    	
+    	screenHeight = size.y;
+
     	DisplayMetrics dm = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(dm);        
-        
+        getWindowManager().getDefaultDisplay().getMetrics(dm);
+
         int nowWidth = dm.widthPixels;
         int nowHeigth = dm.heightPixels;
-    	
+
         DisplayMetrics metrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(metrics);   
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
         int sHeight = metrics.heightPixels;
         int sWidth = metrics.widthPixels;
         int dens=dm.densityDpi;
@@ -109,10 +117,10 @@ public class DeviceListActivity extends Activity
         double x = Math.pow(wi,2);
         double y = Math.pow(hi,2);
         double screenInches = Math.sqrt(x+y);
-        
+
         screenWidth = screenWidth / (int)dm.density;
         screenHeight = screenHeight / (int)dm.density;
-        
+
         mHandler = new Handler();
         // Use this check to determine whether BLE is supported on the device.  Then you can
         // selectively disable BLE-related features.
@@ -121,7 +129,7 @@ public class DeviceListActivity extends Activity
             Toast.makeText(this, R.string.ble_not_supported, Toast.LENGTH_SHORT).show();
             finish();
         }
-        
+
         // Initializes a Bluetooth adapter.  For API level 18 and above, get a reference to
         // BluetoothAdapter through BluetoothManager.
         final BluetoothManager bluetoothManager =
@@ -135,17 +143,16 @@ public class DeviceListActivity extends Activity
             finish();
             return;
         }
-        
+
         deviceList = new ArrayList<BluetoothDevice>();
         deviceAdapter = new DeviceAdapter(this, deviceList);
         devRssiValues = new HashMap<String, Integer>();
-        
+
         rLayout.postDelayed(new Runnable() {
 
 			@Override
 			public void run() {
 		        drawHelpScreen();
-		     
 			}
 		}, 100);
 
@@ -157,8 +164,8 @@ public class DeviceListActivity extends Activity
 	public void drawHelpScreen()
 	{
 //		rLayout.removeAllViews();
-		
-		Button cancelButton = new Button(this);
+
+		cancelButton = new Button(this);
 //		cancelButton.setTextColor(color.white);
 		cancelButton.setBackgroundResource(color.holo_red_dark);
 //		cancelButton.setText(R.string.cancel);
@@ -185,7 +192,7 @@ public class DeviceListActivity extends Activity
 //        helpText.setTextColor(color.black);
         int helpTextID = View.generateViewId();
         helpText.setId(helpTextID);
-        
+
         RelativeLayout.LayoutParams helpPos = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
         helpPos.addRule(RelativeLayout.CENTER_HORIZONTAL);
         helpPos.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
@@ -196,15 +203,14 @@ public class DeviceListActivity extends Activity
 //		startButton.setTextColor(color.white);
 		startButton.setBackgroundResource(color.holo_red_dark);
 		startButton.setText("start");
-		startButton.setTextSize(screenHeight / 16);
-		startButton.setOnClickListener(new View.OnClickListener() {  
-            @Override  
-            public void onClick(View v) {  
+		startButton.setTextSize(screenHeight / 20);
+		startButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
                 startButton.animate().alpha(0).setDuration(500).setListener(new AnimatorListenerAdapter(){
                     @Override
                     public void onAnimationEnd(Animator animation) {
                     	drawSearchScreen();
-                    	scanLeDevice(true);
                     }}).start();
             }
         });
@@ -214,15 +220,16 @@ public class DeviceListActivity extends Activity
         btnPos.setMargins(0, 0, 0, screenHeight/16);
         rLayout.addView(startButton, btnPos);
 	}
-	
+
 	/*
 	 * This screen ask customer to move mobile phone close to device
 	 * and get device searched
 	 * */
 	public void drawSearchScreen()
 	{
-		int height = startButton.getHeight();
-		
+//		int height = startButton.getHeight();
+		int cancelBottom = cancelButton.getBottom();
+
 	    int startButtonID = View.generateViewId();
 	    startButton.setId(startButtonID);
         RelativeLayout.LayoutParams btnPos = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
@@ -232,23 +239,49 @@ public class DeviceListActivity extends Activity
         startButton.setLayoutParams(btnPos);
 
 		helpText.setText(R.string.scanning);
-		int y = helpText.getTop();
-		helpText.animate().y(y - height * 2).setDuration(500).start();
-//        RelativeLayout.LayoutParams helpPos = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
-//        helpPos.addRule(RelativeLayout.CENTER_HORIZONTAL);
-//        helpPos.addRule(RelativeLayout.ABOVE, startButtonID);
-//        helpPos.setMargins(0, 0, 0, screenHeight/16);
-//        helpText.setLayoutParams(helpPos);
+		helpText.animate().y(cancelBottom * 2).setDuration(600).setListener(new AnimatorListenerAdapter(){
+            @Override
+            public void onAnimationEnd(Animator animation) {
+            	scanLeDevice(true);
+            }}).start();
 	}
-	
+
+	TextView bindingProcText;
 	/*
 	 * This screen ask customer to confirm the device to bind
 	 * */
-	public void drawBondingScreen()
+	public void drawBondingScreen(BluetoothDevice device)
 	{
-		
+		helpText.setText(this.getString(R.string.bleDetected) + " " + device.getName());
+
+		bindingProcText = new TextView(this);
+		bindingProcText.setText(R.string.bindingProcess);
+		bindingProcText.setTextSize(screenHeight / 20);
+		bindingProcText.setAlpha(1);
+		bindingProcText.setTextColor(color.black);
+
+        RelativeLayout.LayoutParams bindingProcPos = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,
+        		LayoutParams.WRAP_CONTENT);
+        bindingProcPos.addRule(RelativeLayout.CENTER_HORIZONTAL);
+        bindingProcPos.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        bindingProcPos.setMargins(0, 0, 0, screenHeight / 16);
+        rLayout.addView(bindingProcText, bindingProcPos);
+
+        bindingProcText.animate().translationYBy(-10).setDuration(500).setListener(new AnimatorListenerAdapter(){
+            @Override
+            public void onAnimationEnd(Animator animation) {
+
+            	bindingProcText.setText(getResources().getString(R.string.connected));
+            	bindingProcText.animate().cancel();
+            	bindingProcText.animate().scaleXBy(10).scaleXBy(10).setDuration(500).setListener(new AnimatorListenerAdapter(){
+                    public void onAnimationEnd(Animator animation) {
+                    	mUartService.connect(detectedDevice.getAddress());
+						finish();
+                    }
+            	}).start();
+            }}).start();
 	}
-	
+
     public int getStatusBarHeight() {
     	Rect r = new Rect();
     	Window w = getWindow();
@@ -260,25 +293,25 @@ public class DeviceListActivity extends Activity
     	int viewTop = getWindow().findViewById(Window.ID_ANDROID_CONTENT).getTop();
     	return (viewTop - getStatusBarHeight());
     }
-    
+
     private void scanLeDevice(final boolean enable) {
 //        final Button cancelButton = (Button) findViewById(R.id.btn_cancel);
         if (enable) {
             // Stops scanning after a pre-defined scan period.
-            mHandler.postDelayed(new Runnable() 
+            mHandler.postDelayed(new Runnable()
             {
                 @Override
-                public void run() 
+                public void run()
                 {
 					mScanning = false;
-                    mBluetoothAdapter.stopLeScan(mLeScanCallback);  
+                    mBluetoothAdapter.stopLeScan(mLeScanCallback);
                 }
             }, SCAN_PERIOD);
 
             mScanning = true;
             mBluetoothAdapter.startLeScan(mLeScanCallback);
-        } 
-		else 
+        }
+		else
 		{
             mScanning = false;
             mBluetoothAdapter.stopLeScan(mLeScanCallback);
@@ -286,20 +319,20 @@ public class DeviceListActivity extends Activity
     }
 
     private BluetoothAdapter.LeScanCallback mLeScanCallback =
-            new BluetoothAdapter.LeScanCallback() 
+            new BluetoothAdapter.LeScanCallback()
     {
         @Override
-        public void onLeScan(final BluetoothDevice device, final int rssi, byte[] scanRecord) 
+        public void onLeScan(final BluetoothDevice device, final int rssi, byte[] scanRecord)
         {
-            runOnUiThread(new Runnable() 
+            runOnUiThread(new Runnable()
 			{
                 @Override
-                public void run() 
+                public void run()
                 {
-                	  runOnUiThread(new Runnable() 
+                	  runOnUiThread(new Runnable()
 					  	{
                           @Override
-                          public void run() 
+                          public void run()
                           {
                               addDevice(device,rssi);
                           }
@@ -308,12 +341,29 @@ public class DeviceListActivity extends Activity
             });
         }
     };
-    
-    private void addDevice(BluetoothDevice device, int rssi) 
+
+    private void onDeviceDiscovered(BluetoothDevice device, int rssi)
+    {
+    	if (isConnecting == true)
+    		return;
+    	String expectedDevName = new String("ble2Uart");
+
+    	if ((rssi > -40) && (expectedDevName.equals(device.getName())))
+    	{
+    		detectedDevice = device;
+        	isConnecting = true;
+    		scanLeDevice(false);
+    		drawBondingScreen(device);
+    	}
+    }
+
+    private void addDevice(BluetoothDevice device, int rssi)
 	{
+    	onDeviceDiscovered(device, rssi);
+    	/*
         boolean deviceFound = false;
 
-        for (BluetoothDevice listDev : deviceList) 
+        for (BluetoothDevice listDev : deviceList)
 		{
             if (listDev.getAddress().equals(device.getAddress()))
 			{
@@ -323,16 +373,16 @@ public class DeviceListActivity extends Activity
         }
     	EVLog.e("device is found:" + device.getName() + "rssi:" + rssi);
     	devRssiValues.put(device.getAddress(), rssi);
-        if (!deviceFound) 
+        if (!deviceFound)
 		{
         	EVLog.e("device is found:" + device.getName());
         	deviceList.add(device);
             deviceAdapter.notifyDataSetChanged();
-        }
+        } */
     }
 
     @Override
-    public void onStart() 
+    public void onStart()
     {
         super.onStart();
 
@@ -342,23 +392,23 @@ public class DeviceListActivity extends Activity
     }
 
     @Override
-    public void onStop() 
+    public void onStop()
     {
         super.onStop();
         mBluetoothAdapter.stopLeScan(mLeScanCallback);
     }
 
     @Override
-    protected void onDestroy() 
+    protected void onDestroy()
     {
         super.onDestroy();
         mBluetoothAdapter.stopLeScan(mLeScanCallback);
     }
 
-    private OnItemClickListener mDeviceClickListener = new OnItemClickListener() 
+    private OnItemClickListener mDeviceClickListener = new OnItemClickListener()
 	{
         @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) 
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id)
         {
             mBluetoothAdapter.stopLeScan(mLeScanCallback);
 
@@ -372,19 +422,19 @@ public class DeviceListActivity extends Activity
         }
     };
 
-    protected void onPause() 
+    protected void onPause()
 	{
         super.onPause();
         scanLeDevice(false);
     }
-    
-    class DeviceAdapter extends BaseAdapter 
+
+    class DeviceAdapter extends BaseAdapter
 	{
         Context context;
         List<BluetoothDevice> devices;
         LayoutInflater inflater;
 
-        public DeviceAdapter(Context context, List<BluetoothDevice> devices) 
+        public DeviceAdapter(Context context, List<BluetoothDevice> devices)
 		{
             this.context = context;
             inflater = LayoutInflater.from(context);
@@ -392,33 +442,33 @@ public class DeviceListActivity extends Activity
         }
 
         @Override
-        public int getCount() 
+        public int getCount()
         {
             return devices.size();
         }
 
         @Override
-        public Object getItem(int position) 
+        public Object getItem(int position)
         {
             return devices.get(position);
         }
 
         @Override
-        public long getItemId(int position) 
+        public long getItemId(int position)
         {
             return position;
         }
 
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) 
+        public View getView(int position, View convertView, ViewGroup parent)
         {
             ViewGroup vg;
 
-            if (convertView != null) 
+            if (convertView != null)
 			{
                 vg = (ViewGroup) convertView;
             }
-			else 
+			else
 			{
                 vg = (ViewGroup) inflater.inflate(R.layout.device_element, null);
             }
@@ -441,7 +491,7 @@ public class DeviceListActivity extends Activity
 
             tvname.setText(device.getName());
             tvadd.setText(device.getAddress());
-            if (device.getBondState() == BluetoothDevice.BOND_BONDED) 
+            if (device.getBondState() == BluetoothDevice.BOND_BONDED)
 			{
 				EVLog.e("device::"+device.getName());
                 tvname.setTextColor(Color.WHITE);
@@ -451,9 +501,9 @@ public class DeviceListActivity extends Activity
                 tvpaired.setText(R.string.paired);
                 tvrssi.setVisibility(View.VISIBLE);
                 tvrssi.setTextColor(Color.WHITE);
-                
-            } 
-			else 
+
+            }
+			else
 			{
                 tvname.setTextColor(Color.WHITE);
                 tvadd.setTextColor(Color.WHITE);
@@ -461,7 +511,7 @@ public class DeviceListActivity extends Activity
                 tvrssi.setVisibility(View.VISIBLE);
                 tvrssi.setTextColor(Color.WHITE);
             }
-			
+
             return vg;
         }
     }
