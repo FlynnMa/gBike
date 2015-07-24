@@ -60,6 +60,7 @@ public class DashedCircularProgress extends RelativeLayout
      * @param right
      * @param bottom
      */
+     /*
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) 
     {
@@ -93,7 +94,7 @@ public class DashedCircularProgress extends RelativeLayout
                 layoutParams.height = maxHeight;
             }
         }
-    }
+    }*/
 
     private void init(Context context, AttributeSet attributeSet) 
 	{

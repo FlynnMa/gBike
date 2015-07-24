@@ -25,8 +25,6 @@ import com.vehicle.uart.CarouselContainer;
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
 
-import com.vehicle.uart.BindBT;
-
 /**
  * @author Andrew Neal (andrewdneal@gmail.com)
  */
@@ -72,9 +70,20 @@ public class DummyListFragment extends ListFragment implements OnItemClickListen
 		{
        		adapter.add(this.getString(R.string.device_unbinding));
 		}
+
+		// TODO: remove below items
 		adapter.add("历史记录01");
 		adapter.add("历史记录02");
 		adapter.add("历史记录03");
+		adapter.add("历史记录04");
+		adapter.add("历史记录05");
+		adapter.add("历史记录06");
+		adapter.add("历史记录07");
+		adapter.add("历史记录08");
+		adapter.add("历史记录09");
+		adapter.add("历史记录10");
+		adapter.add("历史记录11");
+		adapter.add("历史记录12");
 
         // Bind the data
         setListAdapter(adapter);
