@@ -452,6 +452,57 @@ public class CarouselContainer extends HorizontalScrollView implements OnTouchLi
         }
     }
 
+	public void setText(int index, String text) 
+    {
+        switch (index) 
+		{
+            case TAB_INDEX_FIRST:
+                mFirstTab.setText(text);
+                break;
+
+            case TAB_INDEX_SECOND:
+                mSecondTab.setText(text);
+                break;
+				
+            default:
+                throw new IllegalStateException("Invalid tab position " + index);
+        }
+    }
+
+	public void setNumbers(int index, int value) 
+    {
+        switch (index) 
+		{
+            case TAB_INDEX_FIRST:
+                mFirstTab.setNumbers(value);
+                break;
+
+            case TAB_INDEX_SECOND:
+                mSecondTab.setNumbers(value);
+                break;
+				
+            default:
+                throw new IllegalStateException("Invalid tab position " + index);
+        }
+    }
+
+	public void setSign(int index, String text) 
+    {
+        switch (index) 
+		{
+            case TAB_INDEX_FIRST:
+                mFirstTab.setSign(text);
+                break;
+
+            case TAB_INDEX_SECOND:
+                mSecondTab.setSign(text);
+                break;
+				
+            default:
+                throw new IllegalStateException("Invalid tab position " + index);
+        }
+    }
+
     /**
      * Sets a drawable as the content of the tab {@link ImageView}
      * 

@@ -25,7 +25,8 @@ import com.vehicle.uart.SatelliteMenu.SateliteClickedListener;
 public class CarouselTab extends FrameLayoutWithOverlay 
 {	
 	private DashedCircularProgress dashedCircularProgress;
-	private TextView numbers;
+	private TextView mText, mNumbers;
+	private String mSign;
 
 	/**
      * Used to display the main images in the tabs of the carousel
@@ -62,6 +63,8 @@ public class CarouselTab extends FrameLayoutWithOverlay
         mCarouselImage = (ImageView) findViewById(R.id.carousel_tab_image);
         mLabel = (TextView) findViewById(R.id.carousel_tab_label);
         mAlphaLayer = findViewById(R.id.carousel_tab_alpha_overlay);
+		mNumbers = (TextView) findViewById(R.id.number);
+		mText = (TextView) findViewById(R.id.text);
 		dashedCircularProgress = (DashedCircularProgress) findViewById(R.id.CircularView);
 		dashedCircularProgress.setOnValueChangeListener(
                 new DashedCircularProgress.OnValueChangeListener() 
@@ -69,11 +72,9 @@ public class CarouselTab extends FrameLayoutWithOverlay
                     @Override
                     public void onValueChange(float value) 
                     {
-                        numbers.setText((int) value + "" + getResources().getString(R.string.miles));
+                        mNumbers.setText((int) value + "" + mSign);
                     }
                 });
-		numbers = (TextView) findViewById(R.id.number);
-		dashedCircularProgress.setValue(99);
 		
         // Set the alpha layer
         setAlphaLayer(mAlphaLayer);
@@ -180,5 +181,36 @@ public class CarouselTab extends FrameLayoutWithOverlay
     public View getAlphaLayer() 
     {
         return mAlphaLayer;
+    }
+
+	public TextView getText()
+    {
+        return mText;
+    }
+	
+	public void setText(String text)
+    {
+        mText.setText(text);
+    }
+
+	public TextView getNumbers()
+    {
+        return mNumbers;
+    }
+	
+	public void setNumbers(int value)
+    {
+    	dashedCircularProgress.setValue(value);
+        mNumbers.setText(value + "" + mSign);
+    }
+
+	public String getSign()
+    {
+        return mSign;
+    }
+	
+	public void setSign(String text)
+    {
+        mSign = text;
     }
 }

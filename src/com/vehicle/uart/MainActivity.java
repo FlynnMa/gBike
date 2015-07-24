@@ -20,19 +20,15 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.res.Resources;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.Window;
-import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
 import com.vehicle.uart.CarouselContainer;
 import com.vehicle.uart.CarouselPagerAdapter;
-import com.vehicle.uart.DevMaster;
 
 public class MainActivity extends FragmentActivity
 {
@@ -46,7 +42,6 @@ public class MainActivity extends FragmentActivity
 	*/
     private static final int SECOND_TAB = CarouselContainer.TAB_INDEX_SECOND;
 
-	private static final byte[] NULL_ARRAY = new byte[0];
 	private static final int REQUEST_SELECT_DEVICE = 1;
     private static final int REQUEST_ENABLE_BT = 2;
     private static final int UART_PROFILE_CONNECTED = 20;
@@ -77,9 +72,19 @@ public class MainActivity extends FragmentActivity
        	carousel.setLabel(FIRST_TAB, this.getString(R.string.disconnected));
         carousel.setLabel(SECOND_TAB, this.getString(R.string.disconnected));
 
-        // Add some images to the tabs
-        carousel.setImageDrawable(SECOND_TAB, res.getDrawable(R.drawable.temp2));
+		// Add some text to the text
+		carousel.setText(FIRST_TAB, this.getString(R.string.totalmiles));
+		carousel.setText(SECOND_TAB, this.getString(R.string.batterytext));
 
+		// Add some text to the sign
+		carousel.setSign(FIRST_TAB, this.getString(R.string.miles));
+		carousel.setSign(SECOND_TAB, this.getString(R.string.batterysign));
+
+		// TODO: need to replace by real value from driver
+		// Add some numbers
+		carousel.setNumbers(FIRST_TAB, 99);
+		carousel.setNumbers(SECOND_TAB, 66);
+		
         // Initialize the pager adatper
         final PagerAdapter pagerAdapter = new PagerAdapter(this);
         pagerAdapter.add(DummyListFragment.class, new Bundle());

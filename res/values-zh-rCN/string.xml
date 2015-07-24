@@ -60,4 +60,6 @@
     <string name="helpBinding">请移动手机靠近设备开始绑定</string>
     <string name="bindingProcess">正在绑定设备,请稍候.</string>
     <string name="bleDetected">发现可用设备:</string>
+    <string name="batterytext">电池电量</string>
+    <string name="batterysign">%</string>
 </resources>
