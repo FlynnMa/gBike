@@ -40,6 +40,10 @@
         		android:label="@string/app_name" 
         		android:theme="@android:style/Theme.Dialog"
         		android:screenOrientation="portrait"  />
+        <activity android:name="com.vehicle.uart.HistoryActivity" 
+        		android:label="@string/app_name" 
+        		android:theme="@android:style/Theme.Dialog"
+        		android:screenOrientation="portrait"  />
         <service android:enabled="true" android:name="com.vehicle.uart.UartService" />
     </application>
 </manifest>

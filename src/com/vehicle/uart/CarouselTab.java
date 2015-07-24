@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
@@ -94,6 +95,30 @@ public class CarouselTab extends FrameLayoutWithOverlay
 			public void eventOccured(int id) 
 			{
 				EVLog.e("Clicked on " + id);
+				switch (id)
+				{
+				case 1:
+					{
+						Intent newIntent = new Intent(getContext(), HistoryActivity.class);
+						getContext().startActivity(newIntent);
+					}
+					break;
+
+				// TODO: need to update
+				case 2:
+				case 3:
+				case 4:
+				case 5:
+				case 6:
+					{
+						Intent newIntent = new Intent(getContext(), HistoryActivity.class);
+						getContext().startActivity(newIntent);
+					}
+					break;
+					
+				default:
+					break;
+				}
 			}
 		});
     }
