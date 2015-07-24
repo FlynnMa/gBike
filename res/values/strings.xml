@@ -61,6 +61,7 @@
     <string name="device_unbinding">Device is not binded, click to bind</string>
     <string name="helpBinding">Please move your mobile close to the device to start binding process</string>
     <string name="bleDetected">detected device:</string>
+    <string name="start">start</string>
     <string name="batterytext">Battery</string>
     <string name="batterysign">%</string>
 </resources>

@@ -16,4 +16,5 @@
     <!-- Height of the tab indicator (colorstrip) -->
     <dimen name="carousel_indicator_height">5.0dip</dimen>
 
+    <dimen name="cpb_stroke_width">4dp</dimen>
 </resources>

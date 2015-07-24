@@ -1,21 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context=".MainActivity" >
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:orientation="horizontal" >
+    <com.dd.CircularProgressButton
+        android:id="@+id/startConnectButton"
+        android:layout_width="196dp"
+        android:layout_height="64dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="30dp"
+        android:textSize="36sp"
+        app:cpb_cornerRadius="48dp"
+        app:cpb_iconComplete="@drawable/ic_action_accept"
+        app:cpb_iconError="@drawable/ic_action_cancel"
+        app:cpb_textIdle="@string/start" />
 
-    <LinearLayout
+
+    <TextView
+        android:id="@+id/helpBindingText"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:orientation="vertical" >
-    </LinearLayout>
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/startConnectButton"
+        android:layout_alignParentLeft="true"
+        android:layout_marginBottom="66dp"
+        android:text="@string/helpBinding"
+        android:textColor="@color/Green"
+        android:textColorHint="@color/Blue"
+        android:textSize="@dimen/text_size_large" />
 
-    <ProgressBar
-        android:id="@+id/searchingProgress"
-        style="?android:attr/progressBarStyleLarge"
-        android:layout_gravity=""
+    <ImageView
+        android:id="@+id/helpImage"
+        android:contentDescription="@string/connect"  
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/startConnectButton"
+        android:layout_alignRight="@+id/startConnectButton"
+        android:src="@drawable/bt" />
 
-</LinearLayout>
+</RelativeLayout>

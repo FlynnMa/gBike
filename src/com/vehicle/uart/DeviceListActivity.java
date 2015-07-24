@@ -44,6 +44,8 @@ import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.dd.CircularProgressButton;
 import com.vehicle.uart.R;
 import android.text.style.TypefaceSpan;
 import android.text.*;
@@ -70,7 +72,7 @@ public class DeviceListActivity extends Activity
 	int topLeftID;
 	int statusBarHeight;
 	Button cancelButton;
-	Button startButton;
+	CircularProgressButton startButton;
 	TextView helpText;
 
 	boolean isConnecting = false;
@@ -86,40 +88,7 @@ public class DeviceListActivity extends Activity
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         mUartService = UartService.getInstance();
-        Bundle bundle = getIntent().getExtras();
-
-        rLayout = new RelativeLayout(this);
-        rLayout.setBackgroundResource(color.holo_blue_dark);
-        rLayout.setBackgroundColor(getResources().getColor(R.color.DarkOrange));
-		LayoutParams rlParam = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-	    rLayout.setLayoutParams(rlParam);
-        setContentView(rLayout);
-
-        Display display = getWindowManager().getDefaultDisplay();
-    	Point size = new Point();
-    	display.getSize(size);
-    	screenWidth = size.x;
-    	screenHeight = size.y;
-
-    	DisplayMetrics dm = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(dm);
-
-        int nowWidth = dm.widthPixels;
-        int nowHeigth = dm.heightPixels;
-
-        DisplayMetrics metrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        int sHeight = metrics.heightPixels;
-        int sWidth = metrics.widthPixels;
-        int dens=dm.densityDpi;
-        double wi=(double)sWidth/(double)dens;
-        double hi=(double)sHeight/(double)dens;
-        double x = Math.pow(wi,2);
-        double y = Math.pow(hi,2);
-        double screenInches = Math.sqrt(x+y);
-
-        screenWidth = screenWidth / (int)dm.density;
-        screenHeight = screenHeight / (int)dm.density;
+        setContentView(R.layout.device_list);
 
         mHandler = new Handler();
         // Use this check to determine whether BLE is supported on the device.  Then you can
@@ -148,7 +117,7 @@ public class DeviceListActivity extends Activity
         deviceAdapter = new DeviceAdapter(this, deviceList);
         devRssiValues = new HashMap<String, Integer>();
 
-        rLayout.postDelayed(new Runnable() {
+        mHandler.postDelayed(new Runnable() {
 
 			@Override
 			public void run() {
@@ -165,60 +134,25 @@ public class DeviceListActivity extends Activity
 	{
 //		rLayout.removeAllViews();
 
-		cancelButton = new Button(this);
-//		cancelButton.setTextColor(color.white);
-		cancelButton.setBackgroundResource(color.holo_red_dark);
-		cancelButton.setText(R.string.cancel);
-//		cancelButton.setText("cancel");
-		cancelButton.setTextSize(screenHeight / 16);
-		cancelButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				scanLeDevice(false);
-				finish();
-			}
-		});
-        RelativeLayout.LayoutParams  cancelBtnPos = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
-        cancelBtnPos.setMargins(0, 0, 0, 0);
-        cancelBtnPos.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-        cancelBtnPos.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-        rLayout.addView(cancelButton, cancelBtnPos);
-
-
-        helpText = new TextView(this);
+        helpText = (TextView)findViewById(R.id.helpBindingText);
         helpText.setText(R.string.helpBinding);
 //        helpText.setText("close your mobile to the device to start binding");
-        helpText.setTextSize(screenHeight / 16);
-//        helpText.setTextColor(color.black);
-        int helpTextID = View.generateViewId();
-        helpText.setId(helpTextID);
+//        helpText.setTextSize(screenHeight / 16);
 
-        RelativeLayout.LayoutParams helpPos = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
-        helpPos.addRule(RelativeLayout.CENTER_HORIZONTAL);
-        helpPos.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        helpPos.setMargins(0, 0, 0, screenHeight/16);
-        rLayout.addView(helpText, helpPos);
-
-		startButton = new Button(this);
-//		startButton.setTextColor(color.white);
-		startButton.setBackgroundResource(color.holo_red_dark);
-		startButton.setText("start");
-		startButton.setTextSize(screenHeight / 20);
+		startButton = (CircularProgressButton) findViewById(R.id.startConnectButton);
+		startButton.setIndeterminateProgressMode(true);
+		startButton.setProgress(0);
 		startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startButton.animate().alpha(0).setDuration(500).setListener(new AnimatorListenerAdapter(){
+            	startButton.setProgress(50);
+            	helpText.animate().alpha(0).setDuration(500).setListener(new AnimatorListenerAdapter(){
                     @Override
                     public void onAnimationEnd(Animator animation) {
                     	drawSearchScreen();
                     }}).start();
             }
         });
-        RelativeLayout.LayoutParams btnPos = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
-        btnPos.addRule(RelativeLayout.CENTER_HORIZONTAL);
-        btnPos.addRule(RelativeLayout.ABOVE, helpTextID);
-        btnPos.setMargins(0, 0, 0, screenHeight/16);
-        rLayout.addView(startButton, btnPos);
 	}
 
 	/*
@@ -227,58 +161,36 @@ public class DeviceListActivity extends Activity
 	 * */
 	public void drawSearchScreen()
 	{
-//		int height = startButton.getHeight();
-		int cancelBottom = cancelButton.getBottom();
-
-	    int startButtonID = View.generateViewId();
-	    startButton.setId(startButtonID);
-        RelativeLayout.LayoutParams btnPos = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
-        btnPos.addRule(RelativeLayout.CENTER_HORIZONTAL);
-        btnPos.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        btnPos.setMargins(0, 0, 0, screenHeight/32);
-        startButton.setLayoutParams(btnPos);
-
 		helpText.setText(R.string.scanning);
-		helpText.animate().y(cancelBottom * 2).setDuration(600).setListener(new AnimatorListenerAdapter(){
+		helpText.animate().alpha(1).setDuration(500).setListener(new AnimatorListenerAdapter(){
             @Override
             public void onAnimationEnd(Animator animation) {
             	scanLeDevice(true);
             }}).start();
 	}
-
-	TextView bindingProcText;
 	/*
 	 * This screen ask customer to confirm the device to bind
 	 * */
 	public void drawBondingScreen(BluetoothDevice device)
 	{
-		helpText.setText(this.getString(R.string.bleDetected) + " " + device.getName());
+		helpText.setText(this.getString(R.string.bleDetected) + " "
+			+ device.getName() + this.getString(R.string.bindingProcess));
 
-		bindingProcText = new TextView(this);
-		bindingProcText.setText(R.string.bindingProcess);
-		bindingProcText.setTextSize(screenHeight / 20);
-//		bindingProcText.setAlpha(1);
-		bindingProcText.setTextColor(Color.rgb(0, 0, 0));
-
-        RelativeLayout.LayoutParams bindingProcPos = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,
-        		LayoutParams.WRAP_CONTENT);
-        bindingProcPos.addRule(RelativeLayout.CENTER_HORIZONTAL);
-        bindingProcPos.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        bindingProcPos.setMargins(0, 0, 0, screenHeight / 16);
-        rLayout.addView(bindingProcText, bindingProcPos);
-
-        bindingProcText.animate().translationYBy(-10).setDuration(500).setListener(new AnimatorListenerAdapter(){
+		helpText.animate().yBy(-10).setDuration(500).setListener(new AnimatorListenerAdapter(){
             @Override
             public void onAnimationEnd(Animator animation) {
 
-            	bindingProcText.setText(getResources().getString(R.string.connected));
-            	bindingProcText.animate().cancel();
-            	bindingProcText.animate().scaleXBy(10).scaleXBy(10).setDuration(500).setListener(new AnimatorListenerAdapter(){
-                    public void onAnimationEnd(Animator animation) {
-                    	mUartService.connect(detectedDevice.getAddress());
-						finish();
-                    }
-            	}).start();
+            	helpText.setText(getResources().getString(R.string.connected));
+            	startButton.setProgress(100);
+            	
+                mHandler.postDelayed(new Runnable() {
+
+        			@Override
+        			public void run() {
+        		        finish();
+        			}
+        		}, 200);
+                
             }}).start();
 	}
 
@@ -292,6 +204,35 @@ public class DeviceListActivity extends Activity
     public int getTitleBarHeight() {
     	int viewTop = getWindow().findViewById(Window.ID_ANDROID_CONTENT).getTop();
     	return (viewTop - getStatusBarHeight());
+    }
+    
+    public void getScreenSize()
+    {
+        Display display = getWindowManager().getDefaultDisplay();
+    	Point size = new Point();
+    	display.getSize(size);
+    	screenWidth = size.x;
+    	screenHeight = size.y;
+
+    	DisplayMetrics dm = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(dm);
+
+        int nowWidth = dm.widthPixels;
+        int nowHeigth = dm.heightPixels;
+
+        DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        int sHeight = metrics.heightPixels;
+        int sWidth = metrics.widthPixels;
+        int dens=dm.densityDpi;
+        double wi=(double)sWidth/(double)dens;
+        double hi=(double)sHeight/(double)dens;
+        double x = Math.pow(wi,2);
+        double y = Math.pow(hi,2);
+        double screenInches = Math.sqrt(x+y);
+
+        screenWidth = screenWidth / (int)dm.density;
+        screenHeight = screenHeight / (int)dm.density;
     }
 
     private void scanLeDevice(final boolean enable) {
