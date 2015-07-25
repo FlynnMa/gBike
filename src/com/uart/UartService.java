@@ -1,4 +1,4 @@
-package com.vehicle.uart;
+package com.uart;
 
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
@@ -18,7 +18,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import java.util.List;
 import java.util.UUID;
 
-import com.vehicle.uart.DevMaster;
+import com.utility.DebugLogger;
 
 /**
  * Service for managing connection and data communication with a GATT server hosted on a
@@ -26,8 +26,6 @@ import com.vehicle.uart.DevMaster;
  */
 public class UartService extends Service
 {
-//	private static final UartService singltonInstance = new UartService();
-
 	public static UartService instanceBk;
 
     private BluetoothManager mBluetoothManager;
@@ -36,7 +34,6 @@ public class UartService extends Service
     private BluetoothGatt mBluetoothGatt;
     private int mConnectionState = STATE_DISCONNECTED;
     BluetoothDevice mDevice;
-    DevMaster evMaster;
 
     private static final int STATE_DISCONNECTED = 0;
     private static final int STATE_CONNECTING = 1;
@@ -88,16 +85,15 @@ public class UartService extends Service
                 intentAction = ACTION_GATT_CONNECTED;
                 mConnectionState = STATE_CONNECTED;
                 broadcastUpdate(intentAction);
-				EVLog.e("Connected to GATT server.");
+                DebugLogger.d("Connected to GATT server.");
                 // Attempts to discover services after successful connection.
-				EVLog.e("Attempting to start service discovery:" + mBluetoothGatt.discoverServices());
-
+                DebugLogger.d("Attempting to start service discovery:" + mBluetoothGatt.discoverServices());
             }
 			else if (newState == BluetoothProfile.STATE_DISCONNECTED)
 			{
                 intentAction = ACTION_GATT_DISCONNECTED;
                 mConnectionState = STATE_DISCONNECTED;
-				EVLog.e("Disconnected from GATT server.");
+                DebugLogger.d("Disconnected from GATT server.");
                 broadcastUpdate(intentAction);
             }
         }
@@ -107,13 +103,13 @@ public class UartService extends Service
         {
             if (status == BluetoothGatt.GATT_SUCCESS)
 			{
-            	EVLog.e("mBluetoothGatt = " + mBluetoothGatt);
+            	DebugLogger.d("mBluetoothGatt = " + mBluetoothGatt);
 
                 broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
             }
 			else
 			{
-				EVLog.e("onServicesDiscovered received: " + status);
+				DebugLogger.d("onServicesDiscovered received: " + status);
             }
         }
 
@@ -198,7 +194,7 @@ public class UartService extends Service
             mBluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
             if (mBluetoothManager == null)
 			{
-				EVLog.e("Unable to initialize BluetoothManager.");
+            	DebugLogger.d("Unable to initialize BluetoothManager.");
                 return false;
             }
         }
@@ -206,7 +202,7 @@ public class UartService extends Service
         mBluetoothAdapter = mBluetoothManager.getAdapter();
         if (mBluetoothAdapter == null)
 		{
-			EVLog.e("Unable to obtain a BluetoothAdapter.");
+        	DebugLogger.d("Unable to obtain a BluetoothAdapter.");
             return false;
         }
 
@@ -227,7 +223,7 @@ public class UartService extends Service
     {
         if (mBluetoothAdapter == null || address == null)
 		{
-			EVLog.e("BluetoothAdapter not initialized or unspecified address.");
+        	DebugLogger.d("BluetoothAdapter not initialized or unspecified address.");
             return false;
         }
 
@@ -235,7 +231,7 @@ public class UartService extends Service
         if (mBluetoothDeviceAddress != null && address.equals(mBluetoothDeviceAddress)
                 && mBluetoothGatt != null)
         {
-			EVLog.e("Trying to use an existing mBluetoothGatt for connection.");
+        	DebugLogger.d("Trying to use an existing mBluetoothGatt for connection.");
             if (mBluetoothGatt.connect())
 			{
                 mConnectionState = STATE_CONNECTING;
@@ -250,13 +246,13 @@ public class UartService extends Service
         final BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
         if (device == null)
 		{
-			EVLog.e("Device not found.  Unable to connect.");
+        	DebugLogger.d("Device not found.  Unable to connect.");
             return false;
         }
         // We want to directly connect to the device, so we are setting the autoConnect
         // parameter to false.
         mBluetoothGatt = device.connectGatt(this, false, mGattCallback);
-		EVLog.e("Trying to create a new connection.");
+        DebugLogger.d("Trying to create a new connection.");
         mBluetoothDeviceAddress = address;
         mConnectionState = STATE_CONNECTING;
         
@@ -274,7 +270,7 @@ public class UartService extends Service
     {
         if (mBluetoothAdapter == null || mBluetoothGatt == null)
 		{
-			EVLog.e("BluetoothAdapter not initialized");
+        	DebugLogger.d("BluetoothAdapter not initialized");
             return;
         }
         mBluetoothGatt.disconnect();
@@ -297,7 +293,7 @@ public class UartService extends Service
 		{
             return;
         }
-		EVLog.e("mBluetoothGatt closed");
+        DebugLogger.d("mBluetoothGatt closed");
         mBluetoothDeviceAddress = null;
         mBluetoothGatt.close();
         mBluetoothGatt = null;
@@ -314,7 +310,7 @@ public class UartService extends Service
     {
         if (mBluetoothAdapter == null || mBluetoothGatt == null)
 		{
-			EVLog.e("BluetoothAdapter not initialized");
+        	DebugLogger.d("BluetoothAdapter not initialized");
             return;
         }
         mBluetoothGatt.readCharacteristic(characteristic);
@@ -399,12 +395,12 @@ public class UartService extends Service
         RxChar.setValue(value);
     	boolean status = mBluetoothGatt.writeCharacteristic(RxChar);
 
-		EVLog.e("write TXchar - status=" + status);
+    	DebugLogger.d("write TXchar - status=" + status);
     }
 
     private void showMessage(String msg)
 	{
-		EVLog.e(msg);
+    	DebugLogger.d(msg);
     }
     /**
      * Retrieves a list of supported GATT services on the connected device. This should be

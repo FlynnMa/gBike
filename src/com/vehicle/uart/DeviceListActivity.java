@@ -70,8 +70,12 @@ public class DeviceListActivity extends Activity
 	Button cancelButton;
 	CircularProgressButton startButton;
 	TextView helpText;
+	
+	boolean isBindingStarted = false;
 
 	boolean isConnecting = false;
+	
+	Runnable scanTimeOutRunable;
 
     SpannableString msp = null;
 
@@ -132,8 +136,6 @@ public class DeviceListActivity extends Activity
 
         helpText = (TextView)findViewById(R.id.helpBindingText);
         helpText.setText(R.string.helpBinding);
-//        helpText.setText("close your mobile to the device to start binding");
-//        helpText.setTextSize(screenHeight / 16);
 
 		startButton = (CircularProgressButton) findViewById(R.id.startConnectButton);
 		startButton.setIndeterminateProgressMode(true);
@@ -141,6 +143,9 @@ public class DeviceListActivity extends Activity
 		startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+            	if (isBindingStarted == true)
+            		return;
+            	isBindingStarted = true;
             	startButton.setProgress(50);
             	helpText.animate().alpha(0).setDuration(500).setListener(new AnimatorListenerAdapter(){
                     @Override
@@ -164,6 +169,7 @@ public class DeviceListActivity extends Activity
             	scanLeDevice(true);
             }}).start();
 	}
+
 	/*
 	 * This screen ask customer to confirm the device to bind
 	 * */
@@ -235,15 +241,15 @@ public class DeviceListActivity extends Activity
 //        final Button cancelButton = (Button) findViewById(R.id.btn_cancel);
         if (enable) {
             // Stops scanning after a pre-defined scan period.
-            mHandler.postDelayed(new Runnable()
-            {
+        	scanTimeOutRunable = new Runnable(){
                 @Override
                 public void run()
                 {
 					mScanning = false;
                     mBluetoothAdapter.stopLeScan(mLeScanCallback);
-                }
-            }, SCAN_PERIOD);
+                }        		
+        	};
+            mHandler.postDelayed(scanTimeOutRunable, SCAN_PERIOD);
 
             mScanning = true;
             mBluetoothAdapter.startLeScan(mLeScanCallback);
@@ -267,11 +273,11 @@ public class DeviceListActivity extends Activity
                 public void run()
                 {
                 	  runOnUiThread(new Runnable()
-					  	{
+					  {
                           @Override
                           public void run()
                           {
-                              addDevice(device,rssi);
+                        	  onDeviceDiscovered(device, rssi);
                           }
                       });
                 }
@@ -290,32 +296,9 @@ public class DeviceListActivity extends Activity
     		detectedDevice = device;
         	isConnecting = true;
     		scanLeDevice(false);
+    		mHandler.removeCallbacks(scanTimeOutRunable);
     		drawBondingScreen(device);
     	}
-    }
-
-    private void addDevice(BluetoothDevice device, int rssi)
-	{
-    	onDeviceDiscovered(device, rssi);
-    	/*
-        boolean deviceFound = false;
-
-        for (BluetoothDevice listDev : deviceList)
-		{
-            if (listDev.getAddress().equals(device.getAddress()))
-			{
-                deviceFound = true;
-                break;
-            }
-        }
-    	EVLog.e("device is found:" + device.getName() + "rssi:" + rssi);
-    	devRssiValues.put(device.getAddress(), rssi);
-        if (!deviceFound)
-		{
-        	EVLog.e("device is found:" + device.getName());
-        	deviceList.add(device);
-            deviceAdapter.notifyDataSetChanged();
-        } */
     }
 
     @Override
@@ -399,57 +382,7 @@ public class DeviceListActivity extends Activity
         @Override
         public View getView(int position, View convertView, ViewGroup parent)
         {
-            ViewGroup vg;
-
-            if (convertView != null)
-			{
-                vg = (ViewGroup) convertView;
-            }
-			else
-			{
-                vg = (ViewGroup) inflater.inflate(R.layout.device_element, null);
-            }
-
-            BluetoothDevice device = devices.get(position);
-            final TextView tvadd = ((TextView) vg.findViewById(R.id.address));
-            final TextView tvname = ((TextView) vg.findViewById(R.id.name));
-            final TextView tvpaired = (TextView) vg.findViewById(R.id.paired);
-            final TextView tvrssi = (TextView) vg.findViewById(R.id.rssi);
-
-            tvrssi.setVisibility(View.VISIBLE);
-
-			// RSSI
-			/*
-            byte rssival = (byte) devRssiValues.get(device.getAddress()).intValue();
-            if (rssival != 0) {
-                tvrssi.setText("Rssi = " + String.valueOf(rssival));
-            }
-            */
-
-            tvname.setText(device.getName());
-            tvadd.setText(device.getAddress());
-            if (device.getBondState() == BluetoothDevice.BOND_BONDED)
-			{
-				EVLog.e("device::"+device.getName());
-                tvname.setTextColor(Color.WHITE);
-                tvadd.setTextColor(Color.WHITE);
-                tvpaired.setTextColor(Color.GRAY);
-                tvpaired.setVisibility(View.VISIBLE);
-                tvpaired.setText(R.string.paired);
-                tvrssi.setVisibility(View.VISIBLE);
-                tvrssi.setTextColor(Color.WHITE);
-
-            }
-			else
-			{
-                tvname.setTextColor(Color.WHITE);
-                tvadd.setTextColor(Color.WHITE);
-                tvpaired.setVisibility(View.GONE);
-                tvrssi.setVisibility(View.VISIBLE);
-                tvrssi.setTextColor(Color.WHITE);
-            }
-
-            return vg;
+        	return null;
         }
     }
 
