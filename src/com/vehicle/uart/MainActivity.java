@@ -1,7 +1,3 @@
-/*
- * Copyright (C) 2015 Daniel.Liu Tel:13818674825
- */
-
 package com.vehicle.uart;
 
 import java.text.DateFormat;
@@ -51,6 +47,7 @@ public class MainActivity extends FragmentActivity
     private UartService mService = null;
     private BluetoothDevice mDevice = null;
     public static BluetoothAdapter mBtAdapter = null;
+	private CarouselContainer mCarousel = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -64,26 +61,25 @@ public class MainActivity extends FragmentActivity
         final Resources res = getResources();
 
         // Initialize the header
-        final CarouselContainer carousel = (CarouselContainer) findViewById(R.id.carousel_header);
+        mCarousel = (CarouselContainer) findViewById(R.id.carousel_header);
         // Indicates that the carousel should only show a fraction of the
         // secondary tab
-        carousel.setUsesDualTabs(true);
+        mCarousel.setUsesDualTabs(true);
         // Add some text to the labels
-       	carousel.setLabel(FIRST_TAB, this.getString(R.string.disconnected));
-        carousel.setLabel(SECOND_TAB, this.getString(R.string.disconnected));
+        setLabel();
 
 		// Add some text to the text
-		carousel.setText(FIRST_TAB, this.getString(R.string.totalmiles));
-		carousel.setText(SECOND_TAB, this.getString(R.string.batterytext));
+		mCarousel.setText(FIRST_TAB, this.getString(R.string.totalmiles));
+		mCarousel.setText(SECOND_TAB, this.getString(R.string.batterytext));
 
 		// Add some text to the sign
-		carousel.setSign(FIRST_TAB, this.getString(R.string.miles));
-		carousel.setSign(SECOND_TAB, this.getString(R.string.batterysign));
+		mCarousel.setSign(FIRST_TAB, this.getString(R.string.miles));
+		mCarousel.setSign(SECOND_TAB, this.getString(R.string.batterysign));
 
 		// TODO: need to replace by real value from driver
 		// Add some numbers
-		carousel.setNumbers(FIRST_TAB, 99);
-		carousel.setNumbers(SECOND_TAB, 66);
+		mCarousel.setNumbers(FIRST_TAB, 99);
+		mCarousel.setNumbers(SECOND_TAB, 66);
 		
         // Initialize the pager adatper
         final PagerAdapter pagerAdapter = new PagerAdapter(this);
@@ -93,7 +89,7 @@ public class MainActivity extends FragmentActivity
         // Initialize the pager
         final ViewPager carouselPager = (ViewPager) findViewById(R.id.carousel_pager);
         // This is used to communicate between the pager and header
-        carouselPager.setOnPageChangeListener(new CarouselPagerAdapter(carouselPager, carousel));
+        carouselPager.setOnPageChangeListener(new CarouselPagerAdapter(carouselPager, mCarousel));
         carouselPager.setAdapter(pagerAdapter);
 
 		service_init();
@@ -148,11 +144,10 @@ public class MainActivity extends FragmentActivity
 					 {
                          	String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
 							 EVLog.e("UART_CONNECT_MSG");
-							 // TODO: display speed
-                             //btnConnectDisconnect.setText("Disconnect");
 							 mDevice = UartService.getInstance().getDevice();
 							 EVLog.e("[" + currentDateTimeString + "] Connected to: " + mDevice.getName());
                              mState = UART_PROFILE_CONNECTED;
+							 setLabel();
                      }
             	 });
             }
@@ -165,16 +160,10 @@ public class MainActivity extends FragmentActivity
 					 {
                     	 	 String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
 							 EVLog.e("UART_DISCONNECT_MSG");
-							 // TODO: replace by next segment codes
-							 //btnConnectDisconnect.setText("Connect");
-							 /*
-							 carousel.setLabel(FIRST_TAB, this.getString(R.string.disconnected));
-        					 carousel.setLabel(SECOND_TAB, this.getString(R.string.disconnected));
-        					 */
-
 							 EVLog.e("[" + currentDateTimeString + "] Disconnected to: " + mDevice.getName());
                              mState = UART_PROFILE_DISCONNECTED;
                              mService.close();
+							 setLabel();
                      }
                  });
             }
@@ -349,5 +338,23 @@ public class MainActivity extends FragmentActivity
 	{
 		EVLog.e("" + mState);
 		return UART_PROFILE_CONNECTED == mState;
+	}
+
+	private void setLabel()
+	{
+		if (null != mCarousel)
+		{
+			if (UART_PROFILE_CONNECTED == mState)	// show speed
+			{
+				// TODO: get speed
+				// mCarousel.setLabel(FIRST_TAB, this.getString(R.string.disconnected));
+				// mCarousel.setLabel(SECOND_TAB, this.getString(R.string.disconnected));
+			}
+			else	
+			{
+				mCarousel.setLabel(FIRST_TAB, this.getString(R.string.disconnected));
+		        mCarousel.setLabel(SECOND_TAB, this.getString(R.string.disconnected));
+			}
+		}
 	}
 }
