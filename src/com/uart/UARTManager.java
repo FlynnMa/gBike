@@ -61,7 +61,7 @@ public class UARTManager extends BleManager<UARTManagerCallbacks> {
 
 		@Override
 		protected Queue<Request> initGatt(final BluetoothGatt gatt) {
-			final LinkedList<Request> requests = new LinkedList<>();
+			final LinkedList<Request> requests = new LinkedList<com.profile.BleManager.Request>();
 			requests.push(Request.newEnableNotificationsRequest(mRXCharacteristic));
 			return requests;
 		}
