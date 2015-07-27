@@ -66,7 +66,7 @@ public class MainActivity extends FragmentActivity
         // secondary tab
         mCarousel.setUsesDualTabs(true);
         // Add some text to the labels
-        setLabel();
+        updateConnectionStatusAndSpeedText();
 
 		// Add some text to the text
 		mCarousel.setText(FIRST_TAB, this.getString(R.string.totalmiles));
@@ -147,7 +147,7 @@ public class MainActivity extends FragmentActivity
 							 mDevice = UartService.getInstance().getDevice();
 							 EVLog.e("[" + currentDateTimeString + "] Connected to: " + mDevice.getName());
                              mState = UART_PROFILE_CONNECTED;
-							 setLabel();
+							 updateConnectionStatusAndSpeedText();
                      }
             	 });
             }
@@ -163,7 +163,7 @@ public class MainActivity extends FragmentActivity
 							 EVLog.e("[" + currentDateTimeString + "] Disconnected to: " + mDevice.getName());
                              mState = UART_PROFILE_DISCONNECTED;
                              mService.close();
-							 setLabel();
+							 updateConnectionStatusAndSpeedText();
                      }
                  });
             }
@@ -340,13 +340,15 @@ public class MainActivity extends FragmentActivity
 		return UART_PROFILE_CONNECTED == mState;
 	}
 
-	private void setLabel()
+	// if disconnected, show disconnected text
+	// if connected, show speed text
+	private void updateConnectionStatusAndSpeedText()
 	{
 		if (null != mCarousel)
 		{
 			if (UART_PROFILE_CONNECTED == mState)	// show speed
 			{
-				// TODO: get speed
+				// TODO: get speed and show
 				// mCarousel.setLabel(FIRST_TAB, this.getString(R.string.disconnected));
 				// mCarousel.setLabel(SECOND_TAB, this.getString(R.string.disconnected));
 			}
@@ -355,6 +357,26 @@ public class MainActivity extends FragmentActivity
 				mCarousel.setLabel(FIRST_TAB, this.getString(R.string.disconnected));
 		        mCarousel.setLabel(SECOND_TAB, this.getString(R.string.disconnected));
 			}
+		}
+	}
+
+	private void updateTab_MilesInfo()
+	{
+		if (null != mCarousel)
+		{
+			// TODO: get drivedmiles and totalmiles, calculate percentage
+			//int percentage = drivedmiles / totalmiles * 100;
+			//mCarousel.setNumbers(FIRST_TAB, percentage);
+		}
+	}
+
+	private void updateTab_BatteryInfo()
+	{
+		if (null != mCarousel)
+		{
+			// TODO: calculate battery percentage
+			//int percentage
+			//mCarousel.setNumbers(SECOND_TAB, percentage);
 		}
 	}
 }
