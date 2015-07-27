@@ -68,8 +68,8 @@ public class DummyListFragment extends ListFragment implements OnItemClickListen
 		}
 
 		// TODO: remove below items
-		adapter.add("历史记录01");
-		adapter.add("历史记录02");
+		adapter.add("温度");
+		adapter.add("电流");
 		adapter.add("历史记录03");
 		adapter.add("历史记录04");
 		adapter.add("历史记录05");
