@@ -155,7 +155,6 @@ public class MainActivity extends FragmentActivity
 							EVLog.e("[" + currentDateTimeString + "] Connected to: " + mDevice.getName());
                             mState = UART_PROFILE_CONNECTED;
 							updateConnectionStatusAndSpeedText();
-							setLabel();
 							 
 		        			evDevice.getConnection();
 		        			byte[] pkg = evDevice.getPackage();
