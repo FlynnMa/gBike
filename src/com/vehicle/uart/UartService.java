@@ -50,6 +50,8 @@ public class UartService extends Service
             "com.vehicle.uart.ACTION_GATT_SERVICES_DISCOVERED";
     public final static String ACTION_DATA_AVAILABLE =
             "com.vehicle.uart.ACTION_DATA_AVAILABLE";
+    public final static String ACTION_DATA_SENT =
+            "com.vehicle.uart.ACTION_DATA_SENT";
     public final static String EXTRA_DATA =
             "com.vehicle.uart.EXTRA_DATA";
     public final static String DEVICE_DOES_NOT_SUPPORT_UART =
@@ -127,6 +129,20 @@ public class UartService extends Service
                 broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
             }
         }
+
+    	@Override
+    	public void onCharacteristicWrite (BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status)
+    	{
+    		if (BluetoothGatt.GATT_SUCCESS == status)
+    		{
+    			broadcastUpdate(ACTION_DATA_SENT, characteristic);
+    		}
+    	}
+//    	public void onCharacteristicWrite(final BluetoothGatt gatt, final BluetoothGattCharacteristic characteristic) {
+//    		final String data = characteristic.getStringValue(0);
+//    		broadcast
+//    		mCallbacks.onDataSent(data);
+//    	}
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt,
@@ -378,7 +394,6 @@ public class UartService extends Service
         descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
         mBluetoothGatt.writeDescriptor(descriptor);
     }
-
     public void writeRXCharacteristic(byte[] value)
     {
     	BluetoothGattService RxService = mBluetoothGatt.getService(RX_SERVICE_UUID);

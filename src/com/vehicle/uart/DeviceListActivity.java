@@ -15,7 +15,7 @@ import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
+//import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Point;
@@ -24,27 +24,26 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.view.Display;
-import android.view.Gravity;
+//import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
+//import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.FrameLayout.LayoutParams;
+//import android.widget.FrameLayout.LayoutParams;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.RelativeLayout;
-import android.widget.ListView;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.dd.CircularProgressButton;
 import com.vehicle.uart.R;
-import android.text.style.TypefaceSpan;
+//import android.text.style.TypefaceSpan;
 import android.text.*;
+import com.vehicle.uart.DevMaster;
 
 public class DeviceListActivity extends Activity
 {
@@ -61,6 +60,7 @@ public class DeviceListActivity extends Activity
     private boolean mScanning;
     BluetoothDevice detectedDevice;
     UartService     mUartService;
+    DevMaster       evDevice;
 
     RelativeLayout rLayout;
 	int screenWidth;
@@ -122,6 +122,7 @@ public class DeviceListActivity extends Activity
 			@Override
 			public void run() {
 		        drawHelpScreen();
+		        evDevice = DevMaster.getInstance();
 			}
 		}, 100);
 
@@ -132,8 +133,6 @@ public class DeviceListActivity extends Activity
 	 * */
 	public void drawHelpScreen()
 	{
-//		rLayout.removeAllViews();
-
         helpText = (TextView)findViewById(R.id.helpBindingText);
         helpText.setText(R.string.helpBinding);
 
@@ -189,9 +188,14 @@ public class DeviceListActivity extends Activity
 
         			@Override
         			public void run() {
-        		        finish();
+        				mUartService.connect(detectedDevice.getAddress());
+//        				evDevice.getConnection();
+//        				byte[] pkg = evDevice.getPackage();
+//        				mUartService.writeRXCharacteristic(pkg);
+//        		        finish();
         			}
         		}, 200);
+                
                 
             }}).start();
 	}

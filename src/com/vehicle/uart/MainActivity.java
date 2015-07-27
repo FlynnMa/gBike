@@ -25,6 +25,7 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
 import com.vehicle.uart.CarouselContainer;
 import com.vehicle.uart.CarouselPagerAdapter;
+import com.vehicle.uart.DevMaster;;
 
 public class MainActivity extends FragmentActivity
 {
@@ -48,6 +49,7 @@ public class MainActivity extends FragmentActivity
     private BluetoothDevice mDevice = null;
     public static BluetoothAdapter mBtAdapter = null;
 	private CarouselContainer mCarousel = null;
+	DevMaster evDevice;
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -93,6 +95,11 @@ public class MainActivity extends FragmentActivity
         carouselPager.setAdapter(pagerAdapter);
 
 		service_init();
+		
+		evDevice = DevMaster.getInstance();
+		evDevice.update();
+		evDevice.queryPowerOnOff();
+		byte[] pkg = evDevice.getPackage();
 
 		if (!Feature.blSimulatorMode)
 		{
@@ -143,11 +150,17 @@ public class MainActivity extends FragmentActivity
                      public void run()
 					 {
                          	String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
-							 EVLog.e("UART_CONNECT_MSG");
-							 mDevice = UartService.getInstance().getDevice();
-							 EVLog.e("[" + currentDateTimeString + "] Connected to: " + mDevice.getName());
-                             mState = UART_PROFILE_CONNECTED;
-							 updateConnectionStatusAndSpeedText();
+							EVLog.e("UART_CONNECT_MSG");
+							mDevice = UartService.getInstance().getDevice();
+							EVLog.e("[" + currentDateTimeString + "] Connected to: " + mDevice.getName());
+                            mState = UART_PROFILE_CONNECTED;
+							updateConnectionStatusAndSpeedText();
+							setLabel();
+							 
+		        			evDevice.getConnection();
+		        			byte[] pkg = evDevice.getPackage();
+		        			mService.writeRXCharacteristic(pkg);
+
                      }
             	 });
             }
@@ -175,14 +188,16 @@ public class MainActivity extends FragmentActivity
 
             if (action.equals(UartService.ACTION_DATA_AVAILABLE))
 			{
-                 final byte[] txValue = intent.getByteArrayExtra(UartService.EXTRA_DATA);
+                 final byte[] rxValue = intent.getByteArrayExtra(UartService.EXTRA_DATA);
                  runOnUiThread(new Runnable()
 				 {
                      public void run()
 					 {
                          try
 						 {
-                         	String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
+//                         	String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
+                         	evDevice.onDataRecv(rxValue);
+                         	evDevice.update();
 							//mReceivedPackage = decodePackage(txValue);
 							//EVLog.e("[" + currentDateTimeString + "] Receive blMatch=" + mReceivedPackage.mblMatch);
                          }
@@ -193,6 +208,17 @@ public class MainActivity extends FragmentActivity
                      }
                  });
              }
+            
+            if (action.equals(UartService.ACTION_DATA_SENT))
+            {
+            	final byte[] txValue = intent.getByteArrayExtra(UartService.EXTRA_DATA);
+            	EVLog.e("DATA SENT"+ txValue);
+            	
+            	byte[] pkg = evDevice.getPackage();
+            	if (null != pkg){
+            		mService.writeRXCharacteristic(pkg);
+            	}
+            }
 
             if (action.equals(UartService.DEVICE_DOES_NOT_SUPPORT_UART))
 			{
@@ -218,6 +244,7 @@ public class MainActivity extends FragmentActivity
         intentFilter.addAction(UartService.ACTION_GATT_DISCONNECTED);
         intentFilter.addAction(UartService.ACTION_GATT_SERVICES_DISCOVERED);
         intentFilter.addAction(UartService.ACTION_DATA_AVAILABLE);
+        intentFilter.addAction(UartService.ACTION_DATA_SENT);
         intentFilter.addAction(UartService.DEVICE_DOES_NOT_SUPPORT_UART);
 
         return intentFilter;
@@ -348,9 +375,9 @@ public class MainActivity extends FragmentActivity
 		{
 			if (UART_PROFILE_CONNECTED == mState)	// show speed
 			{
-				// TODO: get speed and show
-				// mCarousel.setLabel(FIRST_TAB, this.getString(R.string.disconnected));
-				// mCarousel.setLabel(SECOND_TAB, this.getString(R.string.disconnected));
+				// TODO: get speed
+				mCarousel.setLabel(FIRST_TAB, this.getString(R.string.connected));
+		        mCarousel.setLabel(SECOND_TAB, this.getString(R.string.connected));
 			}
 			else	
 			{

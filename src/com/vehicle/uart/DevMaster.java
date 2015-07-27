@@ -19,6 +19,13 @@ public class DevMaster {
     float       shutdownVoltage;
     float       fullVoltage;
     float       mainboardTemperiture;
+    
+    private static final DevMaster elecVehicleInstance = new DevMaster();
+    
+    public static DevMaster getInstance()
+    {
+    	return elecVehicleInstance;
+    }
 
    /* write section, data will write to device */
     byte[]       ApkVersion = {0,0,0,0};
