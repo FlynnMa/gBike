@@ -1,4 +1,5 @@
-package com.vehicle.uart;
+package com.carousel;
+
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;

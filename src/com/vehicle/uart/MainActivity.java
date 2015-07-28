@@ -2,6 +2,8 @@ package com.vehicle.uart;
 
 import java.text.DateFormat;
 import java.util.Date;
+
+import com.utility.DebugLogger;
 import com.vehicle.uart.UartService;
 import com.vehicle.uart.R;
 import android.app.Activity;
@@ -108,7 +110,7 @@ public class MainActivity extends FragmentActivity
 	        mBtAdapter = BluetoothAdapter.getDefaultAdapter();
 	        if (mBtAdapter == null)
 			{
-				EVLog.e("Bluetooth is not available");
+				DebugLogger.d("Bluetooth is not available");
 	            Toast.makeText(this, this.getString(R.string.bluetooth_unavailable), Toast.LENGTH_LONG).show();
 	            finish();
 	            return;
@@ -124,10 +126,10 @@ public class MainActivity extends FragmentActivity
 			if (!Feature.blSimulatorMode)
 			{
         		mService = ((UartService.LocalBinder) rawBinder).getService();
-				EVLog.e("onServiceConnected mService= " + mService);
+        		DebugLogger.d("onServiceConnected mService= " + mService);
         		if (!mService.initialize())
 				{
-					EVLog.e("Unable to initialize Bluetooth");
+        			DebugLogger.d("Unable to initialize Bluetooth");
                     finish();
                 }
 			}
@@ -152,9 +154,9 @@ public class MainActivity extends FragmentActivity
                      public void run()
 					 {
                          	String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
-							EVLog.e("UART_CONNECT_MSG");
+                         	DebugLogger.d("UART_CONNECT_MSG");
 							mDevice = UartService.getInstance().getDevice();
-							EVLog.e("[" + currentDateTimeString + "] Connected to: " + mDevice.getName());
+							DebugLogger.d("[" + currentDateTimeString + "] Connected to: " + mDevice.getName());
                             mState = UART_PROFILE_CONNECTED;
 							updateConnectionStatusAndSpeedText();
 							 
@@ -173,8 +175,8 @@ public class MainActivity extends FragmentActivity
                      public void run()
 					 {
                     	 	 String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
-							 EVLog.e("UART_DISCONNECT_MSG");
-							 EVLog.e("[" + currentDateTimeString + "] Disconnected to: " + mDevice.getName());
+                    	 	 DebugLogger.d("UART_DISCONNECT_MSG");
+                    	 	 DebugLogger.d("[" + currentDateTimeString + "] Disconnected to: " + mDevice.getName());
                              mState = UART_PROFILE_DISCONNECTED;
                              mService.close();
 							 updateConnectionStatusAndSpeedText();
@@ -204,7 +206,7 @@ public class MainActivity extends FragmentActivity
                          }
 						 catch (Exception e)
 						 {
-							 EVLog.e(e.toString());
+							 DebugLogger.d(e.toString());
                          }
                      }
                  });
@@ -213,7 +215,7 @@ public class MainActivity extends FragmentActivity
             if (action.equals(UartService.ACTION_DATA_SENT))
             {
             	final byte[] txValue = intent.getByteArrayExtra(UartService.EXTRA_DATA);
-            	EVLog.e("DATA SENT"+ txValue);
+            	DebugLogger.d("DATA SENT"+ txValue);
             	
             	byte[] pkg = evDevice.getPackage();
             	if (null != pkg){
@@ -255,7 +257,7 @@ public class MainActivity extends FragmentActivity
     public void onDestroy()
     {
     	super.onDestroy();
-		EVLog.e("onDestroy()");
+    	DebugLogger.d("onDestroy()");
 
 		if (!Feature.blSimulatorMode)
 		{
@@ -265,7 +267,7 @@ public class MainActivity extends FragmentActivity
 	        }
 			catch (Exception ignore)
 			{
-				EVLog.e(ignore.toString());
+				DebugLogger.d(ignore.toString());
 	        }
 
 	        unbindService(mServiceConnection);
@@ -278,12 +280,12 @@ public class MainActivity extends FragmentActivity
     public void onResume()
     {
         super.onResume();
-		EVLog.e("onResume");
+        DebugLogger.d("onResume");
 		if (!Feature.blSimulatorMode)
 		{
 	        if (!mBtAdapter.isEnabled())
 			{
-				EVLog.e("onResume - BT not enabled yet");
+	        	DebugLogger.d("onResume - BT not enabled yet");
 	            Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
 	            startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
 	        }
@@ -300,7 +302,7 @@ public class MainActivity extends FragmentActivity
             if (resultCode == Activity.RESULT_OK && data != null) {
                 String deviceAddress = data.getStringExtra(BluetoothDevice.EXTRA_DEVICE);
                 mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress);
-				EVLog.e("... onActivityResultdevice.address==" + mDevice + "mserviceValue" + mService);
+                DebugLogger.d("... onActivityResultdevice.address==" + mDevice + "mserviceValue" + mService);
                 mService.connect(deviceAddress);
             }
             break;
@@ -309,20 +311,20 @@ public class MainActivity extends FragmentActivity
             // When the request to enable Bluetooth returns
             if (resultCode == Activity.RESULT_OK)
 			{
-				EVLog.e("BT has turned on");
+            	DebugLogger.d("BT has turned on");
                 Toast.makeText(this, this.getString(R.string.bluetooth_turned_on), Toast.LENGTH_SHORT).show();
             }
 			else
 			{
                 // User did not enable Bluetooth or an error occurred
-				EVLog.e("BT not enabled");
+				DebugLogger.d("BT not enabled");
                 Toast.makeText(this, this.getString(R.string.bluetooth_disabled), Toast.LENGTH_SHORT).show();
                 finish();
             }
             break;
 
         default:
-			EVLog.e("wrong request code");
+        	DebugLogger.d("wrong request code");
             break;
         }
     }
@@ -364,7 +366,7 @@ public class MainActivity extends FragmentActivity
 
 	public static boolean IsBluetoothConnected()
 	{
-		EVLog.e("" + mState);
+		DebugLogger.d("" + mState);
 		return UART_PROFILE_CONNECTED == mState;
 	}
 

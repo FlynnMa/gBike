@@ -40,6 +40,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.dd.CircularProgressButton;
+import com.utility.DebugLogger;
 import com.vehicle.uart.R;
 //import android.text.style.TypefaceSpan;
 import android.text.*;
@@ -83,7 +84,7 @@ public class DeviceListActivity extends Activity
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        EVLog.e("onCreate");
+        DebugLogger.d("onCreate");
 
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 

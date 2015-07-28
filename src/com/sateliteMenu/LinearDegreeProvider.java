@@ -1,6 +1,5 @@
-package com.vehicle.uart;
+package com.sateliteMenu;
 
-import com.sateliteMenu.IDegreeProvider;
 
 public class LinearDegreeProvider implements IDegreeProvider
 {

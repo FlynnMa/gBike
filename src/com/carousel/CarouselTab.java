@@ -15,7 +15,6 @@ import android.widget.TextView;
 import com.sateliteMenu.SatelliteMenu;
 import com.sateliteMenu.SatelliteMenuItem;
 import com.utility.DebugLogger;
-import com.vehicle.uart.HistoryActivity;
 import com.vehicle.uart.R;
 import com.sateliteMenu.SatelliteMenu.SateliteClickedListener;
 
@@ -100,8 +99,8 @@ public class CarouselTab extends FrameLayoutWithOverlay
 				{
 				case 1:
 					{
-						Intent newIntent = new Intent(getContext(), HistoryActivity.class);
-						getContext().startActivity(newIntent);
+//						Intent newIntent = new Intent(getContext(), HistoryActivity.class);
+//						getContext().startActivity(newIntent);
 					}
 					break;
 
@@ -112,8 +111,8 @@ public class CarouselTab extends FrameLayoutWithOverlay
 				case 5:
 				case 6:
 					{
-						Intent newIntent = new Intent(getContext(), HistoryActivity.class);
-						getContext().startActivity(newIntent);
+//						Intent newIntent = new Intent(getContext(), HistoryActivity.class);
+//						getContext().startActivity(newIntent);
 					}
 					break;
 					
