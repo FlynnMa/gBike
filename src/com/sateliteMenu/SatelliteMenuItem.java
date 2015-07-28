@@ -1,4 +1,4 @@
-package com.vehicle.uart;
+package com.sateliteMenu;
 
 import android.graphics.drawable.Drawable;
 import android.view.animation.Animation;

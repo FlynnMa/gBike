@@ -1,5 +1,7 @@
 package com.vehicle.uart;
 
+import com.sateliteMenu.IDegreeProvider;
+
 public class LinearDegreeProvider implements IDegreeProvider
 {
 	public float[] getDegrees(int count, float totalDegrees)

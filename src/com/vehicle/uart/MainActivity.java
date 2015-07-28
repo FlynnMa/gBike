@@ -23,8 +23,10 @@ import android.view.Window;
 import android.widget.Toast;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
-import com.vehicle.uart.CarouselContainer;
-import com.vehicle.uart.CarouselPagerAdapter;
+import com.carousel.CarouselContainer;
+import com.carousel.CarouselPagerAdapter;
+import com.carousel.DummyListFragment;
+import com.carousel.PagerAdapter;
 import com.vehicle.uart.DevMaster;;
 
 public class MainActivity extends FragmentActivity

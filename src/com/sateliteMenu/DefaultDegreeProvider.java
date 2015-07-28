@@ -1,4 +1,5 @@
-package com.vehicle.uart;
+package com.sateliteMenu;
+
 
 public class DefaultDegreeProvider implements IDegreeProvider 
 {

@@ -1,4 +1,4 @@
-package com.vehicle.uart;
+package com.carousel;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;

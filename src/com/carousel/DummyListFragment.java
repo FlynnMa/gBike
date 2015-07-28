@@ -1,4 +1,4 @@
-package com.vehicle.uart;
+package com.carousel;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -16,8 +16,14 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.vehicle.uart.BackScrollManager;
-import com.vehicle.uart.CarouselContainer;
+import com.carousel.BackScrollManager;
+import com.carousel.CarouselContainer;
+import com.utility.DebugLogger;
+import com.vehicle.uart.DeviceListActivity;
+import com.vehicle.uart.Feature;
+import com.vehicle.uart.MainActivity;
+import com.vehicle.uart.R;
+
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
 
@@ -119,7 +125,7 @@ public class DummyListFragment extends ListFragment implements OnItemClickListen
 
         // Remember to substract one from the touched position
         final String str = (String) parent.getItemAtPosition(position - 1);
-		EVLog.e("onItemClick " + str);
+        DebugLogger.e("onItemClick " + str);
 
 		// TODO:
 		if(str.equals(this.getString(R.string.device_unbinding)))
@@ -128,7 +134,7 @@ public class DummyListFragment extends ListFragment implements OnItemClickListen
             {
             	if (!MainActivity.mBtAdapter.isEnabled())
 				{
-					EVLog.e("onClick - BT not enabled yet");
+            		DebugLogger.e("onClick - BT not enabled yet");
                     Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                     startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
                 }

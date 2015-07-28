@@ -1,4 +1,4 @@
-package com.vehicle.uart;
+package com.carousel;
 
 /**
  * Interface for callbacks invoked when the user interacts with the carousel.

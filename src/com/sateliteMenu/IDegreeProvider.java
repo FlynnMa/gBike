@@ -1,4 +1,4 @@
-package com.vehicle.uart;
+package com.sateliteMenu;
 
 public interface IDegreeProvider 
 {

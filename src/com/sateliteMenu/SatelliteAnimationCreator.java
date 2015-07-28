@@ -1,4 +1,4 @@
-package com.vehicle.uart;
+package com.sateliteMenu;
 
 import android.content.Context;
 import android.view.animation.AlphaAnimation;

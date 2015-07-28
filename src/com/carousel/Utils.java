@@ -1,4 +1,4 @@
-package com.vehicle.uart;
+package com.carousel;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;

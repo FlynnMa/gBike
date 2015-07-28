@@ -1,4 +1,4 @@
-package com.vehicle.uart;
+package com.sateliteMenu;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -6,6 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import com.vehicle.uart.R;
+
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;

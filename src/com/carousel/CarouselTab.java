@@ -1,4 +1,4 @@
-package com.vehicle.uart;
+package com.carousel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,8 +11,13 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.sateliteMenu.SatelliteMenu;
+import com.sateliteMenu.SatelliteMenuItem;
+import com.utility.DebugLogger;
+import com.vehicle.uart.HistoryActivity;
 import com.vehicle.uart.R;
-import com.vehicle.uart.SatelliteMenu.SateliteClickedListener;
+import com.sateliteMenu.SatelliteMenu.SateliteClickedListener;
 
 /**
  * This class represents each tab in the {@link CarouselContainer}.
@@ -90,7 +95,7 @@ public class CarouselTab extends FrameLayoutWithOverlay
 		{
 			public void eventOccured(int id) 
 			{
-				EVLog.e("Clicked on " + id);
+				DebugLogger.e("Clicked on " + id);
 				switch (id)
 				{
 				case 1:

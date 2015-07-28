@@ -1,4 +1,15 @@
-package com.vehicle.uart;
+package com.carousel;
+
+import com.vehicle.uart.ExternalCirclePainter;
+import com.vehicle.uart.ExternalCirclePainterImp;
+import com.vehicle.uart.IconPainter;
+import com.vehicle.uart.InternalCirclePainter;
+import com.vehicle.uart.InternalCirclePainterImp;
+import com.vehicle.uart.ProgressPainter;
+import com.vehicle.uart.ProgressPainterImp;
+import com.vehicle.uart.R;
+import com.vehicle.uart.R.drawable;
+import com.vehicle.uart.R.styleable;
 
 import android.animation.ValueAnimator;
 import android.content.Context;

@@ -1,4 +1,4 @@
-package com.vehicle.uart;
+package com.carousel;
 
 import android.content.Context;
 import android.util.AttributeSet;

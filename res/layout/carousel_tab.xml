@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" >
 
-    	<com.vehicle.uart.DashedCircularProgress
+    	<com.carousel.DashedCircularProgress
 	        android:id="@+id/CircularView"
 	        custom:external_color="#1affffff"
 	        custom:base_color="#6effffff"
@@ -48,7 +48,7 @@
 	                android:layout_width="wrap_content"
 	                android:layout_height="wrap_content" />
 	        </RelativeLayout>
-	    </com.vehicle.uart.DashedCircularProgress>
+	    </com.carousel.DashedCircularProgress>
     
         <ImageView
             android:id="@+id/carousel_tab_image"

@@ -1,4 +1,4 @@
-package com.vehicle.uart;
+package com.carousel;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -20,6 +20,8 @@ import com.nineoldandroids.animation.Animator;
 import com.nineoldandroids.animation.Animator.AnimatorListener;
 import com.nineoldandroids.animation.ObjectAnimator;
 import java.lang.ref.WeakReference;
+
+import com.utility.*;
 
 /**
  * This is a horizontally scrolling carousel with 2 tabs.

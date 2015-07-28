@@ -1,4 +1,6 @@
-package com.vehicle.uart;
+package com.utility;
+
+import com.sateliteMenu.IDegreeProvider;
 
 public class ArrayDegreeProvider implements IDegreeProvider 
 {
