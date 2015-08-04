@@ -1,5 +1,7 @@
 package com.vehicle.uart;
 
+import com.ui.ActivityMainView;
+
 import android.app.Activity;  
 import android.content.Intent;  
 import android.os.Bundle;
@@ -27,10 +29,10 @@ public class SplashActivity extends Activity
 			@Override
 			public void run() 
 			{
-				Intent intent = new Intent(SplashActivity.this, MainActivity.class);
+				Intent intent = new Intent(SplashActivity.this, ActivityMainView.class);
 				startActivity(intent);
 				SplashActivity.this.finish();
 			}
-		}, 2500);
+		}, 500);
 	} 
 }

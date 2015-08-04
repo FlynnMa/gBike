@@ -17,4 +17,14 @@
     <dimen name="carousel_indicator_height">5.0dip</dimen>
 
     <dimen name="cpb_stroke_width">4dp</dimen>
+
+    <!-- main view properties -->
+    <dimen name="font_size_normal">28sp</dimen>
+    <dimen name="font_size_small">16sp</dimen>
+    <dimen name="font_size_big">32sp</dimen>
+    <dimen name="font_size_battery">42sp</dimen>
+    <dimen name="font_size_speed">28sp</dimen>
+    <dimen name="font_size_miles">48sp</dimen>
+    <dimen name="font_size_miles_record">16sp</dimen>
+    <dimen name="font_size_promption">28sp</dimen>
 </resources>

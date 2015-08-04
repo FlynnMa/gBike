@@ -177,7 +177,7 @@ public class UartService extends Service
 
     public class LocalBinder extends Binder
 	{
-        UartService getService()
+        public UartService getService()
 		{
             return UartService.this;
         }

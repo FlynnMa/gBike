@@ -19,10 +19,12 @@
  * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.uart;
+package com.ui;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
-import android.app.Fragment;
+import android.support.v4.app.Fragment;
 import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -32,18 +34,20 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ParcelUuid;
-import android.support.annotation.NonNull;
+//import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.ListView;
+import android.view.ViewGroup;
+import android.widget.TextView;
 
 import java.util.Set;
 import java.util.UUID;
 
 import com.vehicle.uart.R;
+import com.vehicle.uart.UartService;
+import com.dd.CircularProgressButton;
+import com.uart.ScannerServiceParser;
 import com.utility.DebugLogger;
 
 /**
@@ -51,30 +55,49 @@ import com.utility.DebugLogger;
  * list and a button to scan/cancel. There is a interface {@link OnDeviceSelectedListener} which is implemented by activity in order to receive selected device. The scanning will continue for 5
  * seconds and then stop
  */
-public class ScannerFragment extends Fragment {
+public class FragScanner extends Fragment{
 	private final static String PARAM_UUID = "param_uuid";
 	private final static String DISCOVERABLE_REQUIRED = "discoverable_required";
-	private final static long SCAN_DURATION = 5000;
+	private final static long SCAN_DURATION = 15000;
 
 	private BluetoothAdapter mBluetoothAdapter;
-	private OnDeviceSelectedListener mListener;
+//	private OnDeviceSelectedListener mListener;
 	private final Handler mHandler = new Handler();
 
 	private boolean mDiscoverableRequired;
 	private UUID mUuid;
 
 	private boolean mIsScanning = false;
+	
+	private boolean mIsConnecting = false;
+	
+    private static final String expectedDevName = "ble2Uart";
+    
+    BluetoothDevice detectedDevice;
+    
+    private View rootView;
+	    
+    TextView helpText = null;
+
+    CircularProgressButton startButton;
+    
+    Runnable scanTimeOutRunable;
+    
+    UartService mUartService;
 
 	private static final boolean DEVICE_IS_BONDED = true;
 	private static final boolean DEVICE_NOT_BONDED = false;
 	/* package */static final int NO_RSSI = -1000;
 
+    public FragScanner(){
+        
+    }
 	/**
 	 * Static implementation of fragment so that it keeps data when phone orientation is changed For standard BLE Service UUID, we can filter devices using normal android provided command
 	 * startScanLe() with required BLE Service UUID For custom BLE Service UUID, we will use class ScannerServiceParser to filter out required device.
 	 */
-	public static ScannerFragment getInstance(final Context context, final UUID uuid, final boolean discoverableRequired) {
-		final ScannerFragment fragment = new ScannerFragment();
+	public static FragScanner getInstance(final Context context, final UUID uuid, final boolean discoverableRequired) {
+		final FragScanner fragment = new FragScanner();
 
 		final Bundle args = new Bundle();
 		args.putParcelable(PARAM_UUID, new ParcelUuid(uuid));
@@ -111,9 +134,9 @@ public class ScannerFragment extends Fragment {
 	public void onAttach(final Activity activity) {
 		super.onAttach(activity);
 		try {
-			this.mListener = (OnDeviceSelectedListener) activity;
+//			this.mListener = (OnDeviceSelectedListener) activity;
 		} catch (final ClassCastException e) {
-			throw new ClassCastException(activity.toString() + " must implement OnDeviceSelectedListener");
+//			throw new ClassCastException(activity.toString() + " must implement OnDeviceSelectedListener");
 		}
 	}
 
@@ -137,6 +160,80 @@ public class ScannerFragment extends Fragment {
 		stopScan();
 		super.onDestroyView();
 	}
+	
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+	            Bundle savedInstanceState) {
+	    rootView = inflater.inflate(R.layout.frag_controlview_connect,
+	                container, false);
+
+	        helpText = (TextView)rootView.findViewById(R.id.helpConnectText);
+	        startButton = (CircularProgressButton) rootView.findViewById(R.id.startConnectButton);
+	        startButton.setIdleText(getResources().getString(R.string.start));
+	        startButton.setIndeterminateProgressMode(true);
+	        startButton.setOnClickListener(new View.OnClickListener() {
+	            @Override
+	            public void onClick(View v) {
+	                if (mIsScanning == true)
+	                    return;
+	                mIsScanning = true;
+	                startButton.setProgress(50);
+	                helpText.animate().alpha(0).setDuration(500).setListener(new AnimatorListenerAdapter(){
+	                    @Override
+	                    public void onAnimationEnd(Animator animation) {
+	                        drawSearchScreen();
+	                    }}).start();
+	            }
+	        });
+
+	        return rootView;
+	    }
+	
+	   public void drawSearchScreen(){
+	        helpText.setText(R.string.scanning);
+	        helpText.animate().alpha(1).setDuration(500).setListener(new AnimatorListenerAdapter(){
+	            @Override
+	            public void onAnimationEnd(Animator animation) {
+	                   startScan();
+	            }}).start();
+	    }
+
+	    /*
+	     * This screen ask customer to confirm the device to bind
+	     * */
+	    public void drawConnectingScreen(BluetoothDevice device)
+	    {
+	        String detectedStr = getResources().getString(R.string.bleDetected);
+	        String deviceStr = device.getName();
+	        String bindStr = getResources().getString(R.string.bindingProcess);
+	        String allStr = detectedStr + " " + deviceStr + bindStr;
+	        helpText.setText("binding");
+
+	        helpText.animate().yBy(-10).setDuration(500).setListener(new AnimatorListenerAdapter(){
+	            @Override
+	            public void onAnimationEnd(Animator animation) {
+
+	                helpText.setText(getResources().getString(R.string.connected));
+	                startButton.setProgress(100);
+
+	                mHandler.postDelayed(new Runnable() {
+
+	                    @Override
+	                    public void run() {
+	                        if (null == mUartService)
+	                        {
+	                            return;
+	                        }
+	                        mUartService.connect(detectedDevice.getAddress());
+//	                      evDevice.getConnection();
+//	                      byte[] pkg = evDevice.getPackage();
+//	                      mUartService.writeRXCharacteristic(pkg);
+//	                      finish();
+	                    }
+	                }, 200);
+
+	            }}).start();
+	    }
 
 	/**
 	 * When dialog is created then set AlertDialog with list and button views.
@@ -197,21 +294,24 @@ public class ScannerFragment extends Fragment {
 	 * using class ScannerServiceParser
 	 */
 	private void startScan() {
-//		mAdapter.clearDevices();
-//		mScanButton.setText(R.string.scanner_action_cancel);
 
 		// Samsung Note II with Android 4.3 build JSS15J.N7100XXUEMK9 is not filtering by UUID at all. We must parse UUIDs manually
 		mBluetoothAdapter.startLeScan(mLEScanCallback);
 
 		mIsScanning = true;
-		mHandler.postDelayed(new Runnable() {
-			@Override
-			public void run() {
-				if (mIsScanning) {
-					stopScan();
-				}
-			}
-		}, SCAN_DURATION);
+        mUartService = UartService.getInstance();
+
+        scanTimeOutRunable = new Runnable(){
+            @Override
+            public void run()
+            {
+                if (mIsScanning) {
+                    stopScan();
+                }
+            }             
+      };
+
+	  mHandler.postDelayed(scanTimeOutRunable, SCAN_DURATION);
 	}
 
 	/**
@@ -258,25 +358,53 @@ public class ScannerFragment extends Fragment {
 			});
 	}
 
+    private void onDeviceDiscovered(BluetoothDevice device, int rssi)
+    {
+        if (mIsConnecting == true)
+            return;
+
+        if ((rssi > -35) && (expectedDevName.equals(device.getName())))
+        {
+            detectedDevice = device;
+            mIsConnecting = true;
+            stopScan();
+            mHandler.removeCallbacks(scanTimeOutRunable);
+            drawConnectingScreen(device);
+        }
+    }
+
 	/**
 	 * Callback for scanned devices class {@link ScannerServiceParser} will be used to filter devices with custom BLE service UUID then the device will be added in a list.
 	 */
 	private final BluetoothAdapter.LeScanCallback mLEScanCallback = new BluetoothAdapter.LeScanCallback() {
 		@Override
 		public void onLeScan(final BluetoothDevice device, final int rssi, final byte[] scanRecord) {
-			if (device != null) {
-				updateScannedDevice(device, rssi);
+
+	          getActivity().runOnUiThread(new Runnable()
+	            {
+	                @Override
+	                public void run()
+	                {
+	                      onDeviceDiscovered(device, rssi);
+	                }
+	            });
+	          /*
+		    if (device != null) {
+//				updateScannedDevice(device, rssi);
+				onDeviceDiscovered(device, rssi);
 				try {
 					if (ScannerServiceParser.decodeDeviceAdvData(scanRecord, mUuid, mDiscoverableRequired)) {
 						// On some devices device.getName() is always null. We have to parse the name manually :(
 						// This bug has been found on Sony Xperia Z1 (C6903) with Android 4.3.
 						// https://devzone.nordicsemi.com/index.php/cannot-see-device-name-in-sony-z1
-						addScannedDevice(device, ScannerServiceParser.decodeDeviceName(scanRecord), rssi, DEVICE_NOT_BONDED);
+//						addScannedDevice(device, ScannerServiceParser.decodeDeviceName(scanRecord), rssi, DEVICE_NOT_BONDED);
+//					    onDeviceDiscovered(device, rssi);
 					}
 				} catch (Exception e) {
 //					DebugLogger.e(TAG, "Invalid data in Advertisement packet " + e.toString());
 				}
 			}
+		    */
 		}
 	};
 }

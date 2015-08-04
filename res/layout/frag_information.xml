@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/view_border"
+    android:orientation="horizontal" >
+    
+	<LinearLayout 
+         android:layout_width="0dp"
+         android:layout_height="match_parent"
+         android:layout_weight="1"
+         android:background="@drawable/view_border"
+         android:orientation="vertical" >
+    	    <ImageView
+             android:id="@+id/img_temperature"
+             android:layout_width="wrap_content"
+             android:layout_height="0dp"
+             android:layout_weight="1"
+             android:scaleType="fitCenter"
+             android:src="@drawable/ic_temperature" />
+	    
+            <TextView
+                android:id="@+id/txt_temperature"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="N/A"
+                android:textColor="@color/black"
+                android:textSize="@dimen/font_size_normal" />
+
+   </LinearLayout>
+
+    <LinearLayout
+         android:layout_width="0dp"
+         android:layout_height="match_parent"
+         android:layout_weight="1"
+         android:orientation="vertical"
+         android:background="@drawable/view_border" >
+
+        <ImageView
+            android:id="@+id/img_battery"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_battery" />
+
+        <TextView
+            android:id="@+id/txt_battery"
+            android:layout_width="match_parent"
+            android:layout_weight="1"
+            android:layout_height="0dp"
+            android:textSize="@dimen/font_size_normal"
+            android:gravity="center"
+            android:textColor="@color/black"
+            android:text="N/A" />
+
+	</LinearLayout>
+     
+     <LinearLayout
+         android:layout_width="0dp"
+         android:layout_height="match_parent"
+         android:layout_weight="1"
+         android:orientation="vertical"
+         android:background="@drawable/view_border" >
+
+         <ImageView
+             android:id="@+id/img_current"
+             android:layout_width="match_parent"
+             android:layout_height="0dp"
+             android:layout_weight="1"
+             android:src="@drawable/ic_current" />
+
+         <TextView
+             android:id="@+id/txt_current"
+             android:layout_width="match_parent"
+             android:layout_height="0dp"
+             android:layout_weight="1"
+             android:gravity="center"
+             android:textSize="@dimen/font_size_normal"
+             android:textColor="@color/black"
+             android:text="NA" />
+
+	</LinearLayout>
+          
+</LinearLayout>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <com.dd.CircularProgressButton
+        android:id="@+id/startConnectButton"
+        android:layout_width="196dp"
+        android:layout_height="54dp"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:textSize="32sp"
+        app:cpb_iconComplete="@drawable/ic_action_accept"
+        app:cpb_iconError="@drawable/ic_action_cancel"
+        app:cpb_textIdle="@string/start" />
+
+    <TextView
+        android:id="@+id/helpConnectText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/startConnectButton"
+        android:layout_marginTop="35dp"
+        android:text="@string/helpBinding"
+        android:textColor="@color/Green"
+        android:gravity="center"
+        android:textColorHint="@color/Blue"
+        android:textSize="@dimen/text_size_large" />
+
+</RelativeLayout>
