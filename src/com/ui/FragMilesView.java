@@ -12,7 +12,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
-public class FragMainView extends Fragment{
+public class FragMilesView extends Fragment{
 	/**
 	 * The fragment argument representing the item ID that this fragment
 	 * represents.
@@ -25,7 +25,7 @@ public class FragMainView extends Fragment{
 	 * Mandatory empty constructor for the fragment manager to instantiate the
 	 * fragment (e.g. upon screen orientation changes).
 	 */
-	public FragMainView() {
+	public FragMilesView() {
 	}
 
 	@Override
@@ -50,7 +50,7 @@ public class FragMainView extends Fragment{
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		rootView = inflater.inflate(R.layout.frag_mainview,
+		rootView = inflater.inflate(R.layout.frag_milesview,
 				container, false);
 
 		// Show the dummy content as text in a TextView.

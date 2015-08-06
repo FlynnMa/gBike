@@ -397,6 +397,11 @@ public class UartService extends Service
     }
     public void writeRXCharacteristic(byte[] value)
     {
+        if (mBluetoothGatt == null)
+        {
+            DebugLogger.e("writeRxCharacteristic failed, mBluetoothGatt is null");
+            return;
+        }
     	BluetoothGattService RxService = mBluetoothGatt.getService(RX_SERVICE_UUID);
     	showMessage("mBluetoothGatt null"+ mBluetoothGatt);
     	if (RxService == null)

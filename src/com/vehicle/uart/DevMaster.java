@@ -1,24 +1,34 @@
 package com.vehicle.uart;
 
-public class DevMaster {
+import com.vehicle.uart.UartService.LocalBinder;
+
+import android.app.Service;
+import android.content.Intent;
+import android.os.Binder;
+import android.os.IBinder;
+import android.support.v4.content.LocalBroadcastManager;
+
+public class DevMaster extends Service{
 	/* ===========device status =====================*/
     String        name = "BIC technology";
     byte[]        version = {0,0,0,0};
     String        copyRight = "All rights reserved @ BIC technology";
-    int         deviceID;
-    int         mile;
-    int         powerOnOff;
-    int         chargerIn;
-    int         driveMode;
-    int         connection;
-    float       speed;
-    float       maxSpeed;
-    float       voltage;
-    float       maxVoltage;
-    float       minVoltage;
-    float       shutdownVoltage;
-    float       fullVoltage;
-    float       mainboardTemperiture;
+    int           deviceID;
+    int           mile;
+    public int    powerOnOff;
+    int           chargerIn;
+    int           driveMode;
+    int           connection;
+    float         speed;
+    float         maxSpeed;
+    float         voltage;
+    float         maxVoltage;
+    float         minVoltage;
+    float         shutdownVoltage;
+    float         fullVoltage;
+    float         mainboardTemperiture;
+    
+    public final static String ACTION_DATA_UPDATED = "devMaster.ACTION_DATA_UPDATED";
     
     private static final DevMaster elecVehicleInstance = new DevMaster();
     
@@ -27,12 +37,51 @@ public class DevMaster {
     	return elecVehicleInstance;
     }
 
+    private void broadcastUpdate(final String action)
+    {
+        final Intent intent = new Intent(action);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
    /* write section, data will write to device */
     byte[]       ApkVersion = {0,0,0,0};
     
+    public void onDataReceived(byte[] data){
+        onDataRecv(data);
+        update();
+        
+        broadcastUpdate(ACTION_DATA_UPDATED);
+    }
+    
+
+    public class LocalBinder extends Binder
+    {
+        public DevMaster getService()
+        {
+            return DevMaster.this;
+        }
+    }
+
+    @Override
+    public IBinder onBind(Intent intent)
+    {
+        return mBinder;
+    }
+
+    @Override
+    public boolean onUnbind(Intent intent)
+    {
+        // After using a given device, you should make sure that BluetoothGatt.close() is called
+        // such that resources are cleaned up properly.  In this particular example, close() is
+        // invoked when the UI is disconnected from the Service.
+        return super.onUnbind(intent);
+    }
+
+    private final IBinder mBinder = new LocalBinder();
+
     /*!
      * This function process received data
-     * 
+     *
      * @param[i] data Array of data in bytes
      * 
      * @return none

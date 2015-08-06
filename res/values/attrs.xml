@@ -19,6 +19,7 @@
         <attr name="cpb_textIdle" format="string"/>
         <attr name="cpb_textError" format="string"/>
         <attr name="cpb_textProgress" format="string"/>
+        <attr name="cpb_colorIdle" format="color"/>
         <attr name="cpb_colorProgress" format="color"/>
         <attr name="cpb_colorIndicator" format="color"/>
         <attr name="cpb_colorIndicatorBackground" format="color"/>
@@ -27,5 +28,11 @@
         <attr name="cpb_cornerRadius" format="dimension"/>
         <attr name="cpb_paddingProgress" format="dimension"/>
     </declare-styleable>
+    
+    <declare-styleable name="CircleButton">
+        <attr name="cb_color" format="color" />
+        <attr name="cb_pressedRingWidth" format="dimension" />
+    </declare-styleable>
+    
     
 </resources>

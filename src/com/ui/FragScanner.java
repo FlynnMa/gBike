@@ -206,8 +206,8 @@ public class FragScanner extends Fragment{
 	        String detectedStr = getResources().getString(R.string.bleDetected);
 	        String deviceStr = device.getName();
 	        String bindStr = getResources().getString(R.string.bindingProcess);
-	        String allStr = detectedStr + " " + deviceStr + bindStr;
-	        helpText.setText("binding");
+	        String allStr = detectedStr + " "  + bindStr;
+	        helpText.setText(allStr);
 
 	        helpText.animate().yBy(-10).setDuration(500).setListener(new AnimatorListenerAdapter(){
 	            @Override

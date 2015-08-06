@@ -64,4 +64,5 @@
     <string name="start">start</string>
     <string name="batterytext">Battery</string>
     <string name="batterysign">%</string>
+    <string name="power">power</string>
 </resources>

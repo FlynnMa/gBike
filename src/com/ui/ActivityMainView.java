@@ -30,8 +30,8 @@ import android.support.v4.content.LocalBroadcastManager;
 public class ActivityMainView extends FragmentActivity {
 
 	boolean mTwoPane = false;
-	
-    private static final int REQUEST_ENABLE_BT = 2;
+
+//    private static final int REQUEST_ENABLE_BT = 2;
     private static final int UART_PROFILE_CONNECTED = 20;
     private static final int UART_PROFILE_DISCONNECTED = 21;
     
@@ -39,9 +39,10 @@ public class ActivityMainView extends FragmentActivity {
     private UartService mService = null;
     private BluetoothDevice mDevice = null;
     public static BluetoothAdapter mBtAdapter = null;
-	private CarouselContainer mCarousel = null;
 	DevMaster evDevice;
 	private boolean mIsBTSending = false;
+	
+	FragPower powerView;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -64,29 +65,10 @@ public class ActivityMainView extends FragmentActivity {
 		service_init();
 		evDevice = new DevMaster();
 		if (savedInstanceState == null) {
-			// Create the detail fragment and add it to the activity
-			// using a fragment transaction.
-//			Bundle arguments = new Bundle();
-//			arguments.putString(fragDetailFragment.ARG_ITEM_ID, getIntent()
-//					.getStringExtra(fragDetailFragment.ARG_ITEM_ID));
-//			FragMainView mainView = new FragMainView();
-//			mainView.setArguments(arguments);
-//			getSupportFragmentManager().beginTransaction()
-//					.add(R.id.frag_mainview_container, mainView).commit();
-	
-/*
-			Bundle arguments = new Bundle();
-			arguments.putString(fragDetailFragment.ARG_ITEM_ID, id);
-			fragDetailFragment fragment = new fragDetailFragment();
-			fragment.setArguments(arguments);
-			getSupportFragmentManager().beginTransaction()
-					.replace(R.id.frag_detail_container, fragment).commit();
-*/
-		    
 		    if (mState != UART_PROFILE_CONNECTED)
 		    {
+		        /* get instance with uuid parameter, to be used in future */
 		        final FragScanner scanner = FragScanner.getInstance(ActivityMainView.this, null, false);
-//		        FragScanner scanner = new FragScanner();
     			getSupportFragmentManager().beginTransaction()
     				.add(R.id.control_container, scanner).commit();
 		    }
@@ -99,6 +81,10 @@ public class ActivityMainView extends FragmentActivity {
 			FragInformationViews infoView = new FragInformationViews();
 			getSupportFragmentManager().beginTransaction()
 			    .add(R.id.devinfo_container, infoView).commit();
+			
+			FragMilesView  milesView = new FragMilesView();
+            getSupportFragmentManager().beginTransaction()
+            .replace(R.id.milesview, milesView).commit();
 		}
 		
 		if (findViewById(R.id.frag_detailview_container) != null) {
@@ -137,7 +123,7 @@ public class ActivityMainView extends FragmentActivity {
         return intentFilter;
     }
     
-    private void sendData(){
+    public void sendData(){
         if (mIsBTSending == true)
             return;
 
@@ -158,7 +144,7 @@ public class ActivityMainView extends FragmentActivity {
  			{
              	 runOnUiThread(new Runnable()
  				 {
-                      public void run()
+                     public void run()
  					 {
                           	String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
                           	DebugLogger.d("UART_CONNECT_MSG");
@@ -168,6 +154,10 @@ public class ActivityMainView extends FragmentActivity {
 
  		        			evDevice.getConnection();
  		        			sendData();
+ 		        			
+ 		        			powerView = new FragPower();
+ 		        			getSupportFragmentManager().beginTransaction()
+ 		                      .replace(R.id.control_container, powerView).commit();
                       }
              	 });
              }
@@ -176,7 +166,7 @@ public class ActivityMainView extends FragmentActivity {
  			{
              	 runOnUiThread(new Runnable()
  				 {
-                      public void run()
+                     public void run()
  					 {
                      	 	 String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
                      	 	 DebugLogger.d("UART_DISCONNECT_MSG");
@@ -249,6 +239,26 @@ public class ActivityMainView extends FragmentActivity {
         public void onServiceDisconnected(ComponentName classname)
 		{
 			mService = null;
+        }
+    };
+    
+    private final BroadcastReceiver devStatusChangeReceiver = new BroadcastReceiver()
+    {
+        public void onReceive(Context context, Intent intent)
+        {
+            String action = intent.getAction();
+            
+            if (action.equals(DevMaster.ACTION_DATA_UPDATED))
+            {
+                runOnUiThread(new Runnable(){
+                   public void run(){
+                       if (powerView != null)
+                       {
+                           powerView.isPowerOn = evDevice.powerOnOff;
+                       }
+                   } 
+                });
+            }
         }
     };
 }

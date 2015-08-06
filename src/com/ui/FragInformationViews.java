@@ -42,7 +42,7 @@ public class FragInformationViews extends Fragment{
 		
 	}
 
-	   @Override
+	@Override
     public void onCreate(Bundle savedInstanceState) {
 	        super.onCreate(savedInstanceState);
 

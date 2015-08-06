@@ -43,6 +43,7 @@ public class CircularProgressButton extends Button {
     private String mErrorText;
     private String mProgressText;
 
+    private int mColorIdle;
     private int mColorProgress;
     private int mColorIndicator;
     private int mColorIndicatorBackground;
@@ -77,6 +78,7 @@ public class CircularProgressButton extends Button {
         super(context, attrs, defStyle);
         init(context, attrs);
     }
+    
 
     private void init(Context context, AttributeSet attributeSet) {
         mStrokeWidth = (int) getContext().getResources().getDimension(R.dimen.cpb_stroke_width);
@@ -212,6 +214,7 @@ public class CircularProgressButton extends Button {
                     R.color.cpb_error_state_selector);
             mErrorColorState = getResources().getColorStateList(errorStateSelector);
 
+            mColorIdle = attr.getColor(R.styleable.CircularProgressButton_cpb_colorIdle, white);
             mColorProgress = attr.getColor(R.styleable.CircularProgressButton_cpb_colorProgress, white);
             mColorIndicator = attr.getColor(R.styleable.CircularProgressButton_cpb_colorIndicator, blue);
             mColorIndicatorBackground =

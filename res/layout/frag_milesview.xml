@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>    
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal" >
+
+        <TextView
+            android:id="@+id/totalMiles"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:text="10235 km"
+            android:textSize="@dimen/font_size_miles" />
+
+        <TextView
+            android:id="@+id/milesRecord"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:text="record : NA"
+            android:textSize="@dimen/font_size_miles_record" />
+
+        <TextView
+            android:id="@+id/milesName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/totalMiles"
+            android:layout_centerHorizontal="true"
+            android:text="@string/totalmiles" />
+
+	</RelativeLayout>
