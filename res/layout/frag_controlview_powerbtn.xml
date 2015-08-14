@@ -26,7 +26,7 @@
         android:layout_centerHorizontal="true"
         android:layout_centerInParent="true"
         android:src="@drawable/ic_power"
-        app:cb_color="@color/cpb_red_dark"
+        app:cb_color="@color/DimGray"
 		/>
 
 </RelativeLayout>

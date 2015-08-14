@@ -44,6 +44,7 @@ import android.widget.TextView;
 import java.util.Set;
 import java.util.UUID;
 
+import com.vehicle.uart.DevMaster;
 import com.vehicle.uart.R;
 import com.vehicle.uart.UartService;
 import com.dd.CircularProgressButton;
@@ -58,7 +59,7 @@ import com.utility.DebugLogger;
 public class FragScanner extends Fragment{
 	private final static String PARAM_UUID = "param_uuid";
 	private final static String DISCOVERABLE_REQUIRED = "discoverable_required";
-	private final static long SCAN_DURATION = 15000;
+	private final static long SCAN_DURATION = 10000;
 
 	private BluetoothAdapter mBluetoothAdapter;
 //	private OnDeviceSelectedListener mListener;
@@ -71,7 +72,7 @@ public class FragScanner extends Fragment{
 	
 	private boolean mIsConnecting = false;
 	
-    private static final String expectedDevName = "ble2Uart";
+    private static final String expectedDevName = "ysport";
     
     BluetoothDevice detectedDevice;
     
@@ -204,7 +205,7 @@ public class FragScanner extends Fragment{
 	    public void drawConnectingScreen(BluetoothDevice device)
 	    {
 	        String detectedStr = getResources().getString(R.string.bleDetected);
-	        String deviceStr = device.getName();
+//	        String deviceStr = device.getName();
 	        String bindStr = getResources().getString(R.string.bindingProcess);
 	        String allStr = detectedStr + " "  + bindStr;
 	        helpText.setText(allStr);
@@ -225,10 +226,6 @@ public class FragScanner extends Fragment{
 	                            return;
 	                        }
 	                        mUartService.connect(detectedDevice.getAddress());
-//	                      evDevice.getConnection();
-//	                      byte[] pkg = evDevice.getPackage();
-//	                      mUartService.writeRXCharacteristic(pkg);
-//	                      finish();
 	                    }
 	                }, 200);
 
@@ -299,7 +296,9 @@ public class FragScanner extends Fragment{
 		mBluetoothAdapter.startLeScan(mLEScanCallback);
 
 		mIsScanning = true;
-        mUartService = UartService.getInstance();
+        mUartService = ActivityMainView.mService;
+
+        DebugLogger.d("scanner UartService: " + mUartService);
 
         scanTimeOutRunable = new Runnable(){
             @Override

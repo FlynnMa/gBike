@@ -1,37 +1,79 @@
 package com.vehicle.uart;
 
+import com.utility.DebugLogger;
 import com.vehicle.uart.UartService.LocalBinder;
 
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 
 public class DevMaster extends Service{
+    
+ // Command ID
+    public static final int   CMD_ID_DEVICE_ID = 0;
+    public static final int   CMD_ID_DEVICE_NAME = 1;
+    public static final int   CMD_ID_FIRMWARE_VERSION = 2;
+    public static final int   CMD_ID_MAINBOARD_TEMPERITURE = 3;
+    public static final int   CMD_ID_BATTERY_VOLTAGE = 4;
+    public static final int   CMD_ID_CHARGE_STATUS = 5;
+    public static final int   CMD_ID_SPEED = 6;
+    public static final int   CMD_ID_MILE = 7;
+    public static final int   CMD_ID_MAX_SPEED = 8;
+    public static final int   CMD_ID_LOW_BATTERY = 9;
+    public static final int   CMD_ID_SHUTDOWN_BATTERY = 10;
+    public static final int   CMD_ID_FULL_BATTERY =   11;
+    public static final int   CMD_ID_POWER_ONOFF  =   12; /**< 1 byte power on off status */
+    public static final int   CMD_ID_DRIVE_MODE   =   13; /**< 1 byte drive mode */
+    public static final int   CMD_ID_CURRENT      =   14; /**< 4 bytes integer current in mA */
+
+    public static final int   CMD_ID_CONNECTED   =   101;
+
+    public static final int   CMD_TYPE_QUERY     =   0;
+    public static final int   CMD_TYPE_SET       =   1;
+    public static final int   CMD_TYPE_ACK       =   2;
+
+    public static final int   DEVICE_TYPE_BT         =   1;
+    public static final int   DEVICE_TYPE_BIKE       =   2;
+
+    int           jniEvent; /* event received from jni*/
+    int           jniEventType; /* 0 query, 1 set, 2 ack */
+
 	/* ===========device status =====================*/
-    String        name = "BIC technology";
-    byte[]        version = {0,0,0,0};
-    String        copyRight = "All rights reserved @ BIC technology";
-    int           deviceID;
-    int           mile;
-    public int    powerOnOff;
-    int           chargerIn;
-    int           driveMode;
-    int           connection;
-    float         speed;
-    float         maxSpeed;
-    float         voltage;
-    float         maxVoltage;
-    float         minVoltage;
-    float         shutdownVoltage;
-    float         fullVoltage;
-    float         mainboardTemperiture;
-    
+    public String        name = "BIC technology";
+    public byte[]        version = {0,0,0,0};
+    public String        copyRight = "All rights reserved @ BIC technology";
+    public int           deviceID;
+    public int           mile;
+    public int           powerOnOff;
+    public int           chargerIn;
+    public int           driveMode;
+    public int           connection;
+    public float         speed;
+    public float         maxSpeed;
+    public float         voltage;
+    public float         maxVoltage;
+    public float         minVoltage;
+    public float         shutdownVoltage;
+    public float         fullVoltage;
+    public float         mainboardTemperiture;
+    public float         current = 0;
+    public boolean       exit = false;
+    private static Thread mThread = null;
+
     public final static String ACTION_DATA_UPDATED = "devMaster.ACTION_DATA_UPDATED";
-    
+    public final static String ACTION_POWER_ON     = "devMaster.ACTION_POWER_ON";
+    public final static String EXTRA_DATA = "devMaster.EXTRA_DATA";
+
+
     private static final DevMaster elecVehicleInstance = new DevMaster();
-    
+
+    public DevMaster(){
+
+    }
+
     public static DevMaster getInstance()
     {
     	return elecVehicleInstance;
@@ -40,20 +82,48 @@ public class DevMaster extends Service{
     private void broadcastUpdate(final String action)
     {
         final Intent intent = new Intent(action);
+        final int[] jniEvt = {jniEvent, jniEventType};
+
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+
+        intent.putExtra(EXTRA_DATA, jniEvt);
+
     }
 
    /* write section, data will write to device */
     byte[]       ApkVersion = {0,0,0,0};
-    
+
     public void onDataReceived(byte[] data){
         onDataRecv(data);
         update();
-        
-        broadcastUpdate(ACTION_DATA_UPDATED);
     }
-    
 
+    public void startProcess() {
+        if (null == mThread)
+        {
+            mThread = new Thread(readEventProcess);
+            mThread.start();
+        }
+    }
+
+    Runnable readEventProcess = new Runnable() {
+        @Override
+        public void run() {
+            
+            while(exit == false) {
+                jniEvent = -1;
+                readEvent();
+                DebugLogger.d("read event :" + jniEvent + "-" + jniEventType);
+                broadcastUpdate(ACTION_DATA_UPDATED);
+
+                if (CMD_ID_POWER_ONOFF == jniEvent)
+                {
+                    broadcastUpdate(ACTION_POWER_ON);
+                }
+            }
+        }
+    };
+    
     public class LocalBinder extends Binder
     {
         public DevMaster getService()
@@ -65,12 +135,14 @@ public class DevMaster extends Service{
     @Override
     public IBinder onBind(Intent intent)
     {
+        startProcess();
         return mBinder;
     }
 
     @Override
     public boolean onUnbind(Intent intent)
     {
+        mThread = null;
         // After using a given device, you should make sure that BluetoothGatt.close() is called
         // such that resources are cleaned up properly.  In this particular example, close() is
         // invoked when the UI is disconnected from the Service.
@@ -105,7 +177,14 @@ public class DevMaster extends Service{
      * @return none
      * */
     public native void update();
+
+    public native void readEvent();
     
+    public native void sleepMs();
+    
+    public native void query(int cmd, int dev);
+
+    public native void setInt(int cmd, int dev, int data);
     /*!
      * This function generates package for query speed
      * 

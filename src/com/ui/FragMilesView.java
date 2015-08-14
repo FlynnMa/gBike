@@ -1,11 +1,19 @@
 package com.ui;
 
 
+import com.vehicle.uart.DevMaster;
 import com.vehicle.uart.R;
+import com.vehicle.uart.UartService;
 import com.vehicle.uart.R.layout;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,7 +27,12 @@ public class FragMilesView extends Fragment{
 	 */
 	public static final String ARG_ITEM_ID = "item_id";
 
-	private View rootView;
+    private static final long SHORT_PERIOD = 5000; //0.5 seconds
+    
+    private View rootView;
+	TextView     milesView;
+	TextView     recordView;
+    Handler mHandler;
 
 	/**
 	 * Mandatory empty constructor for the fragment manager to instantiate the
@@ -53,15 +66,56 @@ public class FragMilesView extends Fragment{
 		rootView = inflater.inflate(R.layout.frag_milesview,
 				container, false);
 
-		// Show the dummy content as text in a TextView.
-//		if (mItem != null) {
-//			((TextView) rootView.findViewById(R.id.frag_detail))
-//					.setText(mItem.content);
-//		}
-		
-//		Button myButton = (Button)rootView.findViewById(R.id.button1);
-//		myButton.setOnClickListener(button_listener);
-
+		milesView = (TextView)rootView.findViewById(R.id.totalMiles);
+		recordView = (TextView)rootView.findViewById(R.id.recordJorney);
+        final IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(DevMaster.ACTION_DATA_UPDATED);
+        intentFilter.addAction(DevMaster.ACTION_POWER_ON);
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(deviceStatusReceiver, intentFilter);
+        
+        mHandler = new Handler();
 		return rootView;
 	}
+	
+	   @Override
+	    public void onDestroyView() {
+	       super.onDestroyView();
+           mHandler = null;
+	    }
+	
+    Runnable shortPeriodRunable = new Runnable(){
+        @Override
+        public void run()
+        {
+            ActivityMainView.evDevice.query(DevMaster.CMD_ID_MILE, DevMaster.DEVICE_TYPE_BIKE);
+            ActivityMainView.mService.send();
+
+            mHandler.postDelayed(shortPeriodRunable, SHORT_PERIOD);
+        }
+  };
+
+    private final BroadcastReceiver deviceStatusReceiver = new BroadcastReceiver()
+    {
+         public void onReceive(Context context, Intent intent)
+        {
+             String action = intent.getAction();
+             if(action.equals(DevMaster.ACTION_DATA_UPDATED))
+             {
+                 int mile = ActivityMainView.evDevice.mile;
+
+                 milesView.setText(Integer.toString(mile));
+             }
+             else if(action.equals(DevMaster.ACTION_POWER_ON))
+             {
+                 if (ActivityMainView.evDevice.powerOnOff == 0)
+                 {
+                     mHandler.removeCallbacks(shortPeriodRunable);
+                 }
+                 else
+                 {
+                     mHandler.postDelayed(shortPeriodRunable, SHORT_PERIOD);
+                 }
+             }
+        }
+    };
 }

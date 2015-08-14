@@ -4,12 +4,14 @@ import com.cycleButton.CircleButton;
 import com.utility.DebugLogger;
 import com.vehicle.uart.DevMaster;
 import com.vehicle.uart.R;
+import com.vehicle.uart.UartService;
 
 import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
@@ -25,13 +27,17 @@ public class FragPower extends Fragment implements View.OnClickListener {
     public View rootView;
     CircleButton powerButton;
     Handler mHandler;
-    int powerOffColor = R.color.DarkGray;
+    int powerOffColor = R.color.DimGray;
     int powerOnColor = R.color.DarkGreen;
+    DevMaster mDevice = null;
+    UartService mService = null;
     
     int isPowerOn = 0;
     boolean isSwitchingDevice = false;
 
     public FragPower(){
+        mDevice = ActivityMainView.evDevice;
+        mService = ActivityMainView.mService;
         mHandler = new Handler();
     }
     
@@ -80,7 +86,6 @@ public class FragPower extends Fragment implements View.OnClickListener {
                                 layoutParam.addRule(RelativeLayout.CENTER_HORIZONTAL);
                                 layoutParam.addRule(RelativeLayout.CENTER_VERTICAL);
                                 powerButton.setLayoutParams(layoutParam);
-                                Log.e("HelloWorld", "update x" + size + "y:" + size);
                                 
                             }
                         });
@@ -96,11 +101,11 @@ public class FragPower extends Fragment implements View.OnClickListener {
     private void setPowerButtonStatus(){
         if (isPowerOn == 0)
         {
-            powerButton.setBackgroundColor(powerOffColor);
+            powerButton.setColor(powerOffColor);
         }
         else
         {
-            powerButton.setBackgroundColor(powerOnColor);
+            powerButton.setColor(powerOnColor);
         }
     }
     
@@ -135,6 +140,12 @@ public class FragPower extends Fragment implements View.OnClickListener {
     @Override
     public void onClick(View view) {
         DebugLogger.d("power button clicked!");
+        mDevice.setConnection(1);
+        mDevice.getConnection();
+        
+        mDevice.setInt(DevMaster.CMD_ID_POWER_ONOFF, DevMaster.DEVICE_TYPE_BIKE, 1);
+        mDevice.query(DevMaster.CMD_ID_POWER_ONOFF, DevMaster.DEVICE_TYPE_BIKE);
+        mService.send();
     }
 
     public void dataUpdated()

@@ -18,6 +18,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import java.util.List;
 import java.util.UUID;
 
+import com.ui.ActivityMainView;
 import com.utility.DebugLogger;
 import com.vehicle.uart.DevMaster;
 
@@ -186,6 +187,7 @@ public class UartService extends Service
     @Override
     public IBinder onBind(Intent intent)
     {
+        evMaster = ActivityMainView.evDevice;
         return mBinder;
     }
 
@@ -276,9 +278,23 @@ public class UartService extends Service
 		DebugLogger.d("Trying to create a new connection.");
         mBluetoothDeviceAddress = address;
         mConnectionState = STATE_CONNECTING;
-        
+
         mDevice = device;
         return true;
+    }
+
+    public void send()
+    {
+        if (evMaster == null)
+        {
+            return;
+        }
+
+        byte[] pkg = evMaster.getPackage();
+        if (null == pkg)
+            return;
+
+        writeRXCharacteristic(pkg);
     }
 
     /**
@@ -298,7 +314,7 @@ public class UartService extends Service
         mDevice = null;
        // mBluetoothGatt.close();
     }
-    
+
     public BluetoothDevice getDevice()
     {
     	return mDevice;
@@ -403,7 +419,7 @@ public class UartService extends Service
             return;
         }
     	BluetoothGattService RxService = mBluetoothGatt.getService(RX_SERVICE_UUID);
-    	showMessage("mBluetoothGatt null"+ mBluetoothGatt);
+    	showMessage("mBluetoothGatt :"+ mBluetoothGatt);
     	if (RxService == null)
 		{
             showMessage("Rx service not found!");
