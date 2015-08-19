@@ -1,5 +1,6 @@
 package com.vehicle.uart;
 
+import android.annotation.SuppressLint;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -13,8 +14,11 @@ import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
+
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,6 +41,7 @@ public class UartService extends Service
     private String mBluetoothDeviceAddress;
     private BluetoothGatt mBluetoothGatt;
     private int mConnectionState = STATE_DISCONNECTED;
+    boolean isSending = false;
     BluetoothDevice mDevice;
     DevMaster evMaster;
 
@@ -58,6 +63,8 @@ public class UartService extends Service
             "com.vehicle.uart.EXTRA_DATA";
     public final static String DEVICE_DOES_NOT_SUPPORT_UART =
             "com.vehicle.uart.DEVICE_DOES_NOT_SUPPORT_UART";
+    public final static String ACTION_SEND_TIMEOUT =
+            "com.vehicle.uart.SENDTIMEOUT";
 
     public static final UUID TX_POWER_UUID = UUID.fromString("00001804-0000-1000-8000-00805f9b34fb");
     public static final UUID TX_POWER_LEVEL_UUID = UUID.fromString("00002a07-0000-1000-8000-00805f9b34fb");
@@ -67,6 +74,7 @@ public class UartService extends Service
     public static final UUID RX_SERVICE_UUID = UUID.fromString("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
     public static final UUID RX_CHAR_UUID = UUID.fromString("6e400002-b5a3-f393-e0a9-e50e24dcca9e");
     public static final UUID TX_CHAR_UUID = UUID.fromString("6e400003-b5a3-f393-e0a9-e50e24dcca9e");
+    private BluetoothGattCharacteristic mTXCharacteristic, mRXCharacteristic;
 
     public UartService()
     {
@@ -112,8 +120,8 @@ public class UartService extends Service
             if (status == BluetoothGatt.GATT_SUCCESS)
 			{
             	DebugLogger.d("mBluetoothGatt = " + mBluetoothGatt);
-
-                broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
+            	if (isRequiredServiceSupported(mBluetoothGatt))
+            	    broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
             }
 			else
 			{
@@ -137,6 +145,7 @@ public class UartService extends Service
     	{
     		if (BluetoothGatt.GATT_SUCCESS == status)
     		{
+    		    isSending = false;
     			broadcastUpdate(ACTION_DATA_SENT, characteristic);
     		}
     	}
@@ -153,6 +162,15 @@ public class UartService extends Service
             broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
         }
     };
+
+    public boolean isRequiredServiceSupported(final BluetoothGatt gatt) {
+        final BluetoothGattService service = gatt.getService(RX_SERVICE_UUID);
+        if (service != null) {
+            mTXCharacteristic = service.getCharacteristic(TX_CHAR_UUID);
+            mRXCharacteristic = service.getCharacteristic(RX_CHAR_UUID);
+        }
+        return mTXCharacteristic != null && mRXCharacteristic != null;
+    }
 
     private void broadcastUpdate(final String action)
 	{
@@ -283,6 +301,15 @@ public class UartService extends Service
         return true;
     }
 
+    Runnable sendTimeoutRunable = new Runnable() {
+        @Override
+        public void run()
+        {
+            isSending = false;
+            broadcastUpdate(ACTION_SEND_TIMEOUT);
+        }
+    };
+
     public void send()
     {
         if (evMaster == null)
@@ -294,7 +321,14 @@ public class UartService extends Service
         if (null == pkg)
             return;
 
+        if (isSending)
+            return;
+
+        Handler timeout = new Handler();
+        timeout.postDelayed(sendTimeoutRunable, 800);
+        isSending = true;
         writeRXCharacteristic(pkg);
+        DebugLogger.w("send data:" + Arrays.toString(pkg));
     }
 
     /**
@@ -382,6 +416,7 @@ public class UartService extends Service
      *
      * @return
      */
+    @SuppressLint("InlinedApi")
     public void enableTXNotification()
     {
     	/*
@@ -391,6 +426,7 @@ public class UartService extends Service
     		return;
     	}
     		*/
+        /*
     	BluetoothGattService RxService = mBluetoothGatt.getService(RX_SERVICE_UUID);
     	if (RxService == null)
 		{
@@ -405,9 +441,9 @@ public class UartService extends Service
             broadcastUpdate(DEVICE_DOES_NOT_SUPPORT_UART);
             return;
         }
-        mBluetoothGatt.setCharacteristicNotification(TxChar,true);
-
-        BluetoothGattDescriptor descriptor = TxChar.getDescriptor(CCCD);
+        mBluetoothGatt.setCharacteristicNotification(TxChar,true);*/
+        mBluetoothGatt.setCharacteristicNotification(mTXCharacteristic,true);
+        BluetoothGattDescriptor descriptor = mTXCharacteristic.getDescriptor(CCCD);
         descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
         mBluetoothGatt.writeDescriptor(descriptor);
     }
@@ -418,6 +454,7 @@ public class UartService extends Service
             DebugLogger.e("writeRxCharacteristic failed, mBluetoothGatt is null");
             return;
         }
+        /*
     	BluetoothGattService RxService = mBluetoothGatt.getService(RX_SERVICE_UUID);
     	showMessage("mBluetoothGatt :"+ mBluetoothGatt);
     	if (RxService == null)
@@ -434,7 +471,9 @@ public class UartService extends Service
             return;
         }
         RxChar.setValue(value);
-    	boolean status = mBluetoothGatt.writeCharacteristic(RxChar);
+        */
+        mRXCharacteristic.setValue(value);
+    	boolean status = mBluetoothGatt.writeCharacteristic(mRXCharacteristic);
 
 		DebugLogger.d("write TXchar - status=" + status);
     }

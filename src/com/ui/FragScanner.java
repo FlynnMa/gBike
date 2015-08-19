@@ -23,6 +23,7 @@ package com.ui;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.support.v4.app.Fragment;
 import android.app.Dialog;
@@ -56,10 +57,11 @@ import com.utility.DebugLogger;
  * list and a button to scan/cancel. There is a interface {@link OnDeviceSelectedListener} which is implemented by activity in order to receive selected device. The scanning will continue for 5
  * seconds and then stop
  */
+@SuppressLint("InlinedApi")
 public class FragScanner extends Fragment{
 	private final static String PARAM_UUID = "param_uuid";
 	private final static String DISCOVERABLE_REQUIRED = "discoverable_required";
-	private final static long SCAN_DURATION = 10000;
+	private final static long SCAN_DURATION = 5000;
 
 	private BluetoothAdapter mBluetoothAdapter;
 //	private OnDeviceSelectedListener mListener;
@@ -159,7 +161,15 @@ public class FragScanner extends Fragment{
 	@Override
 	public void onDestroyView() {
 		stopScan();
+		mUartService = null;
 		super.onDestroyView();
+	}
+
+	
+	@Override
+	public void onStop(){
+	    mHandler.removeCallbacksAndMessages(null);
+	    super.onStop();
 	}
 	
 	@Override
@@ -304,9 +314,11 @@ public class FragScanner extends Fragment{
             @Override
             public void run()
             {
-                if (mIsScanning) {
-                    stopScan();
-                }
+                stopScan();
+                startButton.setIdleText(getResources().getString(R.string.start));
+                startButton.setProgress(0);
+                helpText = (TextView)rootView.findViewById(R.id.helpConnectText);
+                helpText.setText(getResources().getString(R.string.helpBinding));
             }             
       };
 
@@ -318,7 +330,6 @@ public class FragScanner extends Fragment{
 	 */
 	private void stopScan() {
 		if (mIsScanning) {
-//			mScanButton.setText(R.string.scanner_action_scan);
 			mBluetoothAdapter.stopLeScan(mLEScanCallback);
 			mIsScanning = false;
 		}

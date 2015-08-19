@@ -10,7 +10,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 
-public class DevMaster extends Service{
+public class DevMaster extends Service {
     
  // Command ID
     public static final int   CMD_ID_DEVICE_ID = 0;
@@ -28,6 +28,17 @@ public class DevMaster extends Service{
     public static final int   CMD_ID_POWER_ONOFF  =   12; /**< 1 byte power on off status */
     public static final int   CMD_ID_DRIVE_MODE   =   13; /**< 1 byte drive mode */
     public static final int   CMD_ID_CURRENT      =   14; /**< 4 bytes integer current in mA */
+    public static final int   CMD_ID_PERIOD_LONG =   15; /**< 4 bytes int32 value in ms
+                                                                this defines update rate of long period
+                                                                range 1000 ~ 10000 */
+    public static final int   CMD_ID_PERIOD_SHORT =   16; /**< 4 bytes int32 value in ms
+                                                            this defines update rate of short period
+                                                            range 200 ~ 1000 */
+
+    public static final int   CMD_ID_GENERAL_LONG =   17; /**< a combined command, contains 
+                                                        attery, temperature, charge status */
+    public static final int   CMD_ID_GENERAL_SHORT =   18; /**< a combined command queried in short
+                                                         duration, contains speed, current, mile */
 
     public static final int   CMD_ID_CONNECTED   =   101;
 
@@ -62,11 +73,16 @@ public class DevMaster extends Service{
     public float         current = 0;
     public boolean       exit = false;
     private static Thread mThread = null;
-
+    private static final long SHORT_PERIOD = 1200; //0.5 seconds
+    int periodCount = 0;
+    boolean isQueryStarted;
+    
     public final static String ACTION_DATA_UPDATED = "devMaster.ACTION_DATA_UPDATED";
+    public final static String ACTION_PACKAGE_PUSHED = "devMaster.ACTION_PACKAGE_PUSHED";
     public final static String ACTION_POWER_ON     = "devMaster.ACTION_POWER_ON";
     public final static String EXTRA_DATA = "devMaster.EXTRA_DATA";
 
+    Handler mHandler = new Handler();
 
     private static final DevMaster elecVehicleInstance = new DevMaster();
 
@@ -113,15 +129,39 @@ public class DevMaster extends Service{
             while(exit == false) {
                 jniEvent = -1;
                 readEvent();
-                DebugLogger.d("read event :" + jniEvent + "-" + jniEventType);
+
                 broadcastUpdate(ACTION_DATA_UPDATED);
 
                 if (CMD_ID_POWER_ONOFF == jniEvent)
                 {
                     broadcastUpdate(ACTION_POWER_ON);
+                    if (powerOnOff == 0){
+                        mHandler.removeCallbacksAndMessages(null);
+                    } else if(isQueryStarted == false) {
+                        mHandler.postDelayed(regularQueryProcess, SHORT_PERIOD);
+                        isQueryStarted = true;
+                    }
                 }
             }
         }
+    };
+    
+    Runnable regularQueryProcess = new Runnable() {
+      @Override
+      public void run() {
+
+          if(exit == false) {
+              if (((periodCount ++) % 4) == 0)
+              {
+                  query(CMD_ID_GENERAL_LONG, DevMaster.DEVICE_TYPE_BIKE);
+                  periodCount = 0;
+              }
+              
+              query(CMD_ID_GENERAL_SHORT, DevMaster.DEVICE_TYPE_BIKE);
+              broadcastUpdate(ACTION_PACKAGE_PUSHED);
+              mHandler.postDelayed(regularQueryProcess, SHORT_PERIOD);
+          }
+      }
     };
     
     public class LocalBinder extends Binder
@@ -151,6 +191,18 @@ public class DevMaster extends Service{
 
     private final IBinder mBinder = new LocalBinder();
 
+    public void queryEx(int cmd, int dev)
+    {
+        query(cmd, dev);
+        broadcastUpdate(ACTION_PACKAGE_PUSHED);
+    }
+    
+    public void setIntEx(int cmd, int dev, int data)
+    {
+        setInt(cmd, dev, data);
+        broadcastUpdate(ACTION_PACKAGE_PUSHED);
+    }
+
     /*!
      * This function process received data
      *
@@ -159,7 +211,7 @@ public class DevMaster extends Service{
      * @return none
      * */
     public native void onDataRecv(byte[] recvData);
-    
+
     /*!
      * This function returns package needs to be send to remote device
      * 

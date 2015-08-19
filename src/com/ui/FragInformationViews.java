@@ -141,7 +141,7 @@ public class FragInformationViews extends Fragment{
             ActivityMainView.evDevice.queryVoltage();
             ActivityMainView.mService.send();
 
-            mHandler.postDelayed(longPeriodRunable, LONG_PERIOD);
+//            mHandler.postDelayed(longPeriodRunable, LONG_PERIOD);
         }
   };
   
@@ -152,7 +152,7 @@ public class FragInformationViews extends Fragment{
           ActivityMainView.evDevice.query(DevMaster.CMD_ID_CURRENT, DevMaster.DEVICE_TYPE_BIKE);
           ActivityMainView.mService.send();
 
-          mHandler.postDelayed(longPeriodRunable, SHORT_PERIOD);
+//          mHandler.postDelayed(longPeriodRunable, SHORT_PERIOD);
       }
 };
 
@@ -190,6 +190,7 @@ public class FragInformationViews extends Fragment{
 	             }
 	             else if(action.equals(DevMaster.ACTION_POWER_ON))
 	             {
+	                 /*
 	                 if (ActivityMainView.evDevice.powerOnOff == 0)
 	                 {
                          mHandler.removeCallbacks(longPeriodRunable);
@@ -200,6 +201,7 @@ public class FragInformationViews extends Fragment{
                          mHandler.postDelayed(longPeriodRunable, LONG_PERIOD);
                          mHandler.postDelayed(shortPeriodRunable, LONG_PERIOD);
 	                 }
+	                 */
 	             }
 	        }
 	    };

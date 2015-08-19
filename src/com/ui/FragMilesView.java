@@ -27,7 +27,7 @@ public class FragMilesView extends Fragment{
 	 */
 	public static final String ARG_ITEM_ID = "item_id";
 
-    private static final long SHORT_PERIOD = 5000; //0.5 seconds
+    private static final long SHORT_PERIOD = 1000; //0.5 seconds
     
     private View rootView;
 	TextView     milesView;
@@ -87,6 +87,8 @@ public class FragMilesView extends Fragment{
         @Override
         public void run()
         {
+            if (null == ActivityMainView.mService)
+                return;
             ActivityMainView.evDevice.query(DevMaster.CMD_ID_MILE, DevMaster.DEVICE_TYPE_BIKE);
             ActivityMainView.mService.send();
 
@@ -107,6 +109,7 @@ public class FragMilesView extends Fragment{
              }
              else if(action.equals(DevMaster.ACTION_POWER_ON))
              {
+                 /*
                  if (ActivityMainView.evDevice.powerOnOff == 0)
                  {
                      mHandler.removeCallbacks(shortPeriodRunable);
@@ -115,6 +118,7 @@ public class FragMilesView extends Fragment{
                  {
                      mHandler.postDelayed(shortPeriodRunable, SHORT_PERIOD);
                  }
+                 */
              }
         }
     };

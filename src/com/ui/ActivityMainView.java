@@ -25,6 +25,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.LocalBroadcastManager;
+import android.widget.Toast;
 
 public class ActivityMainView extends FragmentActivity {
 
@@ -53,37 +54,32 @@ public class ActivityMainView extends FragmentActivity {
 		setContentView(R.layout.activity_mainview);
 
 		savedInstance = savedInstanceState;
-		// Show the Up button in the action bar.
-//		getActionBar().setDisplayHomeAsUpEnabled(true);
-
-		// savedInstanceState is non-null when there is fragment state
-		// saved from previous configurations of this activity
-		// (e.g. when rotating the screen from portrait to landscape).
-		// In this case, the fragment will automatically be re-added
-		// to its container so we don't need to manually add it.
-		// For more information, see the Fragments API guide at:
-		//
-		// http://developer.android.com/guide/components/fragments.html
-		//
-
-		service_init();
-		
+		/*
+		mBtAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (mBtAdapter == null) {
+            Toast.makeText(this, "Bluetooth is not available", Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }*/
+	
 		userInfo = getSharedPreferences("userInfo", 0);
 		String devName = userInfo.getString("deviceName", null);
 		devAddress = userInfo.getString("deviceAddr", null);
 		if (null != devName) {
 		    DebugLogger.d("load saved device : [" + devName + "]");
 		}
-		
+
 		evDevice = DevMaster.getInstance();
-		evDevice.update();
 		evDevice.startProcess();
         evDevice.update();
         
+        service_init(); 
+
         mHandler.postDelayed(new Runnable() {
 
             @Override
             public void run() {
+
                 if (savedInstance == null) {
                     if (mState != UART_PROFILE_CONNECTED)
                     {
@@ -92,21 +88,17 @@ public class ActivityMainView extends FragmentActivity {
                         getSupportFragmentManager().beginTransaction()
                             .add(R.id.control_container, scanner).commit();
                     }
-                    else
-                    {
-                        FragControlViewConnectDevice controlView = new FragControlViewConnectDevice();
-                        getSupportFragmentManager().beginTransaction()
-                            .add(R.id.control_container, controlView).commit();
-                    }
+
                     FragInformationViews infoView = new FragInformationViews();
                     getSupportFragmentManager().beginTransaction()
                         .add(R.id.devinfo_container, infoView).commit();
-                    
+
                     FragMilesView  milesView = new FragMilesView();
                     getSupportFragmentManager().beginTransaction()
                     .replace(R.id.milesview, milesView).commit();
-                }            }
-        }, 200);
+                }
+            }
+        }, 400);
 		
 		if (findViewById(R.id.frag_detailview_container) != null) {
 			// The detail container view will be present only in the
@@ -144,6 +136,8 @@ public class ActivityMainView extends FragmentActivity {
         intentFilter.addAction(UartService.DEVICE_DOES_NOT_SUPPORT_UART);
 
         intentFilter.addAction(DevMaster.ACTION_DATA_UPDATED);
+        intentFilter.addAction(DevMaster.ACTION_PACKAGE_PUSHED);
+
 
         return intentFilter;
     }
@@ -171,6 +165,9 @@ public class ActivityMainView extends FragmentActivity {
                             /* save device address */
                             userInfo.edit().putString("deviceAddr", mDevice.getAddress()).commit();
 
+//                            evDevice.setInt(DevMaster.CMD_ID_CONNECTED, DevMaster.DEVICE_TYPE_BIKE, 1);
+//                            evDevice.query(DevMaster.CMD_ID_CONNECTED, DevMaster.DEVICE_TYPE_BIKE);
+
  		        			powerView = new FragPower();
  		        			getSupportFragmentManager().beginTransaction()
  		                      .replace(R.id.control_container, powerView).commit();
@@ -187,8 +184,12 @@ public class ActivityMainView extends FragmentActivity {
                      	 	 String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
                      	 	 DebugLogger.d("UART_DISCONNECT_MSG");
                      	 	 DebugLogger.d("[" + currentDateTimeString + "] Disconnected to: " + mDevice.getName());
-                              mState = UART_PROFILE_DISCONNECTED;
-                              mService.close();
+                             mState = UART_PROFILE_DISCONNECTED;
+                             mService.close();
+
+                             final FragScanner scanner = FragScanner.getInstance(ActivityMainView.this, null, false);
+                             getSupportFragmentManager().beginTransaction()
+                                  .replace(R.id.control_container, scanner).commit();
                       }
                   });
              }
@@ -221,12 +222,11 @@ public class ActivityMainView extends FragmentActivity {
                   });
               }
              
-             if (action.equals(UartService.ACTION_DATA_SENT))
+             if (action.equals(UartService.ACTION_DATA_SENT) || action.equals(DevMaster.ACTION_PACKAGE_PUSHED))
              {
-//             	final byte[] txValue = intent.getByteArrayExtra(UartService.EXTRA_DATA);
-             	
              	/* send next package */
-             	mService.send();
+                 if (null != mService)
+                     mService.send();
              }
 
              if (action.equals(UartService.DEVICE_DOES_NOT_SUPPORT_UART))
@@ -237,8 +237,9 @@ public class ActivityMainView extends FragmentActivity {
              if (action.equals(DevMaster.ACTION_DATA_UPDATED))
              {
                  final int[] cmd = intent.getIntArrayExtra(DevMaster.EXTRA_DATA);
-                 DebugLogger.d("devMaster action updated:" + cmd[0] + "-"+ cmd[1]);
-                 onCmd(cmd[0], cmd[1]);
+
+                 if (null != cmd)
+                     onCmd(cmd[0], cmd[1]);
              }
 
          }
@@ -289,6 +290,7 @@ public class ActivityMainView extends FragmentActivity {
 				{
         			DebugLogger.d("Unable to initialize Bluetooth");
                     finish();
+                    return;
                 }
         		
                 if (null != devAddress)
@@ -318,11 +320,11 @@ public class ActivityMainView extends FragmentActivity {
             LocalBroadcastManager.getInstance(this).unregisterReceiver(UARTStatusChangeReceiver);
         } catch (Exception ignore) {
             DebugLogger.e(ignore.toString());
-        } 
+        }
         unbindService(mServiceConnection);
         mService.stopSelf();
         mService= null;
-       
+        evDevice.exit = true;
     }
     
     @Override
@@ -338,9 +340,22 @@ public class ActivityMainView extends FragmentActivity {
     }
 
     @Override
+    public void onResume() {
+        super.onResume(); 
+    }
+    @Override
     protected void onRestart() {
         super.onRestart();
         DebugLogger.d("onRestart");
+    }
+    
+
+    @Override
+    public void onBackPressed() {
+        if (mState == UART_PROFILE_CONNECTED) {
+            mService.disconnect();
+        }
+        finish();
     }
 }
 

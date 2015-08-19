@@ -11,10 +11,12 @@ import android.animation.ValueAnimator;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,20 +26,23 @@ import android.widget.RelativeLayout;
 
 public class FragPower extends Fragment implements View.OnClickListener {
 
+    public static final int   POWER_STATE_CONNECT     =   0;
+    public static final int   POWER_STATE_SET_POWER   =   1;
+
     public View rootView;
     CircleButton powerButton;
     Handler mHandler;
     int powerOffColor = R.color.DimGray;
     int powerOnColor = R.color.DarkGreen;
     DevMaster mDevice = null;
-    UartService mService = null;
     
-    int isPowerOn = 0;
+    boolean isPowerOn = false;
     boolean isSwitchingDevice = false;
+    
+    long delayMS;
 
     public FragPower(){
         mDevice = ActivityMainView.evDevice;
-        mService = ActivityMainView.mService;
         mHandler = new Handler();
     }
     
@@ -55,6 +60,8 @@ public class FragPower extends Fragment implements View.OnClickListener {
         powerButton = (CircleButton) rootView.findViewById(R.id.power_button);
         powerButton.setOnClickListener(this);
         setPowerButtonStatus();
+        
+        createDeviceListener();
 
         mHandler.postDelayed(new Runnable() {
             @Override
@@ -98,8 +105,45 @@ public class FragPower extends Fragment implements View.OnClickListener {
         return rootView;
     }
     
+    @Override
+    public void onDestroyView() {
+        mDevice = null;
+        super.onDestroyView();
+    }
+
+    public void createDeviceListener()
+    {
+        final IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(DevMaster.ACTION_DATA_UPDATED);
+        intentFilter.addAction(DevMaster.ACTION_POWER_ON);
+        intentFilter.addAction(UartService.ACTION_GATT_DISCONNECTED);
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(deviceStatusReceiver, intentFilter);
+    }
+    
+    private final BroadcastReceiver deviceStatusReceiver = new BroadcastReceiver()
+    {
+         public void onReceive(Context context, Intent intent)
+        {
+             String action = intent.getAction();
+
+             if (action.equals(DevMaster.ACTION_DATA_UPDATED))
+             {
+                 getActivity().runOnUiThread(new Runnable()
+                 {
+                     public void run() {
+                        
+                     }
+                 });
+             }
+             else if(action.equals(UartService.ACTION_GATT_DISCONNECTED))
+             {
+                 mHandler.removeCallbacks(setPowerRunable);
+             }
+        }
+    };
+    
     private void setPowerButtonStatus(){
-        if (isPowerOn == 0)
+        if (isPowerOn == false)
         {
             powerButton.setColor(powerOffColor);
         }
@@ -140,14 +184,26 @@ public class FragPower extends Fragment implements View.OnClickListener {
     @Override
     public void onClick(View view) {
         DebugLogger.d("power button clicked!");
-        mDevice.setConnection(1);
-        mDevice.getConnection();
-        
-        mDevice.setInt(DevMaster.CMD_ID_POWER_ONOFF, DevMaster.DEVICE_TYPE_BIKE, 1);
-        mDevice.query(DevMaster.CMD_ID_POWER_ONOFF, DevMaster.DEVICE_TYPE_BIKE);
-        mService.send();
+        isPowerOn = !isPowerOn;
+        mHandler.postDelayed(setPowerRunable, 200);
     }
 
+    Runnable setPowerRunable = new Runnable() {
+        @Override
+        public void run()
+        {
+            if (isPowerOn != (mDevice.powerOnOff != 0))
+            {
+                mDevice.setIntEx(DevMaster.CMD_ID_POWER_ONOFF, DevMaster.DEVICE_TYPE_BIKE, isPowerOn ? 1 : 0);
+                mDevice.queryEx(DevMaster.CMD_ID_POWER_ONOFF, DevMaster.DEVICE_TYPE_BIKE);
+            }
+            else{
+                mHandler.removeCallbacks(setPowerRunable);
+            }
+            
+//            mHandler.postDelayed(setPowerRunable, delayMS);
+        }
+  };
     public void dataUpdated()
     {
         
