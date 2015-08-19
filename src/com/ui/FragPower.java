@@ -28,7 +28,9 @@ public class FragPower extends Fragment implements View.OnClickListener {
 
     public static final int   POWER_STATE_CONNECT     =   0;
     public static final int   POWER_STATE_SET_POWER   =   1;
+    public static final int   RETRY_TIMES             =   2;
 
+    public static final int   SWITCHING_POWER_TIMEOUT = 2000;
     public View rootView;
     CircleButton powerButton;
     Handler mHandler;
@@ -39,6 +41,8 @@ public class FragPower extends Fragment implements View.OnClickListener {
     boolean isPowerOn = false;
     boolean isSwitchingDevice = false;
     
+    int     retryCount = 0;
+
     long delayMS;
 
     public FragPower(){
@@ -81,26 +85,25 @@ public class FragPower extends Fragment implements View.OnClickListener {
                         resizeAnimator.addListener(resizerAnimatorListener);
                         resizeAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                             
-                            @Override
-                            public void onAnimationUpdate(ValueAnimator animation) {
-                                int height = rootView.getHeight();
-                                int width = rootView.getWidth();
-                                int diameter = height < width ? height : width;
-                                diameter = diameter * 2 / 3;
-                                int progress = (Integer)animation.getAnimatedValue();
-                                int size = diameter * progress / 100;
-                                RelativeLayout.LayoutParams layoutParam = new RelativeLayout.LayoutParams(size,size);
-                                layoutParam.addRule(RelativeLayout.CENTER_HORIZONTAL);
-                                layoutParam.addRule(RelativeLayout.CENTER_VERTICAL);
-                                powerButton.setLayoutParams(layoutParam);
-                                
-                            }
+                        @Override
+                        public void onAnimationUpdate(ValueAnimator animation) {
+                            int height = rootView.getHeight();
+                            int width = rootView.getWidth();
+                            int diameter = height < width ? height : width;
+                            diameter = diameter * 2 / 3;
+                            int progress = (Integer)animation.getAnimatedValue();
+                            int size = diameter * progress / 100;
+                            RelativeLayout.LayoutParams layoutParam = new RelativeLayout.LayoutParams(size,size);
+                            layoutParam.addRule(RelativeLayout.CENTER_HORIZONTAL);
+                            layoutParam.addRule(RelativeLayout.CENTER_VERTICAL);
+                            powerButton.setLayoutParams(layoutParam);
+                        }
                         });
 
                     }
                 });                
             }
-        }, 150);
+        }, 50);
 
         return rootView;
     }
@@ -114,7 +117,6 @@ public class FragPower extends Fragment implements View.OnClickListener {
     public void createDeviceListener()
     {
         final IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(DevMaster.ACTION_DATA_UPDATED);
         intentFilter.addAction(DevMaster.ACTION_POWER_ON);
         intentFilter.addAction(UartService.ACTION_GATT_DISCONNECTED);
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(deviceStatusReceiver, intentFilter);
@@ -126,17 +128,25 @@ public class FragPower extends Fragment implements View.OnClickListener {
         {
              String action = intent.getAction();
 
-             if (action.equals(DevMaster.ACTION_DATA_UPDATED))
+             if (action.equals(DevMaster.ACTION_POWER_ON))
              {
+                 DebugLogger.e("fragpower event power on!");
                  getActivity().runOnUiThread(new Runnable()
                  {
                      public void run() {
-                        
+                        if (isSwitchingDevice)
+                        {
+                            isPowerOn = (mDevice.powerOnOff == 0 )? false : true;
+                            setPowerButtonStatus();
+                            isSwitchingDevice = false;
+                            mHandler.removeCallbacks(switchTimeoutRunnable);
+                        }
                      }
                  });
              }
              else if(action.equals(UartService.ACTION_GATT_DISCONNECTED))
              {
+                 mHandler.removeCallbacks(switchTimeoutRunnable);
                  mHandler.removeCallbacks(setPowerRunable);
              }
         }
@@ -145,11 +155,11 @@ public class FragPower extends Fragment implements View.OnClickListener {
     private void setPowerButtonStatus(){
         if (isPowerOn == false)
         {
-            powerButton.setColor(powerOffColor);
+            powerButton.setColor(getResources().getColor(powerOffColor));
         }
         else
         {
-            powerButton.setColor(powerOnColor);
+            powerButton.setColor(getResources().getColor(powerOnColor));
         }
     }
     
@@ -158,20 +168,17 @@ public class FragPower extends Fragment implements View.OnClickListener {
         @Override
         public void onAnimationStart(Animator animation) {
             // TODO Auto-generated method stub
-            
         }
         
         @Override
         public void onAnimationRepeat(Animator animation) {
             // TODO Auto-generated method stub
-            
         }
         
         @Override
         public void onAnimationEnd(Animator animation) {
             // TODO Auto-generated method stub
             powerButton.enableContinuePressedRing();
-            
         }
         
         @Override
@@ -183,9 +190,13 @@ public class FragPower extends Fragment implements View.OnClickListener {
     
     @Override
     public void onClick(View view) {
-        DebugLogger.d("power button clicked!");
+        if (isSwitchingDevice)
+            return;
+
         isPowerOn = !isPowerOn;
-        mHandler.postDelayed(setPowerRunable, 200);
+        DebugLogger.d("power button clicked!" + isPowerOn);
+        retryCount = 0;
+        mHandler.postDelayed(setPowerRunable, 50);
     }
 
     Runnable setPowerRunable = new Runnable() {
@@ -194,19 +205,31 @@ public class FragPower extends Fragment implements View.OnClickListener {
         {
             if (isPowerOn != (mDevice.powerOnOff != 0))
             {
+                DebugLogger.e("set power on off" + isPowerOn);
                 mDevice.setIntEx(DevMaster.CMD_ID_POWER_ONOFF, DevMaster.DEVICE_TYPE_BIKE, isPowerOn ? 1 : 0);
                 mDevice.queryEx(DevMaster.CMD_ID_POWER_ONOFF, DevMaster.DEVICE_TYPE_BIKE);
+                isSwitchingDevice = true;
+                
+                mHandler.postDelayed(switchTimeoutRunnable, SWITCHING_POWER_TIMEOUT);
             }
             else{
                 mHandler.removeCallbacks(setPowerRunable);
             }
-            
-//            mHandler.postDelayed(setPowerRunable, delayMS);
         }
-  };
-    public void dataUpdated()
-    {
-        
-    }
+    };
+    
+    /* if timeout */
+    Runnable switchTimeoutRunnable = new Runnable() {
 
+        @Override
+        public void run() {
+            retryCount++;
+            if (retryCount >= RETRY_TIMES)
+                isSwitchingDevice = false;
+            else
+            {
+                mHandler.postDelayed(setPowerRunable, 100);
+            }
+        }
+    };
 }

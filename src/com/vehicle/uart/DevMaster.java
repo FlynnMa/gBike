@@ -105,6 +105,16 @@ public class DevMaster extends Service {
         intent.putExtra(EXTRA_DATA, jniEvt);
 
     }
+    
+    private void broadcastPowerOnOff()
+    {
+        final Intent intent = new Intent(ACTION_POWER_ON);
+
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+
+        intent.putExtra(EXTRA_DATA, powerOnOff);
+
+    }
 
    /* write section, data will write to device */
     byte[]       ApkVersion = {0,0,0,0};
@@ -134,18 +144,18 @@ public class DevMaster extends Service {
 
                 if (CMD_ID_POWER_ONOFF == jniEvent)
                 {
-                    broadcastUpdate(ACTION_POWER_ON);
+                    broadcastPowerOnOff();
                     if (powerOnOff == 0){
+                        isQueryStarted = false;
+
+                        mHandler.removeCallbacks(regularQueryProcess);
                         mHandler.removeCallbacksAndMessages(null);
-                    } else if(isQueryStarted == false) {
-                        mHandler.postDelayed(regularQueryProcess, SHORT_PERIOD);
-                        isQueryStarted = true;
                     }
                 }
             }
         }
     };
-    
+
     Runnable regularQueryProcess = new Runnable() {
       @Override
       public void run() {
@@ -154,10 +164,12 @@ public class DevMaster extends Service {
               if (((periodCount ++) % 4) == 0)
               {
                   query(CMD_ID_GENERAL_LONG, DevMaster.DEVICE_TYPE_BIKE);
-                  periodCount = 0;
               }
-              
-              query(CMD_ID_GENERAL_SHORT, DevMaster.DEVICE_TYPE_BIKE);
+              else
+              {
+                  query(CMD_ID_GENERAL_SHORT, DevMaster.DEVICE_TYPE_BIKE);
+              }
+
               broadcastUpdate(ACTION_PACKAGE_PUSHED);
               mHandler.postDelayed(regularQueryProcess, SHORT_PERIOD);
           }
@@ -201,6 +213,15 @@ public class DevMaster extends Service {
     {
         setInt(cmd, dev, data);
         broadcastUpdate(ACTION_PACKAGE_PUSHED);
+    }
+    
+    public void startQueryLoop(){
+        if (isQueryStarted)
+            return;
+
+        mHandler.postDelayed(regularQueryProcess, SHORT_PERIOD);
+        isQueryStarted = true;
+
     }
 
     /*!

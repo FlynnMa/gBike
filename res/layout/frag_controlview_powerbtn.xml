@@ -5,6 +5,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
+    <com.cycleButton.CircleButton
+        android:id="@+id/power_button"
+        android:layout_width="match_parent"
+        android:layout_height="4dip"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_centerInParent="true"
+        android:src="@drawable/ic_power"
+        app:cb_color="@color/DimGray"
+		/>
+
     <!--
     <com.dd.CircularProgressButton
         android:id="@+id/power_button"
@@ -18,15 +29,4 @@
         app:cpb_textIdle="@string/power"
         app:cpb_textProgress="@string/power"/>"
 -->
-    <com.cycleButton.CircleButton
-        android:id="@+id/power_button"
-        android:layout_width="match_parent"
-        android:layout_height="4dip"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_centerInParent="true"
-        android:src="@drawable/ic_power"
-        app:cb_color="@color/DimGray"
-		/>
-
 </RelativeLayout>

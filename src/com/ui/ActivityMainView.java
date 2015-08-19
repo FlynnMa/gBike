@@ -81,14 +81,6 @@ public class ActivityMainView extends FragmentActivity {
             public void run() {
 
                 if (savedInstance == null) {
-                    if (mState != UART_PROFILE_CONNECTED)
-                    {
-                        /* get instance with uuid parameter, to be used in future */
-                        final FragScanner scanner = FragScanner.getInstance(ActivityMainView.this, null, false);
-                        getSupportFragmentManager().beginTransaction()
-                            .add(R.id.control_container, scanner).commit();
-                    }
-
                     FragInformationViews infoView = new FragInformationViews();
                     getSupportFragmentManager().beginTransaction()
                         .add(R.id.devinfo_container, infoView).commit();
@@ -98,8 +90,8 @@ public class ActivityMainView extends FragmentActivity {
                     .replace(R.id.milesview, milesView).commit();
                 }
             }
-        }, 400);
-		
+        }, 100);
+
 		if (findViewById(R.id.frag_detailview_container) != null) {
 			// The detail container view will be present only in the
 			// large-screen layouts (res/values-large and
@@ -119,8 +111,6 @@ public class ActivityMainView extends FragmentActivity {
         Intent bindIntent = new Intent(this, UartService.class);
         bindService(bindIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
 
-//        LocalBroadcastManager.getInstance(this).registerReceiver(UARTStatusChangeReceiver, makeGattUpdateIntentFilter());
-
         LocalBroadcastManager.getInstance(this).registerReceiver(UARTStatusChangeReceiver, makeGattUpdateIntentFilter());
     }
     
@@ -137,6 +127,7 @@ public class ActivityMainView extends FragmentActivity {
 
         intentFilter.addAction(DevMaster.ACTION_DATA_UPDATED);
         intentFilter.addAction(DevMaster.ACTION_PACKAGE_PUSHED);
+        intentFilter.addAction(DevMaster.ACTION_POWER_ON);
 
 
         return intentFilter;
@@ -196,7 +187,13 @@ public class ActivityMainView extends FragmentActivity {
 
              if (action.equals(UartService.ACTION_GATT_SERVICES_DISCOVERED))
  			{
-              	 mService.enableTXNotification();
+                 mHandler.postDelayed(new Runnable() {
+
+                     @Override
+                     public void run() {
+                             mService.enableTXNotification();
+                     }
+                 }, 50);
              }
 
              if (action.equals(UartService.ACTION_DATA_AVAILABLE))
@@ -234,6 +231,12 @@ public class ActivityMainView extends FragmentActivity {
              	mService.disconnect();
              }
 
+             if (action.equals(DevMaster.ACTION_POWER_ON))
+             {
+                 int powerOnOff = intent.getIntExtra(DevMaster.EXTRA_DATA, -1);
+                 DebugLogger.e("!@^_^@  poweronoff event" + powerOnOff);
+                 evDevice.startQueryLoop();
+             }
              if (action.equals(DevMaster.ACTION_DATA_UPDATED))
              {
                  final int[] cmd = intent.getIntArrayExtra(DevMaster.EXTRA_DATA);
@@ -296,6 +299,23 @@ public class ActivityMainView extends FragmentActivity {
                 if (null != devAddress)
                 {
                     mService.connect(devAddress);
+                    
+                    mHandler.postDelayed(new Runnable() {
+
+                        @Override
+                        public void run() {
+
+                            if (savedInstance == null) {
+                                if (mState != UART_PROFILE_CONNECTED)
+                                {
+                                    /* get instance with uuid parameter, to be used in future */
+                                    final FragScanner scanner = FragScanner.getInstance(ActivityMainView.this, null, false);
+                                    getSupportFragmentManager().beginTransaction()
+                                        .add(R.id.control_container, scanner).commit();
+                                }
+                            }
+                        }
+                    }, 500);
                 }
 
 			}
