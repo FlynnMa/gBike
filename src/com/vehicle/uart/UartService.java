@@ -292,7 +292,7 @@ public class UartService extends Service
         }
         // We want to directly connect to the device, so we are setting the autoConnect
         // parameter to false.
-        mBluetoothGatt = device.connectGatt(this, false, mGattCallback);
+        mBluetoothGatt = device.connectGatt(this, true, mGattCallback);
 		DebugLogger.d("Trying to create a new connection.");
         mBluetoothDeviceAddress = address;
         mConnectionState = STATE_CONNECTING;
@@ -314,6 +314,7 @@ public class UartService extends Service
     {
         if (evMaster == null)
         {
+            DebugLogger.e("failed send: evMaster is null");
             return;
         }
 
@@ -321,14 +322,16 @@ public class UartService extends Service
         if (null == pkg)
             return;
 
-        if (isSending)
+        if (isSending) {
+            DebugLogger.w("uart service is sending");
             return;
+        }
 
         Handler timeout = new Handler();
         timeout.postDelayed(sendTimeoutRunable, 800);
         isSending = true;
         writeRXCharacteristic(pkg);
-        DebugLogger.w("send data:" + Arrays.toString(pkg));
+//        DebugLogger.w("send data:" + Arrays.toString(pkg));
     }
 
     /**
@@ -447,11 +450,18 @@ public class UartService extends Service
         descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
         mBluetoothGatt.writeDescriptor(descriptor);
     }
+
     public void writeRXCharacteristic(byte[] value)
     {
         if (mBluetoothGatt == null)
         {
             DebugLogger.e("writeRxCharacteristic failed, mBluetoothGatt is null");
+            return;
+        }
+        
+        if (mRXCharacteristic == null)
+        {
+            DebugLogger.e("mRxCharacteristic is null!");
             return;
         }
         /*

@@ -1,3 +1,13 @@
+/*
+ * 
+ * @brief this file is based on JNI interface to provide protocal related functions
+ * 
+ * one thing remind that, there is petencially a bug that while exit the app, the
+ * instance of DevMaster may still running in background, I have not find the solution yet.
+ * Possibly is because the thread is not exit, as I have not tried because I don't know how.
+ * 
+ * */
+
 package com.vehicle.uart;
 
 import com.utility.DebugLogger;
@@ -71,7 +81,7 @@ public class DevMaster extends Service {
     public float         fullVoltage;
     public float         mainboardTemperiture;
     public float         current = 0;
-    public boolean       exit = false;
+    public volatile boolean       exit = false;
     private static Thread mThread = null;
     private static final long SHORT_PERIOD = 1200; //0.5 seconds
     int periodCount = 0;
@@ -84,15 +94,17 @@ public class DevMaster extends Service {
 
     Handler mHandler = new Handler();
 
-    private static final DevMaster elecVehicleInstance = new DevMaster();
+    private static DevMaster elecVehicleInstance;
 
     public DevMaster(){
-
     }
 
     public static DevMaster getInstance()
     {
-    	return elecVehicleInstance;
+        if (elecVehicleInstance == null)
+            elecVehicleInstance = new DevMaster();
+
+        return elecVehicleInstance;
     }
 
     private void broadcastUpdate(final String action)
@@ -119,7 +131,7 @@ public class DevMaster extends Service {
    /* write section, data will write to device */
     byte[]       ApkVersion = {0,0,0,0};
 
-    public void onDataReceived(byte[] data){
+    public void onDataReceived(byte[] data) {
         onDataRecv(data);
         update();
     }
@@ -128,8 +140,15 @@ public class DevMaster extends Service {
         if (null == mThread)
         {
             mThread = new Thread(readEventProcess);
+            exit = false;
             mThread.start();
         }
+    }
+    
+    public void exitProcess() {
+        isQueryStarted = false;
+        mHandler.removeCallbacks(regularQueryProcess);
+        mHandler.removeCallbacksAndMessages(null);
     }
 
     Runnable readEventProcess = new Runnable() {
@@ -153,6 +172,8 @@ public class DevMaster extends Service {
                     }
                 }
             }
+            
+            elecVehicleInstance = null;
         }
     };
 
@@ -216,7 +237,12 @@ public class DevMaster extends Service {
     }
     
     public void startQueryLoop(){
-        if (isQueryStarted)
+        if (isQueryStarted) {
+            DebugLogger.e("query loop is already running!!!");
+            return;
+        }
+        
+        if (powerOnOff == 0)
             return;
 
         mHandler.postDelayed(regularQueryProcess, SHORT_PERIOD);
@@ -250,6 +276,15 @@ public class DevMaster extends Service {
      * @return none
      * */
     public native void update();
+
+    /*!
+     * This function initialize the protocal status
+     * 
+     * @param none
+     * 
+     * @return none
+     * */
+    public native void init();
 
     public native void readEvent();
     

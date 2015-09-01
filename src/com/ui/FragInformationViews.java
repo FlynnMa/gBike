@@ -1,18 +1,9 @@
 package com.ui;
 
-import java.text.DateFormat;
-import java.util.Date;
-
-import com.dd.CircularProgressButton;
-import com.utility.DebugLogger;
 import com.vehicle.uart.DevMaster;
 import com.vehicle.uart.R;
-import com.vehicle.uart.UartService;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.ObjectAnimator;
-import android.animation.PropertyValuesHolder;
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -21,11 +12,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -47,6 +36,7 @@ public class FragInformationViews extends Fragment{
 	
 	boolean isAnimating = false;
     Handler mHandler;
+    Activity mActivity = null;
 
     private static final long LONG_PERIOD = 10000; //10 seconds
     private static final long SHORT_PERIOD = 5000; //0.5 seconds
@@ -74,18 +64,6 @@ public class FragInformationViews extends Fragment{
 		rootView = inflater.inflate(R.layout.frag_information,
 				container, false);
 
-//		 Show the dummy content as text in a TextView.
-//		if (mItem != null) {
-//			((TextView) rootView.findViewById(R.id.frag_detail))
-//					.setText(mItem.content);
-//		}
-
-//		Button myButton = (Button)rootView.findViewById(R.id.button1);
-//		myButton.setOnClickListener(button_listener);
-
-//		helpText = (TextView)rootView.findViewById(R.id.helpConnectText);
-//		startButton = (CircularProgressButton) rootView.findViewById(R.id.startConnectButton);
-//		startButton.setIdleText(getResources().getString(R.string.start));
 
 		temperatureText = (TextView)rootView.findViewById(R.id.txt_temperature);
 		temperatureImage = (ImageView)rootView.findViewById(R.id.img_temperature);
@@ -131,6 +109,18 @@ public class FragInformationViews extends Fragment{
 		return rootView;
 	}
 
+	@Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        mActivity = activity;
+    }
+	
+	@Override
+    public void onDetach() {
+        super.onDetach();
+        mActivity = null;
+    }
+
     Runnable longPeriodRunable = new Runnable(){
         @Override
         public void run()
@@ -164,29 +154,17 @@ public class FragInformationViews extends Fragment{
 
 	             if (action.equals(DevMaster.ACTION_DATA_UPDATED))
 	             {
-	                 getActivity().runOnUiThread(new Runnable()
+	                 float temp = ActivityMainView.evDevice.mainboardTemperiture;
+	                 temperatureText.setText(Float.toString(temp));
+
+	                 float vol = ActivityMainView.evDevice.voltage;
+	                 if (vol != 0f)
 	                 {
-	                     public void run()
-	                     {
-	                         float temp = ActivityMainView.evDevice.mainboardTemperiture;
-	                         if (temp != 0f)
-	                         {
-	                             temperatureText.setText(Float.toString(temp));
-	                         }
+	                     batteryText.setText(Float.toString(vol));
+	                 }
 	                         
-	                         float vol = ActivityMainView.evDevice.voltage;
-	                         if (vol != 0f)
-	                         {
-	                             batteryText.setText(Float.toString(vol));
-	                         }
-	                         
-	                         float curr = ActivityMainView.evDevice.current;
-	                         if (curr != 0f)
-	                         {
-	                             currentText.setText(Float.toString(curr));
-	                         }
-	                      }
-	                 });
+	                 float curr = ActivityMainView.evDevice.current;
+	                 currentText.setText(Float.toString(curr));
 	             }
 	             else if(action.equals(DevMaster.ACTION_POWER_ON))
 	             {

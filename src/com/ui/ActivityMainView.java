@@ -3,7 +3,9 @@ package com.ui;
 import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.UUID;
 
+import com.uart.ScannerServiceParser;
 import com.utility.DebugLogger;
 import com.vehicle.uart.DevMaster;
 import com.vehicle.uart.Feature;
@@ -13,6 +15,7 @@ import com.vehicle.uart.UartService;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -29,24 +32,42 @@ import android.widget.Toast;
 
 public class ActivityMainView extends FragmentActivity {
 
-	boolean mTwoPane = false;
+    public final static UUID UART_SERVICE_UUID = UUID.fromString("6E400001-B5A3-F393-E0A9-E50E24DCCA9E");
+
+    boolean mTwoPane = false;
 
 //    private static final int REQUEST_ENABLE_BT = 2;
     private static final int UART_PROFILE_CONNECTED = 20;
+
     private static final int UART_PROFILE_DISCONNECTED = 21;
     
     private static int mState = UART_PROFILE_DISCONNECTED;
+
     public static UartService mService = null;
+
     private BluetoothDevice mDevice = null;
+
     public static BluetoothAdapter mBtAdapter = null;
+
 	public static DevMaster evDevice;
+	
+	FragScanner scannerView;
+
 	FragPower powerView;
+
     SharedPreferences userInfo;
+
     String devAddress;
-    
+
     final private Handler mHandler = new Handler();
     
     public static Bundle savedInstance;
+
+    FragLoading loadingView = null;
+    
+    boolean exitProgram;
+    
+    boolean isLoading = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +75,7 @@ public class ActivityMainView extends FragmentActivity {
 		setContentView(R.layout.activity_mainview);
 
 		savedInstance = savedInstanceState;
+		exitProgram = false;
 		/*
 		mBtAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBtAdapter == null) {
@@ -68,29 +90,18 @@ public class ActivityMainView extends FragmentActivity {
 		if (null != devName) {
 		    DebugLogger.d("load saved device : [" + devName + "]");
 		}
+        service_init();
 
 		evDevice = DevMaster.getInstance();
+		evDevice.init();
 		evDevice.startProcess();
         evDevice.update();
-        
-        service_init(); 
 
-        mHandler.postDelayed(new Runnable() {
-
-            @Override
-            public void run() {
-
-                if (savedInstance == null) {
-                    FragInformationViews infoView = new FragInformationViews();
-                    getSupportFragmentManager().beginTransaction()
-                        .add(R.id.devinfo_container, infoView).commit();
-
-                    FragMilesView  milesView = new FragMilesView();
-                    getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.milesview, milesView).commit();
-                }
-            }
-        }, 100);
+        loadingView = new FragLoading();
+        getSupportFragmentManager().beginTransaction()
+            .add(R.id.frag_mainview_container, loadingView).commit();
+        isLoading = true;
+        mHandler.postDelayed(loadingTimeoutRunnable, 5000);
 
 		if (findViewById(R.id.frag_detailview_container) != null) {
 			// The detail container view will be present only in the
@@ -106,11 +117,56 @@ public class ActivityMainView extends FragmentActivity {
 		}
 	}
 	
+	Runnable loadingTimeoutRunnable = new Runnable() {
+
+        @Override
+        public void run() {
+            DebugLogger.w("!!loading timeout! enter_main ");
+            enter_main();
+        }
+    };
+	
+	public void enter_main()
+	{
+	    isLoading = false;
+        if (null != loadingView)
+        {
+            getSupportFragmentManager().beginTransaction()
+                .remove(loadingView).commit();
+
+            FragInformationViews infoView = new FragInformationViews();
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.devinfo_container, infoView).commit();
+
+            FragMilesView  milesView = new FragMilesView();
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.milesview, milesView).commit();
+        }
+
+        if (mState != UART_PROFILE_CONNECTED) {
+            /* get instance with UUID parameter, to be used in future */
+            if (scannerView != null) {
+                getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.control_container, scannerView).commit();
+//                scannerView = FragScanner.getInstance(ActivityMainView.this,
+//                        UART_SERVICE_UUID, devAddress, false, false);
+            }
+        } else {
+            powerView = new FragPower();
+            getSupportFragmentManager().beginTransaction()
+              .replace(R.id.control_container, powerView).commit();
+
+        }
+        loadingView = null;
+
+	}
+	
     private void service_init()
 	{
         Intent bindIntent = new Intent(this, UartService.class);
         bindService(bindIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
 
+        DebugLogger.w("-->service init ");
         LocalBroadcastManager.getInstance(this).registerReceiver(UARTStatusChangeReceiver, makeGattUpdateIntentFilter());
     }
     
@@ -146,7 +202,7 @@ public class ActivityMainView extends FragmentActivity {
                      public void run()
  					 {
                           	String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
-                          	DebugLogger.d("UART_CONNECT_MSG");
+                          	DebugLogger.e("ACTION_GATT_CONNECTED");
  							mDevice = mService.getDevice();
  							DebugLogger.d("[" + currentDateTimeString + "] Connected to: " + mDevice.getName());
                             mState = UART_PROFILE_CONNECTED;
@@ -156,12 +212,9 @@ public class ActivityMainView extends FragmentActivity {
                             /* save device address */
                             userInfo.edit().putString("deviceAddr", mDevice.getAddress()).commit();
 
-//                            evDevice.setInt(DevMaster.CMD_ID_CONNECTED, DevMaster.DEVICE_TYPE_BIKE, 1);
-//                            evDevice.query(DevMaster.CMD_ID_CONNECTED, DevMaster.DEVICE_TYPE_BIKE);
-
- 		        			powerView = new FragPower();
- 		        			getSupportFragmentManager().beginTransaction()
- 		                      .replace(R.id.control_container, powerView).commit();
+                            /* enter main view immediately */
+                            mHandler.removeCallbacks(loadingTimeoutRunnable);
+                            enter_main();
                       }
              	 });
              }
@@ -172,17 +225,35 @@ public class ActivityMainView extends FragmentActivity {
  				 {
                      public void run()
  					 {
+                             // I don't know why, but it does enter here on application start,
+                             // almost soon after the "connection action"
+                             if (exitProgram == false)
+                                 return;
+
                      	 	 String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
                      	 	 DebugLogger.d("UART_DISCONNECT_MSG");
                      	 	 DebugLogger.d("[" + currentDateTimeString + "] Disconnected to: " + mDevice.getName());
                              mState = UART_PROFILE_DISCONNECTED;
                              mService.close();
 
-                             final FragScanner scanner = FragScanner.getInstance(ActivityMainView.this, null, false);
-                             getSupportFragmentManager().beginTransaction()
-                                  .replace(R.id.control_container, scanner).commit();
+                             if (exitProgram) {
+                                 System.exit(0);
+                                 return;
+                             }
+/*
+                             final FragScanner scanner = FragScanner.getInstance(ActivityMainView.this,
+                                                             UART_SERVICE_UUID, null, false, false);
+                             */
+                             if (scannerView != null)
+                                 getSupportFragmentManager().beginTransaction()
+                                      .replace(R.id.control_container, scannerView).commit();
                       }
                   });
+             }
+             /* no need further process */
+             else if (exitProgram) {
+                 DebugLogger.e("on exitProgram but received :" + action);
+                 return;
              }
 
              if (action.equals(UartService.ACTION_GATT_SERVICES_DISCOVERED))
@@ -199,7 +270,6 @@ public class ActivityMainView extends FragmentActivity {
              if (action.equals(UartService.ACTION_DATA_AVAILABLE))
  			{
                   final byte[] rxValue = intent.getByteArrayExtra(UartService.EXTRA_DATA);
-                  DebugLogger.w("recevied data:" + Arrays.toString(rxValue));
                   
                   runOnUiThread(new Runnable()
  				 {
@@ -224,6 +294,9 @@ public class ActivityMainView extends FragmentActivity {
              	/* send next package */
                  if (null != mService)
                      mService.send();
+                 else {
+                     DebugLogger.e("failed send : mService is null");
+                 }
              }
 
              if (action.equals(UartService.DEVICE_DOES_NOT_SUPPORT_UART))
@@ -282,13 +355,14 @@ public class ActivityMainView extends FragmentActivity {
     //UART service connected/disconnected
     private ServiceConnection mServiceConnection = new ServiceConnection()
     {
+        @Override
         public void onServiceConnected(ComponentName className, IBinder rawBinder)
 		{
 			if (!Feature.blSimulatorMode)
 			{
         		mService = ((UartService.LocalBinder) rawBinder).getService();
 
-        		DebugLogger.d("onServiceConnected mService= " + mService);
+        		DebugLogger.e("!!onServiceConnected mService = " + mService);
         		if (!mService.initialize())
 				{
         			DebugLogger.d("Unable to initialize Bluetooth");
@@ -296,60 +370,63 @@ public class ActivityMainView extends FragmentActivity {
                     return;
                 }
         		
-                if (null != devAddress)
+                if ((null != devAddress) && isLoading)
                 {
-                    mService.connect(devAddress);
-                    
-                    mHandler.postDelayed(new Runnable() {
-
-                        @Override
-                        public void run() {
-
-                            if (savedInstance == null) {
-                                if (mState != UART_PROFILE_CONNECTED)
-                                {
-                                    /* get instance with uuid parameter, to be used in future */
-                                    final FragScanner scanner = FragScanner.getInstance(ActivityMainView.this, null, false);
-                                    getSupportFragmentManager().beginTransaction()
-                                        .add(R.id.control_container, scanner).commit();
-                                }
-                            }
-                        }
-                    }, 500);
+                    DebugLogger.w("-->start background scan : " + mService);
+                    scannerView = FragScanner.getInstance(ActivityMainView.this,
+                            UART_SERVICE_UUID, devAddress, false, true);
+//                  mService.connect(devAddress);
                 }
 
 			}
         }
 
+        @Override
         public void onServiceDisconnected(ComponentName classname)
 		{
-			mService = null;
+            DebugLogger.e("onServiceDisconnected should never comes here ");
+            if (exitProgram == true){
+                System.exit(0);
+                return;
+            }
         }
     };
     
     @Override
     public void onStart() {
+        DebugLogger.d("onStart");
+        exitProgram = false;
         super.onStart();
     }
     
     @Override
     public void onDestroy() {
-         super.onDestroy();
+        if (exitProgram == false) {
+            return;
+        }
+
+        unbindService(mServiceConnection);
+        super.onDestroy();
         
+         DebugLogger.d("onDestroy");
         try {
             LocalBroadcastManager.getInstance(this).unregisterReceiver(UARTStatusChangeReceiver);
         } catch (Exception ignore) {
             DebugLogger.e(ignore.toString());
         }
-        unbindService(mServiceConnection);
-        mService.stopSelf();
-        mService= null;
-        evDevice.exit = true;
+//        unbindService(mServiceConnection);
+        mService = null;
+        evDevice = null;
     }
     
     @Override
     protected void onStop() {
         DebugLogger.d("onStop");
+//        if (exitProgram == false) {
+//            return;
+//        }
+        evDevice.exitProcess();
+        mService.stopSelf();
         super.onStop();
     }
 
@@ -361,6 +438,8 @@ public class ActivityMainView extends FragmentActivity {
 
     @Override
     public void onResume() {
+        DebugLogger.d("onResume");
+        evDevice.startQueryLoop();
         super.onResume(); 
     }
     @Override
@@ -372,10 +451,20 @@ public class ActivityMainView extends FragmentActivity {
 
     @Override
     public void onBackPressed() {
+        exitProgram = true;
+        mHandler.removeCallbacks(loadingTimeoutRunnable);
         if (mState == UART_PROFILE_CONNECTED) {
-            mService.disconnect();
+            if (null != mService){
+                mService.disconnect();
+            }
+            else {
+                DebugLogger.e("onBackPressed service is null - exit flag: " + exitProgram);
+                System.exit(0);
+            }
+        } else {
+            System.exit(0);
         }
-        finish();
     }
+    
 }
 

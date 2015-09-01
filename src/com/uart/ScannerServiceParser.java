@@ -137,7 +137,10 @@ public class ScannerServiceParser {
 		String serviceUUID = Integer.toHexString(decodeUuid16(data, startPosition));
 		String requiredUUID = uuid.substring(4, 8);
 
-		return serviceUUID.equals(requiredUUID);
+		int sUUID = Integer.parseInt(serviceUUID);
+        int rUUID = Integer.parseInt(requiredUUID);
+        
+        return (sUUID == rUUID);
 	}
 
 	/**
@@ -147,7 +150,10 @@ public class ScannerServiceParser {
 		String serviceUUID = Integer.toHexString(decodeUuid16(data, startPosition + serviceDataLength - 4));
 		String requiredUUID = uuid.substring(4, 8);
 
-		return serviceUUID.equals(requiredUUID);
+        int sUUID = Integer.parseInt(serviceUUID);
+        int rUUID = Integer.parseInt(requiredUUID);
+        
+        return (sUUID == rUUID);
 	}
 
 	/**
@@ -157,7 +163,10 @@ public class ScannerServiceParser {
 		String serviceUUID = Integer.toHexString(decodeUuid16(data, startPosition + serviceDataLength - 4));
 		String requiredUUID = uuid.substring(4, 8);
 
-		return serviceUUID.equals(requiredUUID);
+		int sUUID = Integer.parseInt(serviceUUID);
+		int rUUID = Integer.parseInt(requiredUUID);
+		
+		return (sUUID == rUUID);
 	}
 
 	private static int decodeUuid16(final byte[] data, final int start) {
